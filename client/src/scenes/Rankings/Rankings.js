@@ -2,18 +2,40 @@ import "./Rankings.css"
 import { getAllImages, generateImagesByIdol } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 
-const Rankings = () => {
+const Rankings = (props) => {
     const [images, setImages] = useState([]);
-    const [errMsg, setErrMsg] = useState("");
+    const [resultMsg, setResultMsg] = useState("");
     const [idolNameInput, setIdolNameInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    let mybutton = document.getElementById("myBtn");
     useEffect(() => {
         fetchImages();
     }, [])
+    
+    function scrollFunction() {
+        if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
+          mybutton.style.display = "block";
+        } else {
+          mybutton.style.display = "none";
+        }
+      }
+      window.onscroll = function() {scrollFunction()};
+
+    const topFunction = () => {
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+        });
+    }
 
     const fetchImages = async () => {
         const allImages = await getAllImages();
+        const totalWinsLosses = allImages.reduce(( accumulator, current) => {
+            return accumulator + current.numWins + current.numLosses;
+        }, 0)
+        props.setTotalVotes(totalWinsLosses / 2);
 
         const allImagesSorted = allImages.sort((a, b) => {
             return b.score - a.score;
@@ -28,9 +50,14 @@ const Rankings = () => {
     const handleSearch = async (e) => {
         if (idolNameInput !== "" && (e.keyCode === 13)) {
             setIsLoading(true);
-            await generateImagesByIdol(idolNameInput);
+            const allImagesJSON = await generateImagesByIdol(idolNameInput);
+            console.log(allImagesJSON);
+            setResultMsg(`${allImagesJSON.imagesAdded} images added`)
             setIsLoading(false);
             setIdolNameInput("");
+            setTimeout(() => {
+                setResultMsg("");
+            }, 3000)
         }
     }
 
@@ -38,6 +65,7 @@ const Rankings = () => {
         <div className="Rankings relative">
             <div className="flex justify-center mb-5">
                 <input className="md:w-1/5 text-white bg-black-700 bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem]" onKeyDown={handleSearch} placeholder="Add Idol" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
+                <div className="resultMsg absolute text-black">{resultMsg}</div>
             </div>
             <div className="images flex flex-row flex-wrap md:gap-10 gap-6 md:p-8 justify-center p-4">
                 {images.map((image, index) => {
@@ -67,7 +95,7 @@ const Rankings = () => {
                     </div>
                 </div>
             }
-            <div className="absolute m-4 text-[4rem] z-99 border-4 border-black rounded-md p-2">^</div>
+            <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
         </div>
     )
 }

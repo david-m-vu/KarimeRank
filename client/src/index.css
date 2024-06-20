@@ -14,13 +14,17 @@
   width: 100%;
 
   color-scheme: light dark;
-  color: rgba(0, 0, 0, 0.87);
   background-color: #FFFFF0;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html{
+  overflow-y: scroll;
+  
 }
 
 html, body { 

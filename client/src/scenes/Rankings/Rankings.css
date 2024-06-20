@@ -1,3 +1,13 @@
+.Rankings {
+    color: black;
+}
+
+.resultMsg {
+    top: 3.7rem;
+    font-size: 1.4rem;
+    color: green
+}
+
 .loadingScreen, .dark-overlay {
     position: fixed;
     display: flex;
