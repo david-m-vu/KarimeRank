@@ -2,6 +2,8 @@ import "./Rankings.css"
 import { getAllImages, generateImagesByIdol } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 
+import crown from "../../assets/crown.png"
+
 const Rankings = (props) => {
     const [images, setImages] = useState([]);
     const [resultMsg, setResultMsg] = useState("");
@@ -61,17 +63,23 @@ const Rankings = (props) => {
         }
     }
 
+    const getRankOneStyle = (index) => {
+        if (index === 0) {
+            return "shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
+        }
+    }
+
     return (
         <div className="Rankings relative">
-            <div className="flex justify-center mb-5">
-                <input className="bg-black md:w-1/5 text-white  bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem]" onKeyDown={handleSearch} placeholder="Add Idol" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
+            <div className="flex justify-center mb-5 z-10">
+                <input className="bg-black md:w-1/5 text-white  bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] " onKeyDown={handleSearch} placeholder="Add Idol" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
                 <div className="resultMsg absolute text-black">{resultMsg}</div>
             </div>
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center ">
                 {images.map((image, index) => {
                     return (
-                        <div key={image._id} className=" rounded-xl p-1 bg-white shadow-2xl ">
-                            <div className="flex flex-row justify-center ">
+                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl ${getRankOneStyle(index)}`}>
+                            <div className="flex flex-row justify-center">
                                 <img className=" md:border-4 border-2 border-black md:h-[15rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             </div>
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
@@ -83,6 +91,7 @@ const Rankings = (props) => {
                                     </div>
                                 </div>
                             </div>
+                            {index === 0 && <img className="absolute lg:w-[10rem] md:w-[8rem] w-[5rem] h-auto lg:top-[-7rem] md:top-[-5rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown"/>}
                         </div>
                     )
                 })}
