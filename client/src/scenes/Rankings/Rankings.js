@@ -64,7 +64,7 @@ const Rankings = (props) => {
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-5">
-                <input className="md:w-1/5 text-white bg-black-700 bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem]" onKeyDown={handleSearch} placeholder="Add Idol" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
+                <input className="bg-black md:w-1/5 text-white  bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem]" onKeyDown={handleSearch} placeholder="Add Idol" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
                 <div className="resultMsg absolute text-black">{resultMsg}</div>
             </div>
             <div className="images flex flex-row flex-wrap md:gap-10 gap-6 md:p-8 justify-center p-4">
