@@ -43,11 +43,11 @@ const Main = () => {
                 </h1>
             </div>
 
-            <div className="imagePair mt-5 md:mt-8 flex flex-row flex-wrap justify-center gap-10">
+            <div className="imagePair mt-5 md:mt-8 flex flex-row flex-wrap justify-center md:gap-10 gap-6">
                 {images.map((image) => {
                     return (
                         <div className="relative" key={image._id}>
-                            <img onClick={() => selectImage(image._id)} className="relative gap-6 hover:outline outline-[#FF0000] outline-4 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl mb-8" src={image.imageUrl} alt={image.imageName} />
+                            <img onClick={() => selectImage(image._id)} className="relative hover:outline outline-[#FF0000] outline-4 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
                         </div>
                     )

@@ -65,6 +65,7 @@ export const getRandomImagePair = async (req, res) => {
         const randIndex = Math.floor(Math.random() * allIdolNames.length);
         const randomIdolName = allIdolNames[randIndex];
 
+        console.log("hello");
         // get all images of one idol --> array
         const allIdolImages = await Image.find({ idolName: randomIdolName });
 
