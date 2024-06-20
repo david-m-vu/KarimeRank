@@ -78,9 +78,9 @@ const Rankings = (props) => {
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center ">
                 {images.map((image, index) => {
                     return (
-                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl ${getRankOneStyle(index)}`}>
+                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
                             <div className="flex flex-row justify-center">
-                                <img className=" md:border-4 border-2 border-black md:h-[15rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
+                                <img className=" md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             </div>
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className=" md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
