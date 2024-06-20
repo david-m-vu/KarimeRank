@@ -1,0 +1,37 @@
+.loadingScreen, .dark-overlay {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.loadingScreen {
+    z-index: 12;
+}
+
+.dark-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.loader {
+    border: 16px solid rgba(0, 0, 0, 0.5);
+    border-top: 16px solid #84DCCF;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

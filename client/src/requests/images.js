@@ -1,7 +1,21 @@
 const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
 
 export const generateImagesByIdol = async (idolName) => {
-    // await fetch(`${BACKEND_BASE_URL}/images/`)
+    const res = await fetch(`${BACKEND_BASE_URL}/images/generate`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            idolName
+        })
+    });
+
+    let allImages = [];
+    if (res.ok) {
+        let allImages = await res.json().allImages;
+    }
+    return allImages;
 }
 
 export const getAllImages = async () => {
