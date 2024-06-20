@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
     res.json({"running": "true"});
 })
 
-app.use("images", imageRoutes)
+app.use("/images", imageRoutes)
 
 const PORT = process.env.PORT || 6001;
 mongoose

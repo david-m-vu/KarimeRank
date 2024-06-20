@@ -18,9 +18,9 @@ export const getImagesByIdol = async (idolName) => {
         return null;
     }
 
-    const data = res.data();
+    const data = res.data;
 
-    return data.albums.map((album) => {
+    const albumArr = data.albums.map((album) => {
         const originUrl = album.url;
         const title = album.title;
 
@@ -39,4 +39,7 @@ export const getImagesByIdol = async (idolName) => {
 
         return imageObjects
     })
+
+    const allImageObjects = albumArr.flat();
+    return allImageObjects;
 }   

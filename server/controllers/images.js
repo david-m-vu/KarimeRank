@@ -23,7 +23,7 @@ export const generateImagesByIdol = async (req, res) => {
 
         const allImageObjects = await Image.find();
 
-        res.status(201).json({ images: allImageObjects, imagesAdded })
+        res.status(201).json({ allImages: allImageObjects, imagesAdded })
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
@@ -40,7 +40,6 @@ export const getAllImages = async (req, res) => {
 
 // export const getRandomImagePairs = async (req, res) => {
 //     const { idolName } 
-    
 //     // get all images of one idol --> array
     
 //     // create random sets of two images for that one idol --> array of arrays

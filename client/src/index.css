@@ -14,7 +14,7 @@
   width: 100%;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: rgba(0, 0, 0, 0.87);
   background-color: #FFFFF0;
 
   font-synthesis: none;
@@ -27,21 +27,12 @@ html, body {
   margin: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden;
-  font-family: 'Roboto'; 
+  font-family: 'Bayon'; 
+  overflow-y: scroll;
+
 }
 
 #root {
-  height: 100vh;
-}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px #150F13 inset !important;
-    -webkit-text-fill-color: #ffc4ec;
-
 }
 
 /* button {
