@@ -21,7 +21,7 @@ const Navbar = (props) => {
         <div className="Navbar">
             <div className="text-center w-full flex justify-center flex-row items-center">
                 
-                {location.pathname === "/rankings" && <div className={`md:text-[32px] text-[20px] text-black absolute left-4 mx-4`}>{props.totalVotes} total votes <span className="hidden lg:inline">worldwide</span></div>}
+                {location.pathname === "/rankings" && <div className={`md:text-[32px] text-[15px] text-black absolute left-4 mx-4`}>{props.totalVotes} total votes <span className="hidden lg:inline">worldwide</span></div>}
                 <div>
 
                 </div>
