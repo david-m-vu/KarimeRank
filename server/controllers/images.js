@@ -112,7 +112,7 @@ export const likeImage = async (req, res) => {
         let secondScore = secondImage.score;
         let secondWins = secondImage.numWins;
         let secondLosses = secondImage.numLosses;
-        
+
         if (chosenID === firstImageID) {
             firstScore = getNewRating(firstScore, secondScore, 1);
             secondScore = getNewRating(secondScore, firstScore, 0);
@@ -132,7 +132,7 @@ export const likeImage = async (req, res) => {
             { 
                 score: firstScore,
                 numWins: firstWins,
-                numLosses, firstLosses
+                numLosses: firstLosses
             },
             { new: true}
         )

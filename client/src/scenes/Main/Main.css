@@ -1,2 +1,26 @@
 .Main {
 }
+
+.imagePair {
+
+}
+
+.heart {
+    animation: pulse 0.8s ease forwards 1;
+    transform-origin: center;
+    top: 50%;
+    left: 50%;
+}
+
+@keyframes pulse {
+    from {
+        transform: translate(-50%, -50%) scale(2);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(4);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2)
+
+    }
+}
