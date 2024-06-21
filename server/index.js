@@ -18,7 +18,7 @@ app.use(cors());
 
 /* ROUTES */
 app.get("/", (req, res) => {
-    res.json({"running": "true"});
+    res.send("running");
 })
 
 app.use("/images", imageRoutes)
