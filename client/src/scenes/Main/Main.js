@@ -20,17 +20,19 @@ const Main = () => {
 
     const fetchImages = async () => {
         const imagePair = await getIdolImagePair();
-        setImages([imagePair[0], imagePair[1]]);
-        setHasLiked(0);
+        setTimeout(() => {
+            setImages([imagePair[0], imagePair[1]]);
+            setHasLiked(0);
+        }, 250)
     }
 
     const selectImage = async (chosenImageId) => {
-        const updatedImages = await likeImage(images[0]._id, images[1]._id, chosenImageId);
-        setHasLiked(chosenImageId);
-        playAudio();
-        setTimeout(() => {
+        if (!hasLiked) {
+            setHasLiked(chosenImageId);
+            const updatedImages = await likeImage(images[0]._id, images[1]._id, chosenImageId);
+            playAudio();
             fetchImages();
-        }, 900);
+        }
     }
 
     return (

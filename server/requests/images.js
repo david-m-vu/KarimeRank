@@ -13,8 +13,7 @@ export const getImagesByIdol = async (idolName) => {
         }   
     })
 
-    console.log(res.status);
-    if (res.status === 404) {
+    if (res.data === "Idol doesn't exist") {
         return null;
     }
 

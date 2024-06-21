@@ -12,11 +12,13 @@ export const generateImagesByIdol = async (idolName) => {
             })
         });
     
-        let allImagesJSON
         if (res.ok) {
-            allImagesJSON = await res.json();
+            const allImagesJSON = await res.json();
+            return allImagesJSON;
+        } else if (res.status === 404) {
+            const messageJSON = await res.json();
+            return messageJSON;
         }
-        return allImagesJSON;
     } catch (err) {
         return null;
     }
@@ -58,8 +60,8 @@ export const likeImage = async (firstImageID, secondImageID, chosenID) => {
     });
 
     if (res.ok) {
-        return await res.json();
-
+        const resJSON = await res.json();
+        return resJSON;
     }  else {
         return null;
     }

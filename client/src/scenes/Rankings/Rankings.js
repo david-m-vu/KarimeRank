@@ -9,6 +9,7 @@ const Rankings = (props) => {
     const [resultMsg, setResultMsg] = useState("");
     const [idolNameInput, setIdolNameInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [inputFocused, setInputFocused] = useState(false);
 
     let mybutton = document.getElementById("myBtn");
     useEffect(() => {
@@ -37,7 +38,7 @@ const Rankings = (props) => {
         const totalWinsLosses = allImages.reduce(( accumulator, current) => {
             return accumulator + current.numWins + current.numLosses;
         }, 0)
-        props.setTotalVotes(totalWinsLosses / 2);
+        props.setTotalVotes(Math.floor(totalWinsLosses / 2));
 
         const allImagesSorted = allImages.sort((a, b) => {
             return b.score - a.score;
@@ -53,8 +54,15 @@ const Rankings = (props) => {
         if (idolNameInput !== "" && (e.keyCode === 13)) {
             setIsLoading(true);
             const allImagesJSON = await generateImagesByIdol(idolNameInput);
-            console.log(allImagesJSON);
-            setResultMsg(`${allImagesJSON.imagesAdded} images added`)
+
+            let message;
+            if (Object.hasOwn(allImagesJSON, "message")) {
+                message = allImagesJSON.message;
+            } else {
+                message = `${allImagesJSON.imagesAdded} images added`;
+            }
+
+            setResultMsg(message);
             setIsLoading(false);
             setIdolNameInput("");
             setTimeout(() => {
@@ -72,8 +80,9 @@ const Rankings = (props) => {
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-5 z-10">
-                <input className="bg-black md:w-1/5 text-white  bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] " onKeyDown={handleSearch} placeholder="Add Idol" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
-                <div className="resultMsg absolute text-black">{resultMsg}</div>
+                {inputFocused && <div className="contextMsg z-20 absolute text-black"><span className="decoration-solid	underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700">[IDOL NAME HERE]</span></div>}
+                <input className={`bg-black md:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem]`} onFocus={() => setInputFocused(true)} onBlur={() => setInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
+                <div className="resultMsg absolute">{resultMsg}</div>
             </div>
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center ">
                 {images.map((image, index) => {

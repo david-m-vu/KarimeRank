@@ -4,11 +4,10 @@ import Image from "../models/Image.js";
 export const generateImagesByIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
-
         const imageObjects = await getImagesByIdol(idolName);
 
         if (!imageObjects) {
-            res.status(404).json({ message: "Idol doesn't exist!" })
+            return res.status(404).json({ message: "Idol doesn't exist!" })
         }
 
         let imagesAdded = 0;
@@ -23,9 +22,9 @@ export const generateImagesByIdol = async (req, res) => {
 
         const allImageObjects = await Image.find();
 
-        res.status(201).json({ allImages: allImageObjects, imagesAdded })
+        return res.status(201).json({ allImages: allImageObjects, imagesAdded })
     } catch (err) {
-        res.status(500).json({ message: err.message })
+        return res.status(500).json({ message: err.message })
     }
 }
 
