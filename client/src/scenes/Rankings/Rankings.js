@@ -87,20 +87,20 @@ const Rankings = (props) => {
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center ">
                 {images.map((image, index) => {
                     return (
-                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl ${getRankOneStyle(index)}`}>
+                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
                             <div className="flex flex-row justify-center">
-                                <img className=" border-4 border-black md:h-[15rem] h-[5rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
+                                <img className=" md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             </div>
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className=" md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
                                 <div className="flex flex-col justify-center flex-1 items-center">
-                                    <div className="text-center text-[0.5rem] md:text-[1.5rem]">W: {image.numWins} L: {image.numLosses}</div>
-                                    <div className="text-center text-[0.3rem] md:text-[1rem]">
+                                    <div className="text-center text-[1rem] md:text-[1.5rem]">W: {image.numWins} L: {image.numLosses}</div>
+                                    <div className="text-center text-[0.7rem] md:text-[1rem]">
                                         Score: {image.score}
                                     </div>
                                 </div>
                             </div>
-                            {index === 0 && <img className="absolute lg:w-[10rem] md:w-[8rem] w-[5rem] h-auto lg:top-[-7rem] md:top-[-5rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown"/>}
+                            {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown"/>}
                         </div>
                     )
                 })}
