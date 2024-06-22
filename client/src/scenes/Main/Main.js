@@ -8,6 +8,9 @@ import { useState, useEffect } from "react";
 const Main = () => {
     const [images, setImages] = useState([]);
     const [hasLiked, setHasLiked] = useState(0);
+    const [showRecords, setShowRecords] = useState(false);
+    const [firstNewStats, setFirstNewStats] = useState({});
+    const [secondNewStats, setSecondNewStats] = useState({});
 
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
@@ -23,15 +26,30 @@ const Main = () => {
         setTimeout(() => {
             setImages([imagePair[0], imagePair[1]]);
             setHasLiked(0);
-        }, 250)
+            setShowRecords(false);
+        }, 1500)
     }
 
     const selectImage = async (chosenImageId) => {
         if (!hasLiked) {
             setHasLiked(chosenImageId);
             const updatedImages = await likeImage(images[0]._id, images[1]._id, chosenImageId);
+            const { updatedFirstImage, updatedSecondImage } = updatedImages;
+            setFirstNewStats({id: updatedFirstImage._id, numLosses: updatedFirstImage.numLosses, numWins: updatedFirstImage.numWins, score: updatedFirstImage.score});
+            setSecondNewStats({id: updatedSecondImage._id, numLosses: updatedSecondImage.numLosses, numWins: updatedSecondImage.numWins, score: updatedSecondImage.score})
             playAudio();
+            setShowRecords(true);
             fetchImages();
+        }
+    }
+
+    const getImageStats = (imageID) => {
+        if (firstNewStats.id === imageID) {
+            return firstNewStats;
+        } else if (secondNewStats.id === imageID) {
+            return secondNewStats;
+        } else {
+            return {numWins: "", numLosses: "", score: ""};
         }
     }
 
@@ -46,17 +64,18 @@ const Main = () => {
             </div>
 
             <div className="imagePair mt-5 md:mt-8 flex flex-row flex-wrap justify-center md:gap-10 gap-6">
-                {images.map((image) => {
+                {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
                             <img onClick={() => selectImage(image._id)} className="relative hover:outline outline-[#FF0000] outline-4 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
+                            {showRecords && <div className={`bottom-[-2.5rem] md:bottom-[-3.5rem] lg:bottom-[-5rem] resultsInfo absolute p-4 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] w-[100vw]`}>{`W: ${getImageStats(image._id).numWins} L: ${getImageStats(image._id).numLosses} Score: ${getImageStats(image._id).score}`}</div>}
                         </div>
                     )
                 })}
             </div>
 
-            {/* <div className="flex flex-row justify-center"><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
+            {/* <div className="flex flex-row justify-center" onClick={() => console.log(firstNewStats)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )
 }
