@@ -21,7 +21,7 @@ const Navbar = (props) => {
         <div className="Navbar">
             <div className="text-center w-full flex justify-center flex-row items-center">
                 {location.pathname === "/rankings" && <div className={`md:text-[32px] text-[15px] text-black absolute left-4 mx-1`}>{props.totalVotes} total votes <span className="hidden lg:inline">worldwide</span></div>}
-                <div className=" flex justify-center items-center md:text-[3.875rem] text-[2rem] m-2 text-black"><NavLink to='/'>karimerank</NavLink></div>
+                <div className=" flex justify-center items-center md:text-[3.875rem] text-[2rem] m-2 text-black"><a href='/'>karimerank</a></div>
                 <div className={`md:text-[32px] text-[20px] hover:text-black absolute right-4 mx-4 ${getIsHighlighted("/rankings")}`}><NavLink to="/rankings">Rankings</NavLink></div>
             </div>
         </div>

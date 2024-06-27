@@ -3,7 +3,7 @@
 }
 
 .resultMsg {
-    top: 3.7rem;
+    top: 3.4rem;
     font-size: 1.4rem;
     color: green
 }
@@ -47,5 +47,11 @@
     }
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media only screen and (min-width: 640px) {
+    .resultMsg {
+        top: 3.7rem;
     }
 }

@@ -38,12 +38,13 @@ export const getAllImages = async () => {
 export const getIdolImagePair = async () => {
     const imagePairRes = await fetch(`${BACKEND_BASE_URL}/images/random`);
 
-    let imagePair
     if (imagePairRes.ok) {
-        imagePair = await imagePairRes.json();
+        const imagePair = await imagePairRes.json();
+        return imagePair.images;
+    } else {
+        return null;
     }
 
-    return imagePair.images;
 }
 
 export const likeImage = async (firstImageID, secondImageID, chosenID) => {

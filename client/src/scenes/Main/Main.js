@@ -11,6 +11,7 @@ const Main = () => {
     const [showRecords, setShowRecords] = useState(false);
     const [firstNewStats, setFirstNewStats] = useState({});
     const [secondNewStats, setSecondNewStats] = useState({});
+    // const [imagesLoaded, setImagesLoaded] = useState(false);
 
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
@@ -33,12 +34,17 @@ const Main = () => {
     const selectImage = async (chosenImageId) => {
         if (!hasLiked) {
             setHasLiked(chosenImageId);
+            playAudio();
             const updatedImages = await likeImage(images[0]._id, images[1]._id, chosenImageId);
             const { updatedFirstImage, updatedSecondImage } = updatedImages;
+
+            // show stats on the bottom
             setFirstNewStats({id: updatedFirstImage._id, numLosses: updatedFirstImage.numLosses, numWins: updatedFirstImage.numWins, score: updatedFirstImage.score});
             setSecondNewStats({id: updatedSecondImage._id, numLosses: updatedSecondImage.numLosses, numWins: updatedSecondImage.numWins, score: updatedSecondImage.score})
-            playAudio();
+
             setShowRecords(true);
+
+            // fetch new images
             fetchImages();
         }
     }
@@ -67,7 +73,7 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
-                            <img onClick={() => selectImage(image._id)} className="relative hover:outline outline-[#FF0000] outline-4 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} />
+                            <img onClick={() => selectImage(image._id)} className="relative hover:outline outline-[#FF0000] outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
                             {showRecords && <div className={`bottom-[-2.5rem] md:bottom-[-3.5rem] lg:bottom-[-5rem] resultsInfo absolute p-4 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] w-[100vw]`}>{`W: ${getImageStats(image._id).numWins} L: ${getImageStats(image._id).numLosses} Score: ${getImageStats(image._id).score}`}</div>}
                         </div>
@@ -75,6 +81,8 @@ const Main = () => {
                 })}
             </div>
 
+
+            { <div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] mt-4 lg:mt-12 md:mt-8 ">{images[0]?.idolName.replace(/[0-9]/g, '')}</div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(firstNewStats)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )
