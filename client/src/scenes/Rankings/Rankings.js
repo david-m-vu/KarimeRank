@@ -40,6 +40,7 @@ const Rankings = (props) => {
     }
 
     const fetchImages = async () => {
+        console.log("fetching");
         const allImages = await getAllImages();
         const totalWinsLosses = allImages.reduce(( accumulator, current) => {
             return accumulator + current.numWins + current.numLosses;
@@ -82,7 +83,7 @@ const Rankings = (props) => {
     }
 
     const handleFilter = (e) => {
-        if (filterInput !== "" && (e.keyCode === 13)) {
+        if (e.keyCode === 13) {
             navigate(`/rankings?filter=${e.target.value}`)
         }
     }
