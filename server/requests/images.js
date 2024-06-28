@@ -42,3 +42,4 @@ export const getImagesByIdol = async (idolName) => {
     const allImageObjects = albumArr.flat();
     return allImageObjects;
 }   
+

@@ -1,5 +1,5 @@
 import "./Main.css"
-import { getIdolImagePair, likeImage } from "../../requests/images.js"
+import { getIdolImagePair, getAllIdolNames, likeImage } from "../../requests/images.js"
 import heart from "../../assets/heart-filled.svg";
 import { useState, useEffect } from "react";
 // import Audio from "../../assets/bubble-sound.mp3";
@@ -12,6 +12,7 @@ const Main = () => {
     const [firstNewStats, setFirstNewStats] = useState({});
     const [secondNewStats, setSecondNewStats] = useState({});
     // const [imagesLoaded, setImagesLoaded] = useState(false);
+    const [idolNames, setIdolNames] = useState([]);
 
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
