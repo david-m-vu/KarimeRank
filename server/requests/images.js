@@ -18,6 +18,7 @@ export const getImagesByIdol = async (idolName) => {
     }
 
     const data = res.data;
+    const groupName = data.groupName
 
     const albumArr = data.albums.map((album) => {
         const originUrl = album.url;
@@ -28,6 +29,7 @@ export const getImagesByIdol = async (idolName) => {
                 originUrl,
                 imageUrl,
                 idolName,
+                groupName,
                 title,
                 imageName: `${title} picture ${index}`,
                 score: 1500,

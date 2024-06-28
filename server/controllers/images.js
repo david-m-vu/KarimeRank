@@ -20,6 +20,7 @@ export const generateImagesByIdol = async (req, res) => {
             }
         })
 
+
         const allImageObjects = await Image.find();
 
         return res.status(201).json({ allImages: allImageObjects, imagesAdded })
