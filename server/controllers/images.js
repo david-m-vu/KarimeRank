@@ -4,7 +4,7 @@ import Image from "../models/Image.js";
 export const generateImagesByIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
-        const imageObjects = await getImagesByIdol(idolName);
+        const imageObjects = await getImagesByIdol(idolName.toLowerCase());
 
         if (!imageObjects) {
             return res.status(404).json({ message: "Idol doesn't exist!" })
@@ -73,9 +73,9 @@ export const getRandomImagePair = async (req, res) => {
         const randIndex = Math.floor(Math.random() * allIdolNames.length);
         const randomIdolName = allIdolNames[randIndex];
 
-        console.log("hello");
         // get all images of one idol --> array
-        const allIdolImages = await Image.find({ idolName: randomIdolName });
+        const escapedName = escapeRegExp(randomIdolName);
+        const allIdolImages = await Image.find({ idolName: new RegExp(escapedName, 'i') });
 
         // create one random set of two images for that one idol --> array of 2
         let firstIndex = Math.floor(Math.random() * allIdolImages.length);
@@ -95,10 +95,11 @@ export const getRandomImagePair = async (req, res) => {
 
 export const getRandomImagePairByIdol = async (req, res) => {
     try {
-        const { idolName } = req.params
+        const { idolName } = req.params;
 
         // get all images of one idol --> array
-        const allIdolImages = await Image.find({ idolName });
+        const escapedName = escapeRegExp(idolName);
+        const allIdolImages = await Image.find({ idolName: new RegExp(escapedName, 'i') });
 
         // create one random set of two images for that one idol --> array of 2
         let firstIndex = Math.floor(Math.random() * allIdolImages.length);
@@ -186,4 +187,8 @@ const getRatingDelta = (myRating, opponentRating, outcome) => {
 
     const myChanceToWin = 1 / (1 + Math.pow(10, (opponentRating - myRating) / 400));
     return Math.round(32 * (outcome - myChanceToWin))
+}
+
+const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }

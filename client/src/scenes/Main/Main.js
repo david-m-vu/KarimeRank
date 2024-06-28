@@ -25,6 +25,10 @@ const Main = () => {
         fetchImages();
     }, [])
 
+    useEffect(() => {
+        fetchImages();
+    }, [selectedIdol])
+
     const fetchImages = async () => {
         let imagePair
         if (selectedIdol.toLowerCase() === "random") {
@@ -76,6 +80,23 @@ const Main = () => {
         setSelectedIdol(e.target.value)
     } 
 
+    function removeCaseInsensitiveDuplicates(arr) {
+        // Create a new array to store unique strings in lowercase
+        const uniqueStrings = [];
+        
+        // Filter the array
+        const filteredArray = arr.filter((str) => {
+          const lowerStr = str.toLowerCase();
+          if (uniqueStrings.indexOf(lowerStr) === -1) {
+            uniqueStrings.push(lowerStr);
+            return true;
+          }
+          return false;
+        });
+      
+        return filteredArray;
+      }
+
     return (
         <div className="Main">
 
@@ -90,7 +111,7 @@ const Main = () => {
 
                 <select name="idols" className="bg-white border-black border-2 rounded-md ml-2" onChange={handleSelect}>
                 <option>Random</option>
-                    {idolNames.map((idolName) => {
+                    {removeCaseInsensitiveDuplicates(idolNames).map((idolName) => {
                         return <option>{idolName}</option>
                     })}
                 </select>

@@ -121,7 +121,7 @@ const Rankings = (props) => {
                                 <div className="flex flex-row justify-center">
                                     <img className=" md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
                                 </div>
-                                {/* <div>{image.idolName}</div> */}
+                                <div>{image.idolName}</div>
                                 <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                     <div className=" md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
                                     <div className="flex flex-col justify-center flex-1 items-center">
