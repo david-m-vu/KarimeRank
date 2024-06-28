@@ -84,7 +84,9 @@ const Rankings = (props) => {
 
     const handleFilter = (e) => {
         if (e.keyCode === 13) {
-            navigate(`/rankings?filter=${e.target.value}`)
+            if (!queryParameters.get("filter") || e.target.value.toLowerCase() !== queryParameters.get("filter").toLowerCase()) {
+                navigate(`/rankings?filter=${e.target.value}`)
+            }
         }
     }
 
