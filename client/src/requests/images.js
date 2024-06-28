@@ -35,6 +35,10 @@ export const getAllImages = async () => {
     return allImages.images
 }
 
+export const getAllIdolImages = async () => {
+    
+}
+
 export const getIdolImagePair = async () => {
     const imagePairRes = await fetch(`${BACKEND_BASE_URL}/images/random`);
 

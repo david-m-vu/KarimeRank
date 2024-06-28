@@ -109,8 +109,13 @@ const Rankings = (props) => {
                 
             </div>
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center">
-                {images.map((image, index) => {
-                    if ((image.idolName.toLowerCase().includes(queryParameters.get("filter") || ""))) {
+                {images.filter((image) => {
+                    if (!queryParameters.get("filter")) {
+                        return true;
+                    } else {
+                        return image.idolName.toLowerCase().includes(queryParameters.get("filter"))
+                    }
+                }).map((image, index) => {
                         return (
                             <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
                                 <div className="flex flex-row justify-center">
@@ -129,9 +134,7 @@ const Rankings = (props) => {
                                 {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown"/>}
                             </div>
                         )
-                    } else {
-                        return <></>
-                    }
+
                 }
                 )}
             </div>
