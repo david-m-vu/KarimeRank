@@ -1,5 +1,5 @@
 import "./Main.css"
-import { getIdolImagePair, getAllIdolNames, likeImage } from "../../requests/images.js"
+import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNames, likeImage } from "../../requests/images.js"
 import heart from "../../assets/heart-filled.svg";
 import { useState, useEffect } from "react";
 // import Audio from "../../assets/bubble-sound.mp3";
@@ -11,7 +11,7 @@ const Main = () => {
     const [showRecords, setShowRecords] = useState(false);
     const [firstNewStats, setFirstNewStats] = useState({});
     const [secondNewStats, setSecondNewStats] = useState({});
-    const [selectedIdol, setIdol] = useState({});
+    const [selectedIdol, setSelectedIdol] = useState("Random");
     // const [imagesLoaded, setImagesLoaded] = useState(false);
     const [idolNames, setIdolNames] = useState([]);
 
@@ -21,16 +21,27 @@ const Main = () => {
     }
     
     useEffect(() => {
+        fetchAllIdolNames();
         fetchImages();
     }, [])
 
     const fetchImages = async () => {
-        const imagePair = await getIdolImagePair();
+        let imagePair
+        if (selectedIdol.toLowerCase() === "random") {
+            imagePair = await getIdolImagePair();
+        } else {
+            imagePair = await getIdolImagePairByIdol(selectedIdol);
+        }
         setTimeout(() => {
             setImages([imagePair[0], imagePair[1]]);
             setHasLiked(0);
             setShowRecords(false);
         }, 1500)
+    }
+
+    const fetchAllIdolNames = async () => {
+        const allIdolNames = await getAllIdolNames();
+        setIdolNames(allIdolNames);
     }
 
     const selectImage = async (chosenImageId) => {
@@ -61,6 +72,10 @@ const Main = () => {
         }
     }
 
+    const handleSelect = (e) => {
+        setSelectedIdol(e.target.value)
+    } 
+
     return (
         <div className="Main">
 
@@ -73,11 +88,11 @@ const Main = () => {
             <div className="flex flex-row justify-center items-center mt-2">
                 <label>Filter: </label>
 
-                <select name="idols" className="bg-white border-black border-2 rounded-md ml-2">
-                <option >Karina</option>
-                <option >Wonyoung</option>
-                <option>Chaewon</option>
-                <option>Hanni</option>
+                <select name="idols" className="bg-white border-black border-2 rounded-md ml-2" onChange={handleSelect}>
+                <option>Random</option>
+                    {idolNames.map((idolName) => {
+                        return <option>{idolName}</option>
+                    })}
                 </select>
                 
             </div>

@@ -36,11 +36,11 @@ export const getAllImages = async () => {
 }
 
 export const getAllIdolNames = async () => {
-    const allIdolNamesRes = await fetch(`${BACKEND_BASE_URL}/names`);
+    const allIdolNamesRes = await fetch(`${BACKEND_BASE_URL}/images/names`);
 
     if (allIdolNamesRes.ok) {
         const allIdolNames = await allIdolNamesRes.json();
-        return allIdolNames;
+        return allIdolNames.idolNames;
     } else {
         return null;
     }
@@ -55,7 +55,17 @@ export const getIdolImagePair = async () => {
     } else {
         return null;
     }
+}
 
+export const getIdolImagePairByIdol = async (idolName) => {
+    const imagePairRes = await fetch(`${BACKEND_BASE_URL}/images/random/${idolName}`);
+
+    if (imagePairRes.ok) {
+        const imagePair = await imagePairRes.json();
+        return imagePair.images;
+    } else {
+        return null;
+    }
 }
 
 export const likeImage = async (firstImageID, secondImageID, chosenID) => {
