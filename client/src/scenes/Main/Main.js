@@ -111,8 +111,8 @@ const Main = () => {
 
                 <select name="idols" className="bg-white border-black border-2 rounded-md ml-2" onChange={handleSelect}>
                 <option>Random</option>
-                    {removeCaseInsensitiveDuplicates(idolNames).map((idolName) => {
-                        return <option>{idolName}</option>
+                    {removeCaseInsensitiveDuplicates(idolNames).map((idolName, index) => {
+                        return <option key={index}>{idolName}</option>
                     })}
                 </select>
                 

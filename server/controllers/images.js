@@ -53,6 +53,7 @@ export const getAllImages = async (req, res) => {
 export const getAllIdolNames = async (req, res) => {
     try {
         const allIdolNames = await Image.find().distinct("idolName");
+
         res.status(200).json({ idolNames: allIdolNames});
     } catch (err) {
         res.status(404).json({ message: err.message });
