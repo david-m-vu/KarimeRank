@@ -11,6 +11,7 @@ const Main = () => {
     const [showRecords, setShowRecords] = useState(false);
     const [firstNewStats, setFirstNewStats] = useState({});
     const [secondNewStats, setSecondNewStats] = useState({});
+    const [selectedIdol, setIdol] = useState({});
     // const [imagesLoaded, setImagesLoaded] = useState(false);
     const [idolNames, setIdolNames] = useState([]);
 
@@ -69,8 +70,19 @@ const Main = () => {
                     Which Picture do you like more?
                 </h1>
             </div>
+            <div className="flex flex-row justify-center items-center mt-2">
+                <label>Filter: </label>
 
+                <select name="idols" className="bg-white border-black border-2 rounded-md ml-2">
+                <option >Karina</option>
+                <option >Wonyoung</option>
+                <option>Chaewon</option>
+                <option>Hanni</option>
+                </select>
+                
+            </div>
             <div className="imagePair mt-5 md:mt-8 flex flex-row flex-wrap justify-center md:gap-10 gap-6">
+                
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
