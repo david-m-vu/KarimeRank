@@ -2,8 +2,6 @@ import "./Main.css"
 import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNamesWithGroup, likeImage } from "../../requests/images.js"
 import heart from "../../assets/heart-filled.svg";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion"
-// import Audio from "../../assets/bubble-sound.mp3";
 
 import { useSpring, animated } from "react-spring"
 
@@ -17,7 +15,6 @@ const Main = () => {
     const [winnerID, setWinnerID] = useState(-1);
 
     const [selectedIdol, setSelectedIdol] = useState("Random");
-    // const [imagesLoaded, setImagesLoaded] = useState(false);
     const [idolGroups, setIdolGroups] = useState([]);
 
     const playAudio = () => {
@@ -41,11 +38,12 @@ const Main = () => {
         } else {
             imagePair = await getIdolImagePairByIdol(selectedIdol);
         }
+
         setTimeout(() => {
             setImages([imagePair[0], imagePair[1]]);
             setHasLiked(0);
             setShowRecords(false);
-        }, 1500)
+        }, 2500)
     }
 
     const fetchAllIdolGroups = async () => {
@@ -86,23 +84,6 @@ const Main = () => {
     const handleSelect = (e) => {
         setSelectedIdol(e.target.value)
     }
-
-    // const removeCaseInsensitiveDuplicates = (arr) => {
-    //     // Create a new array to store unique strings in lowercase
-    //     const uniqueStrings = [];
-
-    //     // Filter the array
-    //     const filteredArray = arr.filter((str) => {
-    //         const lowerStr = str.toLowerCase();
-    //         if (uniqueStrings.indexOf(lowerStr) === -1) {
-    //             uniqueStrings.push(lowerStr);
-    //             return true;
-    //         }
-    //         return false;
-    //     });
-
-    //     return filteredArray;
-    // }
 
     return (
         <div className="Main">
@@ -155,9 +136,9 @@ const Main = () => {
 const AnimatedNumber = ({ color, start, end }) => {
     const getNumberClassName = () => {
         if (color === "green") {
-            return "text-green-600"
+            return "text-[#77dd77]"
         } else if (color === "red") {
-            return "text-red-500"
+            return "text-[#FF6961]"
         } else {
             return "";
         }
@@ -169,7 +150,7 @@ const AnimatedNumber = ({ color, start, end }) => {
         delay: 50,
         config: { mass: 1, tension: 20, friction: 10 },
     });
-    return <animated.div className={getNumberClassName()}>{number.to((n) => n.toFixed(0))}</animated.div>
+    return <animated.div className={`${getNumberClassName()} animatedNumber`}>{number.to((n) => n.toFixed(0))}</animated.div>
 }
 
 export default Main;
