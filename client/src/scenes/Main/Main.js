@@ -55,8 +55,8 @@ const Main = () => {
 
     const selectImage = async (chosenImageId) => {
         if (!hasLiked) {
-            setHasLiked(chosenImageId);
             playAudio();
+            setHasLiked(chosenImageId);
 
             // get new stats
             const updatedImages = await likeImage(images[0]._id, images[1]._id, chosenImageId);

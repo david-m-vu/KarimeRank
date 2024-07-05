@@ -29,6 +29,36 @@ export const generateImagesByIdol = async (req, res) => {
     }
 }
 
+export const updateAllIdols = async (req, res) => {
+    try {
+        const allIdolNames = await Image.find().distinct("idolName");
+
+        allIdolNames.forEach(async () => {
+            const imageObjects = await getImagesByIdol(idolName.toLowerCase());
+
+            if (!imageObjects) {
+                return res.status(404).json({ message: "An idol doesn't exist!" })
+            }
+    
+            let imagesAdded = 0;
+            imageObjects.forEach(async (imageObject) => {
+                const imageAlreadyExists = Boolean(await Image.exists({ title: imageObject.title }));
+                if (!imageAlreadyExists) {
+                    const newImage = await new Image(imageObject)
+                    await newImage.save();
+                    imagesAdded++;
+                }
+            })
+        })
+
+        const allImageObjects = await Image.find();
+
+        res.status(200).json({ allImages: allImageObjects, imagesAdded});
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+}
+
 export const deleteIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
