@@ -97,7 +97,15 @@ const Main = () => {
 
                 <select name="idols" className="bg-white border-black border-2 rounded-md ml-2" onChange={handleSelect}>
                     <option>Random</option>
-                    {idolGroups.map((idolGroups, index) => {
+                    {idolGroups.sort((a, b) => {
+                        if (a.groupName > b.groupName) {
+                            return 1;
+                        } else if (a.groupName < b.groupName) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    }).map((idolGroups, index) => {
                         return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
                     })}
                 </select>
