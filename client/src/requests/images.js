@@ -46,6 +46,17 @@ export const getAllIdolNames = async () => {
     }
 }
 
+export const getAllIdolNamesWithGroup = async () => {
+    const uniqueIdolGroupsRes = await fetch(`${BACKEND_BASE_URL}/images/groups`);
+
+    if (uniqueIdolGroupsRes.ok) {
+        const uniqueIdolGroups = await uniqueIdolGroupsRes.json();
+        return uniqueIdolGroups.uniqueIdolGroups;
+    } else {
+        return null;
+    }
+}
+
 export const getIdolImagePair = async () => {
     const imagePairRes = await fetch(`${BACKEND_BASE_URL}/images/random`);
 

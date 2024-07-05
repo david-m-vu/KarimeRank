@@ -33,7 +33,7 @@ export const deleteIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
 
-        const imagesDeleted = await Image.deleteMany({ idolName });
+        const imagesDeleted = await Image.deleteMany({ idolName: new RegExp(`^${idolName}$`, 'i') });
         const newImageObjects = await Image.find();
 
         res.status(200).json({allImages: newImageObjects, imagesDeleted: imagesDeleted.length})
@@ -61,6 +61,35 @@ export const getAllIdolNames = async (req, res) => {
     }
 }
 
+export const getAllIdolNamesWithGroup = async (req, res) => {
+    try {
+        const uniqueIdolGroups = await Image.aggregate([
+            {
+              $project: {
+                idolName: { $toLower: "$idolName" },
+                groupName: { $toLower: "$groupName" }
+              }
+            },
+            {
+              $group: {
+                _id: { idolName: "$idolName", groupName: "$groupName" }
+              }
+            },
+            {
+              $project: {
+                _id: 0,
+                idolName: "$_id.idolName",
+                groupName: "$_id.groupName"
+              }
+            }
+          ]);
+          
+        res.status(200).json({ uniqueIdolGroups });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+}
+
 // export const getRandomImagePairs = async (req, res) => {
 //     const { idolName } 
 //     // get all images of one idol --> array
@@ -76,8 +105,8 @@ export const getRandomImagePair = async (req, res) => {
         const randomIdolName = allIdolNames[randIndex];
 
         // get all images of one idol --> array
-        const escapedName = escapeRegExp(randomIdolName);
-        const allIdolImages = await Image.find({ idolName: new RegExp(`^${escapedName}$`, 'i') });
+        // const escapedName = escapeRegExp(randomIdolName);
+        const allIdolImages = await Image.find({ idolName: new RegExp(`^${randomIdolName}$`, 'i') });
 
 
         // create one random set of two images for that one idol --> array of 2
@@ -101,8 +130,8 @@ export const getRandomImagePairByIdol = async (req, res) => {
         const { idolName } = req.params;
 
         // get all images of one idol --> array
-        const escapedName = escapeRegExp(idolName);
-        const allIdolImages = await Image.find({ idolName: new RegExp(`^${escapedName}$`, 'i') });
+        // const escapedName = escapeRegExp(idolName);
+        const allIdolImages = await Image.find({ idolName: new RegExp(`^${idolName}$`, 'i') });
 
         // create one random set of two images for that one idol --> array of 2
         let firstIndex = Math.floor(Math.random() * allIdolImages.length);
@@ -177,6 +206,13 @@ export const likeImage = async (req, res) => {
     } catch (err) {
         res.status(404).json({ message: err.message });
     }
+}
+
+export const addGroupNames = async (req, res) => {
+    const { idolName, groupName } = req.body;
+    console.log(req.body);
+    const image = await Image.updateMany({ idolName: new RegExp(`^${idolName}$`, 'i')}, { groupName })
+    res.status(200).json({image});
 }
 
 const getNewRating = (myRating, opponentRating, outcome) => {
