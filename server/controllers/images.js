@@ -14,7 +14,13 @@ export const generateImagesByIdol = async (req, res) => {
         imageObjects.forEach(async (imageObject) => {
             const imageAlreadyExists = Boolean(await Image.exists({ title: imageObject.title }));
             if (!imageAlreadyExists) {
-                const newImage = await new Image(imageObject)
+                console.log(imageObject);
+                let {groupName} = imageObject.groupName;
+                if (!groupName) {
+                    groupName = "N/A"
+                }
+
+                const newImage = await new Image({...imageObject, groupName});
                 await newImage.save();
                 imagesAdded++;
             }
