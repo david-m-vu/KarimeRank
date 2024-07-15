@@ -7,9 +7,17 @@
     transform-origin: center;
     top: 50%;
     left: 50%;
+    width: 20px;
+    height: auto;
 }
 .resultsInfo {
     animation: slide-in 0.2s linear forwards;
+}
+
+.updateText {
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+    animation: update-in 0.15s linear forwards;
 }
 
 /* .animatedNumber {
@@ -38,5 +46,32 @@
     }
     to {
         opacity: 1
+    }
+}
+
+@keyframes update-in {
+    from {
+        opacity: 0;
+        left: 0;
+    }
+    to {
+        opacity: 1;
+        left: 0.75rem;
+    }
+}
+
+
+
+@media only screen and (min-width: 768px) {
+    .heart {
+        width: 30px;
+        height: auto;
+    }
+}
+
+@media only screen and (min-width: 1024px) {
+    .heart {
+        width: 50px;
+        height: auto;
     }
 }

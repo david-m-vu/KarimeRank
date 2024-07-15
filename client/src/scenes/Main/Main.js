@@ -28,10 +28,10 @@ const Main = () => {
     }, [])
 
     useEffect(() => {
-        fetchImages();
+        fetchImages(false);
     }, [selectedIdol])
 
-    const fetchImages = async () => {
+    const fetchImages = async (willDelay) => {
         let imagePair
         if (selectedIdol.toLowerCase() === "random") {
             imagePair = await getIdolImagePair();
@@ -39,11 +39,17 @@ const Main = () => {
             imagePair = await getIdolImagePairByIdol(selectedIdol);
         }
 
-        setTimeout(() => {
+        if (willDelay) {
+            setTimeout(() => {
+                setImages([imagePair[0], imagePair[1]]);
+                setHasLiked(0);
+                setShowRecords(false);
+            }, 2500)
+        } else {
             setImages([imagePair[0], imagePair[1]]);
             setHasLiked(0);
             setShowRecords(false);
-        }, 2500)
+        }
     }
 
     const fetchAllIdolGroups = async () => {
@@ -67,7 +73,7 @@ const Main = () => {
             setShowRecords(true);
 
             // fetch new images
-            fetchImages();
+            fetchImages(true);
         }
     }
 
@@ -111,14 +117,14 @@ const Main = () => {
                 </select>
 
             </div>
-            <div className="imagePair mt-5 md:mt-8 flex flex-row flex-wrap justify-center md:gap-10 gap-6">
+            <div className="imagePair mt-5 md:mt-8 flex flex-row flex-wrap justify-center md:gap-x-10 md:gap-y-12 gap-6">
 
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
                             <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} />
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
-                            {showRecords && <div className={`bottom-[-2.5rem] md:bottom-[-3.5rem] lg:bottom-[-4.5rem] resultsInfo absolute p-4 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] w-[100vw] flex flex-row items-start gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem]`}>
+                            {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0`}>
                                 <div>W:</div> 
                                 {
                                     (images[index].numWins === getImageStats(image._id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image._id).numWins}/>
@@ -127,15 +133,15 @@ const Main = () => {
                                 {
                                     (images[index].numLosses === getImageStats(image._id).numLosses) ? <div>{images[index].numLosses}</div> : <AnimatedNumber color="red" start={images[index].numLosses} end={getImageStats(image._id).numLosses}/>
                                 }                                
-                                 <div>Score:</div>  <AnimatedNumber color={winnerID === image._id ? "green" : "red"} start={images[index].score} end={getImageStats(image._id).score}/>
-                                          
-                                </div>}
+                                 <div>Score:</div>  <AnimatedNumber color={winnerID === image._id ? "green" : "red"} start={images[index].score} end={getImageStats(image._id).score}></AnimatedNumber>
+                            </div>}
+                            {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image._id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image._id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image._id).score - images[index].score)}</div>}
                         </div>
                     )
                 })}
             </div>
 
-            {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] mt-4 lg:mt-12 md:mt-8 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
+            {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] mt-6 lg:mt-12 md:mt-14 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )
