@@ -29,16 +29,17 @@ const Rankings = (props) => {
     useEffect(() => {
         window.addEventListener("scroll", handleScroll)
 
-        const onPageLoad = () => {
-            setIsLoadingMain(false);
-        }
+        // const onPageLoad = () => {
+        //     setIsLoadingMain(false);
+        //     console.log("loaded")
+        // }
 
-        if (document.readyState === "complete") {
-            onPageLoad()
-        } else {
-            window.addEventListener("load", onPageLoad, false);
-            return () => window.removeEventListener("load", onPageLoad)
-        }
+        // if (document.readyState === "complete") {
+        //     onPageLoad()
+        // } else {
+        //     window.addEventListener("load", onPageLoad, false);
+        //     return () => window.removeEventListener("load", onPageLoad)
+        // }
         return () => window.removeEventListener("scroll", handleScroll);
 
     }, [])
@@ -59,7 +60,7 @@ const Rankings = (props) => {
     }, [isBottom])
 
     useEffect(() => {
-        if (imagesLoaded === images.length) {
+        if (images.length !== 0 && imagesLoaded === images.length) {
           console.log('All images loaded');
           setIsLoadingMain(false);
         } 
