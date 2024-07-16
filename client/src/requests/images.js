@@ -50,8 +50,6 @@ export const getTotalVotes = async () => {
 export const getStartToEndImages = async (start, count, idolName) => {
     let imagesRes;
 
-    console.log(idolName);
-
     if (!idolName || idolName === "All"){
         imagesRes = await fetch(`${BACKEND_BASE_URL}/images/some?start=${start}&end=${start + count}`)
     } else {
