@@ -24,15 +24,16 @@ const Rankings = (props) => {
 
     useEffect(() => {
         fetchAllIdolGroups();
-        fetchImages();
     }, [])
 
     useEffect(() => {
+        setStart(0)
         if (selectedIdol === "All") {
             navigate(`/rankings`)
         } else if (selectedIdol !== "All"){
             navigate(`/rankings/?filter=${selectedIdol}`)
         }
+        fetchImages();
     }, [selectedIdol])
     
     function scrollFunction() {
@@ -57,11 +58,14 @@ const Rankings = (props) => {
         const newImages = await getStartToEndImages(start, 20, selectedIdol);
 
         const totalVotes = await getTotalVotes();
-        console.log(totalVotes);
-
         props.setTotalVotes(totalVotes);
 
+        setStart((prev) => prev + 20);
         setImages((prev) => [...prev, ...newImages])
+    }
+
+    const fetchImagesByIdol = async () => {
+
     }
 
     const handleIdolNameInputChange = (e) => {
