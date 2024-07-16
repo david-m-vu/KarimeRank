@@ -24,16 +24,13 @@ const Rankings = (props) => {
 
     useEffect(() => {
         fetchAllIdolGroups();
-        fetchImages();
-    }, [])
 
-    useEffect(() => {
-        if (selectedIdol === "All") {
-            navigate(`/rankings`)
-        } else if (selectedIdol !== "All"){
-            navigate(`/rankings/?filter=${selectedIdol}`)
-        }
+        setImages([])
+        fetchImages(queryParameters.get("filter"));
+
+        retrieveTotalVotes();
     }, [selectedIdol])
+
     
     function scrollFunction() {
         if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
@@ -52,16 +49,30 @@ const Rankings = (props) => {
         });
     }
 
-    const fetchImages = async () => {
+    const fetchImages = async (idolName) => {
         console.log("fetching");
-        const newImages = await getStartToEndImages(start, 20, selectedIdol);
+        const newImages = await getStartToEndImages(0, 20, idolName);
 
-        const totalVotes = await getTotalVotes();
-        console.log(totalVotes);
-
-        props.setTotalVotes(totalVotes);
-
+        setStart((prev) => prev + 20);
         setImages((prev) => [...prev, ...newImages])
+    }
+
+    const fetchMoreImages = async (idolName) => {
+        console.log("fetching");
+        const newImages = await getStartToEndImages(start, 20, idolName);
+
+        setStart((prev) => prev + 20);
+        setImages((prev) => [...prev, ...newImages])
+    }
+
+    const fetchAllIdolGroups = async () => {
+        const uniqueIdolGroups = await getAllIdolNamesWithGroup();
+        setIdolGroups(uniqueIdolGroups);
+    }
+
+    const retrieveTotalVotes = async () => {
+        const totalVotes = await getTotalVotes();
+        props.setTotalVotes(totalVotes);
     }
 
     const handleIdolNameInputChange = (e) => {
@@ -89,19 +100,15 @@ const Rankings = (props) => {
         }
     }
 
+    const handleSelect = (e) => {
+        navigate(`/rankings?filter=${e.target.value}`)
+        setSelectedIdol(e.target.value);
+    }
+
     const getRankOneStyle = (index) => {
         if (index === 0) {
             return "shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
         }
-    }
-
-    const fetchAllIdolGroups = async () => {
-        const uniqueIdolGroups = await getAllIdolNamesWithGroup();
-        setIdolGroups(uniqueIdolGroups);
-    }
-
-    const handleSelect = (e) => {
-        setSelectedIdol(e.target.value)
     }
 
     return (
@@ -114,7 +121,7 @@ const Rankings = (props) => {
                 <div className="flex flex-row justify-center items-center">
                     <label className="text-[24px]">Filter: </label>
 
-                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" onChange={handleSelect}>
+                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={selectedIdol} onChange={handleSelect}>
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
@@ -131,13 +138,7 @@ const Rankings = (props) => {
                 </div>
             </div>
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center">
-                {images.filter((image) => {
-                    if (!queryParameters.get("filter")) {
-                        return true;
-                    } else {
-                        return image.idolName.toLowerCase().includes(queryParameters.get("filter"))
-                    }
-                }).map((image, index) => {
+                {images.map((image, index) => {
                         return (
                             <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
                                 <div className="flex flex-row justify-center">
