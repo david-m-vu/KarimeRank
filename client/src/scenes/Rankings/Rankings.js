@@ -51,6 +51,7 @@ const Rankings = (props) => {
 
     const fetchImages = async (idolName) => {
         console.log("fetching");
+        console.log(images);
         const newImages = await getStartToEndImages(0, 20, idolName);
 
         setStart((prev) => prev + 20);
