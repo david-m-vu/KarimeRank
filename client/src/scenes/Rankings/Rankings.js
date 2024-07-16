@@ -138,6 +138,10 @@ const Rankings = (props) => {
         }
     }
 
+    const getFilterQueryParams = () => {
+
+    }
+
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
@@ -148,7 +152,7 @@ const Rankings = (props) => {
                 <div className="flex flex-row justify-center items-center">
                     <label className="text-[24px]">Filter: </label>
 
-                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={queryParameters.get("filter").replace(/[0-9]/g, '')} onChange={handleSelect}>
+                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={queryParameters.get("filter")?.replace(/[0-9]/g, '') || "All"} onChange={handleSelect}>
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
