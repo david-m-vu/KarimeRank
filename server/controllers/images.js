@@ -87,6 +87,33 @@ export const getAllImages = async (req, res) => {
     }
 }
 
+export const getStartToEndImages = async (req, res) => {
+    try {
+        const { idolname, start, end } = req.query;
+
+        let images;
+        if (idolname) {
+            images = await Image.find({ idolName: new RegExp(`^${idolname}$`, 'i') }).sort({score: -1}).skip(start).limit(end - start);
+        } else {
+            images = await Image.find().sort({score: -1}).skip(start).limit(end - start);
+        }
+        res.status(200).json({ images })
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+}
+
+
+export const getStartToEndImagesByIdol = async (req, res) => {
+    try {
+        const { idolName, start, end } = req.query;
+
+        const images = await Image.find({ idolName }).sort({score: -1}).skip(start).limit(end - start);
+        res.status(200).json({ images: images })
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+}
 export const getAllIdolNames = async (req, res) => {
     try {
         const allIdolNames = await Image.find().distinct("idolName");

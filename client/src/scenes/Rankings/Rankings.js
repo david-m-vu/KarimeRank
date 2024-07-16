@@ -1,5 +1,5 @@
 import "./Rankings.css"
-import { getAllImages, generateImagesByIdol } from "../../requests/images.js"
+import { getAllImages, generateImagesByIdol, getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -7,20 +7,32 @@ import crown from "../../assets/crown.png"
 
 const Rankings = (props) => {
     const [images, setImages] = useState([]);
+    const [start, setStart] = useState(0);
+
     const [resultMsg, setResultMsg] = useState("");
     const [idolNameInput, setIdolNameInput] = useState("");
-    const [filterInput, setFilterInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [addInputFocused, setAddInputFocused] = useState(false);
-    const [filterInputFocused, setFilterInputFocused] = useState(false);
+
+    const [idolGroups, setIdolGroups] = useState([]);
+    const [selectedIdol, setSelectedIdol] = useState("All");
 
     const [queryParameters] = useSearchParams();
     const navigate = useNavigate();
 
     let mybutton = document.getElementById("myBtn");
     useEffect(() => {
+        fetchAllIdolGroups();
         fetchImages();
     }, [])
+
+    useEffect(() => {
+        if (selectedIdol === "All") {
+            navigate(`/rankings`)
+        } else if (selectedIdol !== "All"){
+            navigate(`/rankings/?filter=${selectedIdol}`)
+        }
+    }, [selectedIdol])
     
     function scrollFunction() {
         if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
@@ -41,24 +53,32 @@ const Rankings = (props) => {
 
     const fetchImages = async () => {
         console.log("fetching");
+        // const allImages = await getAllImages();
+        // const totalWinsLosses = allImages.reduce(( accumulator, current) => {
+        //     return accumulator + current.numWins + current.numLosses;
+        // }, 0)
+        // props.setTotalVotes(Math.floor(totalWinsLosses / 2));
+
+        // const allImagesSorted = allImages.sort((a, b) => {
+        //     return b.score - a.score;
+        // })
+        // setImages(allImagesSorted);
+
+        // new
+        const newImages = await getStartToEndImages(start, 20, selectedIdol);
+
+        // change this later
         const allImages = await getAllImages();
         const totalWinsLosses = allImages.reduce(( accumulator, current) => {
             return accumulator + current.numWins + current.numLosses;
         }, 0)
         props.setTotalVotes(Math.floor(totalWinsLosses / 2));
 
-        const allImagesSorted = allImages.sort((a, b) => {
-            return b.score - a.score;
-        })
-        setImages(allImagesSorted);
+        setImages((prev) => [...prev, ...newImages])
     }
 
     const handleIdolNameInputChange = (e) => {
         setIdolNameInput(e.target.value)
-    }
-
-    const handleFilterInputChange = (e) => {
-        setFilterInput(e.target.value.toLowerCase())
     }
 
     const handleSearch = async (e) => {
@@ -82,18 +102,19 @@ const Rankings = (props) => {
         }
     }
 
-    const handleFilter = (e) => {
-        if (e.keyCode === 13) {
-            if (!queryParameters.get("filter") || e.target.value.toLowerCase() !== queryParameters.get("filter").toLowerCase()) {
-                navigate(`/rankings?filter=${e.target.value}`)
-            }
-        }
-    }
-
     const getRankOneStyle = (index) => {
         if (index === 0) {
             return "shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
         }
+    }
+
+    const fetchAllIdolGroups = async () => {
+        const uniqueIdolGroups = await getAllIdolNamesWithGroup();
+        setIdolGroups(uniqueIdolGroups);
+    }
+
+    const handleSelect = (e) => {
+        setSelectedIdol(e.target.value)
     }
 
     return (
@@ -103,12 +124,24 @@ const Rankings = (props) => {
                 <input className={`bg-black w-4/5 md:w-[25%] lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] `} onFocus={() => setAddInputFocused(true)} onBlur={() => setAddInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
                 <div className="resultMsg absolute">{resultMsg}</div>
 
-                <input className={`right-[2rem] bg-black w-4/5 md:w-1/5 lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem]`} onFocus={() => setFilterInputFocused(true)} onBlur={() => setFilterInputFocused(false)} onKeyDown={handleFilter} placeholder="FILTER" value={filterInput} onChange={handleFilterInputChange} type="text" name="filter"></input>
-                <h1 className="border-4 p-2 border-black md:text-[24px] hover:bg-[#fcba03] cursor-pointer" onClick={() => {navigate("/rankings"); setFilterInput("")}}>
-                    ALL
-                </h1>
+                <div className="flex flex-row justify-center items-center">
+                    <label className="text-[24px]">Filter: </label>
 
-                
+                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" onChange={handleSelect}>
+                        <option>All</option>
+                        {idolGroups.sort((a, b) => {
+                            if (a.groupName > b.groupName) {
+                                return 1;
+                            } else if (a.groupName < b.groupName) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        }).map((idolGroups, index) => {
+                        return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
+                    })}
+                    </select>
+                </div>
             </div>
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center">
                 {images.filter((image) => {
