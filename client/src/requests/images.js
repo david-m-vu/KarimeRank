@@ -35,6 +35,23 @@ export const getAllImages = async () => {
     return allImages.images
 }
 
+export const getStartToEndImages = async (start, count, idolName) => {
+    let imagesRes;
+    if (idolName === "All") {
+        imagesRes = await fetch(`${BACKEND_BASE_URL}/images/some?start=${start}&end=${start + count}`)
+    } else {
+        imagesRes = await fetch(`${BACKEND_BASE_URL}/images/some?start=${start}&end=${start + count}$idolname=${idolName}`);
+    }
+
+    let images;
+    if (imagesRes.ok) {
+        images = await imagesRes.json();
+    }
+
+    return images.images;
+
+}
+
 export const getAllIdolNames = async () => {
     const allIdolNamesRes = await fetch(`${BACKEND_BASE_URL}/images/names`);
 
