@@ -102,6 +102,8 @@ export const getStartToEndImages = async (req, res) => {
     try {
         const { idolname, start, end } = req.query;
 
+        console.log(idolName);
+
         let images;
         if (idolname) {
             images = await Image.find({ idolName: new RegExp(`^${idolname}$`, 'i') }).sort({score: -1}).skip(start).limit(end - start);
