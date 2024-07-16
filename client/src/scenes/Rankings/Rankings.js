@@ -43,15 +43,15 @@ const Rankings = (props) => {
             })
         }
     }, [isBottom])
-    
+
     function scrollFunction() {
         if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
-          mybutton.style.display = "block";
+            mybutton.style.display = "block";
         } else {
-          mybutton.style.display = "none";
+            mybutton.style.display = "none";
         }
-      }
-      window.onscroll = function() {scrollFunction()};
+    }
+    window.onscroll = function () { scrollFunction() };
 
     const topFunction = () => {
         window.scrollTo({
@@ -64,11 +64,11 @@ const Rankings = (props) => {
     const fetchImages = async (idolName, start) => {
         if (searchMore) {
             console.log("fetching");
-            
-             
+
+            setIsLoadingMain(true);
             const newImages = await getStartToEndImages(start, 20, idolName);
-            // 
-    
+            setIsLoadingMain(false);
+
             if (newImages.length !== 0) {
                 setStart((prev) => prev + 20);
                 setImages((prev) => [...prev, ...newImages])
@@ -132,7 +132,9 @@ const Rankings = (props) => {
 
     const getRankOneStyle = (index) => {
         if (index === 0) {
-            return "shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
+            return "idolCardRankOne shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
+        } else {
+            return "idolCard"
         }
     }
 
@@ -157,31 +159,29 @@ const Rankings = (props) => {
                                 return 0;
                             }
                         }).map((idolGroups, index) => {
-                        return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
-                    })}
+                            return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
+                        })}
                     </select>
                 </div>
             </div>
             <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center">
                 {images.map((image, index) => {
-                        return (
-                            <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                                <div className="flex flex-row justify-center">
-                                    <img className=" md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
-                                </div>
-                                {/* <div>{image.idolName}</div> */}
-                                <div className="flex flex-row items-center md:gap-4 flex-wrap">
-                                    <div className=" md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
-                                    <div className="flex flex-col justify-center flex-1 items-center">
-                                        <div className="text-center text-[1rem] md:text-[1.5rem]">W: {image.numWins} L: {image.numLosses}</div>
-                                        <div className="text-center text-[0.7rem] md:text-[1rem]">
-                                            Score: {image.score}
-                                        </div>
+                    return (
+                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
+                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} setIsLoadingMain={setIsLoadingMain}/>
+                            {/* <div>{image.idolName}</div> */}
+                            <div className="flex flex-row items-center md:gap-4 flex-wrap">
+                                <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
+                                <div className="flex flex-col justify-center flex-1 items-center">
+                                    <div className="text-center text-[1rem] md:text-[1.5rem]">W: {image.numWins} L: {image.numLosses}</div>
+                                    <div className="text-center text-[0.7rem] md:text-[1rem]">
+                                        Score: {image.score}
                                     </div>
                                 </div>
-                                {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown"/>}
                             </div>
-                        )
+                            {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown" />}
+                        </div>
+                    )
 
                 }
                 )}
@@ -194,7 +194,34 @@ const Rankings = (props) => {
                     </div>
                 </div>
             }
+
+            {isLoadingMain &&
+                <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] border-8 border-l-transparent border-r-transparent border-b-transparent"></div>
+            }
+
             <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
+        </div>
+    )
+}
+
+const ImageWithPlaceHolder = (props) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [dimensions, setDimensions] = useState({ width: 'auto', height: 'auto' });
+
+    const getRandomHexColor = () => {
+        return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+    }
+
+    return (
+        // <div className="flex flex-row justify-center">
+        //     <img className=" md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
+        // </div>
+        <div className="flex flex-row justify-center">
+            <img className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+                onLoad={() => {
+                    setIsLoaded(true); 
+                }}/>
+            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[5.5rem] rounded-xl`} style={{ backgroundColor: getRandomHexColor()}}/>}
         </div>
     )
 }

@@ -34,18 +34,39 @@
 
 .loader {
     border: 16px solid rgba(0, 0, 0, 0.5);
-    border-top: 16px solid #84DCCF;
+    border-top: 16px solid #4ab8a8;
     border-radius: 50%;
     width: 100px;
     height: 100px;
     animation: spin 1.5s linear infinite;
 }
 
+.loadingMain {
+    animation: 1.2s ease infinite spin;
+}
+
+.idolCard,
+.idolCardRankOne {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.idolCard:hover {
+    transform: translate3d(0, -1rem, 0);
+    box-shadow: 0 20px 25px 10px rgb(0 0 0 / 0.35)
+}
+
+.idolCardRankOne:hover {
+    transform: translate3d(0, -1rem, 0);
+    box-shadow: 0 20px 25px 17px rgba(252, 186, 3, 0.4)
+}
+
+
+
 @keyframes spin {
-    from {
+    0% {
         transform: rotate(0deg);
     }
-    to {
+    100% {
         transform: rotate(360deg);
     }
 }

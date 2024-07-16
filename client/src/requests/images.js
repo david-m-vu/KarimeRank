@@ -59,8 +59,6 @@ export const getStartToEndImages = async (start, count, idolName) => {
     let images;
     if (imagesRes.ok) {
         images = await imagesRes.json();
-        console.log(start, count, images.images);
-
     }
 
     return images.images;
