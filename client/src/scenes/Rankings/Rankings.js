@@ -10,7 +10,8 @@ const Rankings = (props) => {
     const [start, setStart] = useState(0);
     const [isBottom, setIsBottom] = useState(false);
     const [searchMore, setSearchMore] = useState(true);
-    const [isLoadingMain, setIsLoadingMain] = useState(false);
+    const [isLoadingMain, setIsLoadingMain] = useState(true);
+    const [imagesLoaded, setImagesLoaded] = useState(0);
 
     const [resultMsg, setResultMsg] = useState("");
     const [idolNameInput, setIdolNameInput] = useState("");
@@ -27,7 +28,20 @@ const Rankings = (props) => {
 
     useEffect(() => {
         window.addEventListener("scroll", handleScroll)
-    })
+
+        const onPageLoad = () => {
+            setIsLoadingMain(false);
+        }
+
+        if (document.readyState === "complete") {
+            onPageLoad()
+        } else {
+            window.addEventListener("load", onPageLoad, false);
+            return () => window.removeEventListener("load", onPageLoad)
+        }
+        return () => window.removeEventListener("scroll", handleScroll);
+
+    }, [])
 
     useEffect(() => {
         fetchAllIdolGroups();
@@ -43,6 +57,17 @@ const Rankings = (props) => {
             })
         }
     }, [isBottom])
+
+    useEffect(() => {
+        if (imagesLoaded === images.length) {
+          console.log('All images loaded');
+          setIsLoadingMain(false);
+        } 
+      }, [imagesLoaded, images.length]);
+
+    const handleImageLoad = () => {
+        setImagesLoaded(prev => prev + 1);
+    };
 
     function scrollFunction() {
         if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
@@ -61,13 +86,21 @@ const Rankings = (props) => {
         });
     }
 
+    const handleScroll = (e) => {
+        const scrollTop = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        if (scrollTop + windowHeight >= documentHeight - 5) {
+            setIsBottom(true);
+        }
+    }
+
     const fetchImages = async (idolName, start) => {
         if (searchMore) {
-            console.log("fetching");
-
             setIsLoadingMain(true);
+            console.log("fetching");
             const newImages = await getStartToEndImages(start, 20, idolName);
-            setIsLoadingMain(false);
 
             if (newImages.length !== 0) {
                 setStart((prev) => prev + 20);
@@ -113,16 +146,6 @@ const Rankings = (props) => {
         }
     }
 
-    const handleScroll = (e) => {
-        const scrollTop = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        if (scrollTop + windowHeight >= documentHeight - 5) {
-            setIsBottom(true);
-        }
-    }
-
     const handleSelect = (e) => {
         navigate(`/rankings?filter=${e.target.value}`)
         setSelectedIdol(e.target.value);
@@ -136,10 +159,6 @@ const Rankings = (props) => {
         } else {
             return "idolCard"
         }
-    }
-
-    const getFilterQueryParams = () => {
-
     }
 
     return (
@@ -172,7 +191,7 @@ const Rankings = (props) => {
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} setIsLoadingMain={setIsLoadingMain}/>
+                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -210,10 +229,20 @@ const Rankings = (props) => {
 
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [dimensions, setDimensions] = useState({ width: 'auto', height: 'auto' });
 
     const getRandomHexColor = () => {
         return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+    }
+
+    function randomDullHslColor() {
+        // Generate random hue (0-360)
+        const hue = Math.floor(Math.random() * 361);
+        // Set saturation to a low value to ensure dullness (e.g., 10-20%)
+        const saturation = Math.floor(Math.random() * 11) + 10;
+        // Set lightness to a low-medium value (e.g., 30-50%)
+        const lightness = Math.floor(Math.random() * 21) + 30;
+      
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
     return (
@@ -224,8 +253,9 @@ const ImageWithPlaceHolder = (props) => {
             <img className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
+                    props.handleImageLoad();
                 }}/>
-            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[5.5rem] rounded-xl`} style={{ backgroundColor: getRandomHexColor()}}/>}
+            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[5.5rem] rounded-xl`} style={{ backgroundColor: randomDullHslColor()}}/>}
         </div>
     )
 }
