@@ -8,6 +8,9 @@ import crown from "../../assets/crown.png"
 const Rankings = (props) => {
     const [images, setImages] = useState([]);
     const [start, setStart] = useState(0);
+    const [isBottom, setIsBottom] = useState(false);
+    const [searchMore, setSearchMore] = useState(true);
+    const [isLoadingMain, setIsLoadingMain] = useState(false);
 
     const [resultMsg, setResultMsg] = useState("");
     const [idolNameInput, setIdolNameInput] = useState("");
@@ -23,14 +26,23 @@ const Rankings = (props) => {
     let mybutton = document.getElementById("myBtn");
 
     useEffect(() => {
+        window.addEventListener("scroll", handleScroll)
+    })
+
+    useEffect(() => {
         fetchAllIdolGroups();
 
-        setImages([])
-        fetchImages(queryParameters.get("filter"));
-
+        fetchImages(queryParameters.get("filter"), start);
         retrieveTotalVotes();
     }, [selectedIdol])
 
+    useEffect(() => {
+        if (isBottom) {
+            fetchImages(queryParameters.get("filter"), start).then((value) => {
+                setIsBottom(false);
+            })
+        }
+    }, [isBottom])
     
     function scrollFunction() {
         if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
@@ -49,12 +61,21 @@ const Rankings = (props) => {
         });
     }
 
-    const fetchImages = async (idolName) => {
-        console.log("fetching");
-        const newImages = await getStartToEndImages(0, 20, idolName);
-
-        setStart((prev) => prev + 20);
-        setImages((prev) => [...prev, ...newImages])
+    const fetchImages = async (idolName, start) => {
+        if (searchMore) {
+            console.log("fetching");
+            
+             
+            const newImages = await getStartToEndImages(start, 20, idolName);
+            // 
+    
+            if (newImages.length !== 0) {
+                setStart((prev) => prev + 20);
+                setImages((prev) => [...prev, ...newImages])
+            } else {
+                setSearchMore(false);
+            }
+        }
     }
 
     const fetchAllIdolGroups = async () => {
@@ -92,9 +113,21 @@ const Rankings = (props) => {
         }
     }
 
+    const handleScroll = (e) => {
+        const scrollTop = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        if (scrollTop + windowHeight >= documentHeight - 5) {
+            setIsBottom(true);
+        }
+    }
+
     const handleSelect = (e) => {
         navigate(`/rankings?filter=${e.target.value}`)
         setSelectedIdol(e.target.value);
+        setStart(0);
+        setImages([])
     }
 
     const getRankOneStyle = (index) => {
@@ -106,14 +139,14 @@ const Rankings = (props) => {
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
-                {addInputFocused && <div className="contextMsg z-20 absolute text-black"><span className="decoration-solid	underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700">[IDOL NAME HERE]</span></div>}
+                {addInputFocused && <div className="contextMsg z-20 absolute text-black"><span className="decoration-solid underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700">[IDOL NAME HERE]</span></div>}
                 <input className={`bg-black w-4/5 md:w-[25%] lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] `} onFocus={() => setAddInputFocused(true)} onBlur={() => setAddInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
                 <div className="resultMsg absolute">{resultMsg}</div>
 
                 <div className="flex flex-row justify-center items-center">
                     <label className="text-[24px]">Filter: </label>
 
-                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={selectedIdol} onChange={handleSelect}>
+                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={queryParameters.get("filter").replace(/[0-9]/g, '')} onChange={handleSelect}>
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
