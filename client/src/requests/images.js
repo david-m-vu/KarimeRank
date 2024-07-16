@@ -35,6 +35,17 @@ export const getAllImages = async () => {
     return allImages.images
 }
 
+export const getTotalVotes = async () => {
+    const totalVotesRes = await fetch(`${BACKEND_BASE_URL}/images/votes`);
+
+    let totalVotes; 
+    if (totalVotesRes.ok) {
+        totalVotes = await totalVotesRes.json();
+    }
+
+    return totalVotes.totalVotes;
+}
+
 export const getStartToEndImages = async (start, count, idolName) => {
     let imagesRes;
     if (idolName === "All") {

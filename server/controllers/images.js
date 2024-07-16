@@ -29,6 +29,23 @@ export const generateImagesByIdol = async (req, res) => {
     }
 }
 
+export const getTotalVotes = async (req, res) => {
+    try {
+        const result = await Image.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalVotes: { $sum: "$numWins" }
+                }
+            }
+        ])
+
+        res.status(200).json({totalVotes: result[0].totalVotes})
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
 export const updateAllIdols = async (req, res) => {
     try {
         const allIdolNames = await Image.find().distinct("idolName");
