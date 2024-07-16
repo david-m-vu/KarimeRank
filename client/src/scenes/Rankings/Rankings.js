@@ -1,5 +1,5 @@
 import "./Rankings.css"
-import { getAllImages, generateImagesByIdol, getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
+import { getAllImages, getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -21,6 +21,7 @@ const Rankings = (props) => {
     const navigate = useNavigate();
 
     let mybutton = document.getElementById("myBtn");
+
     useEffect(() => {
         fetchAllIdolGroups();
         fetchImages();
@@ -53,26 +54,12 @@ const Rankings = (props) => {
 
     const fetchImages = async () => {
         console.log("fetching");
-        // const allImages = await getAllImages();
-        // const totalWinsLosses = allImages.reduce(( accumulator, current) => {
-        //     return accumulator + current.numWins + current.numLosses;
-        // }, 0)
-        // props.setTotalVotes(Math.floor(totalWinsLosses / 2));
-
-        // const allImagesSorted = allImages.sort((a, b) => {
-        //     return b.score - a.score;
-        // })
-        // setImages(allImagesSorted);
-
-        // new
         const newImages = await getStartToEndImages(start, 20, selectedIdol);
 
-        // change this later
-        const allImages = await getAllImages();
-        const totalWinsLosses = allImages.reduce(( accumulator, current) => {
-            return accumulator + current.numWins + current.numLosses;
-        }, 0)
-        props.setTotalVotes(Math.floor(totalWinsLosses / 2));
+        const totalVotes = await getTotalVotes();
+        console.log(totalVotes);
+
+        props.setTotalVotes(totalVotes);
 
         setImages((prev) => [...prev, ...newImages])
     }
