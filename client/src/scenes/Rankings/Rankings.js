@@ -28,6 +28,8 @@ const Rankings = (props) => {
 
     useEffect(() => {
         window.addEventListener("scroll", handleScroll)
+        fetchAllIdolGroups();
+        retrieveTotalVotes();
 
         // const onPageLoad = () => {
         //     setIsLoadingMain(false);
@@ -41,19 +43,19 @@ const Rankings = (props) => {
         //     return () => window.removeEventListener("load", onPageLoad)
         // }
         return () => window.removeEventListener("scroll", handleScroll);
-
     }, [])
 
+    // trigger fetch when user selects a new idol
     useEffect(() => {
-        fetchAllIdolGroups();
+        // console.log(`filter: ${selectedIdol}`);
+        fetchImages(queryParameters.get("filter"));
+    }, [queryParameters])
 
-        fetchImages(queryParameters.get("filter"), start);
-        retrieveTotalVotes();
-    }, [selectedIdol])
-
+    // trigger fetch when user reaches the bottom of the page
     useEffect(() => {
         if (isBottom) {
-            fetchImages(queryParameters.get("filter"), start).then((value) => {
+            
+            fetchImages(queryParameters.get("filter")).then((value) => {
                 setIsBottom(false);
             })
         }
@@ -61,7 +63,7 @@ const Rankings = (props) => {
 
     useEffect(() => {
         if (images.length !== 0 && imagesLoaded === images.length) {
-          console.log('All images loaded');
+        //   console.log('All images loaded');
           setIsLoadingMain(false);
         } 
       }, [imagesLoaded, images.length]);
@@ -97,10 +99,10 @@ const Rankings = (props) => {
         }
     }
 
-    const fetchImages = async (idolName, start) => {
+    const fetchImages = async (idolName) => {
         if (searchMore) {
+            // console.log("fetching");
             setIsLoadingMain(true);
-            console.log("fetching");
             const newImages = await getStartToEndImages(start, 20, idolName);
 
             if (newImages.length !== 0) {
@@ -108,6 +110,7 @@ const Rankings = (props) => {
                 setImages((prev) => [...prev, ...newImages])
             } else {
                 setSearchMore(false);
+                setIsLoadingMain(false);
             }
         }
     }
@@ -150,8 +153,10 @@ const Rankings = (props) => {
     const handleSelect = (e) => {
         navigate(`/rankings?filter=${e.target.value}`)
         setSelectedIdol(e.target.value);
+        setSearchMore(true);
         setStart(0);
-        setImages([])
+        setImages([]);
+        setImagesLoaded(0);
     }
 
     const getRankOneStyle = (index) => {
@@ -172,7 +177,7 @@ const Rankings = (props) => {
                 <div className="flex flex-row justify-center items-center">
                     <label className="text-[24px]">Filter: </label>
 
-                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={queryParameters.get("filter")?.replace(/[0-9]/g, '') || "All"} onChange={handleSelect}>
+                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
@@ -188,11 +193,18 @@ const Rankings = (props) => {
                     </select>
                 </div>
             </div>
-            <div className="images flex flex-row gap-3 md:gap-6 flex-wrap md:p-8 justify-center">
+
+            {/* message if user doesn't see any images */}
+            {(images.length === 0 && !isLoadingMain) && <div className="noImagesMessage text-center text-2xl md:text-4xl mt-40">
+                Don't see any images? try reloading!
+            </div>}
+
+
+            <div className="flex flex-row flex-wrap gap-3 md:gap-6 flex-wrap md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad}/>
+                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} />
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -220,7 +232,7 @@ const Rankings = (props) => {
             }
 
             {isLoadingMain &&
-                <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] border-8 border-l-transparent border-r-transparent border-b-transparent"></div>
+                <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] border-8 border-l-transparent border-r-transparent"></div>
             }
 
             <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
@@ -230,10 +242,20 @@ const Rankings = (props) => {
 
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const [whRatio, setWhRatio] = useState(1);
 
-    const getRandomHexColor = () => {
-        return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
-    }
+    // useEffect(() => {
+    //     let img = document.createElement('img');
+    //     img.src = props.src;
+        
+    //     let poll = setInterval(function () {
+    //         if (img.naturalWidth) {
+    //             clearInterval(poll);
+
+    //             setWhRatio(img.naturalWidth / img.naturalHeight);
+    //         }
+    //     }, 10);
+    // })
 
     function randomDullHslColor() {
         // Generate random hue (0-360)
@@ -256,7 +278,7 @@ const ImageWithPlaceHolder = (props) => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
                 }}/>
-            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[5.5rem] rounded-xl`} style={{ backgroundColor: randomDullHslColor()}}/>}
+            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[6rem]  rounded-xl`} style={{ backgroundColor: randomDullHslColor() }}/>}
         </div>
     )
 }

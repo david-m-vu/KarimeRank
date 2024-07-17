@@ -45,6 +45,10 @@
     animation: 1.2s ease infinite spin;
 }
 
+.noImagesMessage {
+    animation: 10s ease fade-in;
+}
+
 .idolCard,
 .idolCardRankOne {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -61,6 +65,14 @@
 }
 
 
+@keyframes fade-in {
+    0%, 10% {
+        opacity: 0;
+    }
+    40%, 100% {
+        opacity: 1;
+    }
+}
 
 @keyframes spin {
     0% {
