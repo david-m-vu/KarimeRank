@@ -1,5 +1,7 @@
 import { getImagesByIdol } from "../requests/images.js"
 import Image from "../models/Image.js";
+import probe from "probe-image-size";
+import axios from "axios"
 
 export const generateImagesByIdol = async (req, res) => {
     try {
@@ -14,18 +16,29 @@ export const generateImagesByIdol = async (req, res) => {
         imageObjects.forEach(async (imageObject) => {
             const imageAlreadyExists = Boolean(await Image.exists({ title: imageObject.title }));
             if (!imageAlreadyExists) {
-                console.log(imageObject);
+                // console.log(imageObject);
                 let {groupName} = imageObject.groupName;
                 if (!groupName) {
                     groupName = "N/A"
                 }
 
-                const newImage = await new Image({...imageObject, groupName});
-                await newImage.save();
-                imagesAdded++;
+                // get dimensions
+                const { imageUrl } = imageObject;
+
+                let imageMetadata
+                const isValidImage = await isValidImageUrl(imageUrl);
+
+                if (isValidImage) {
+                    imageMetadata = await probe(imageUrl);
+                    if (imageMetadata) {
+                        const { width, height } = imageMetadata;
+                        const newImage = await new Image({...imageObject, groupName, width, height});
+                        await newImage.save();
+                        imagesAdded++;
+                    }    
+                }
             }
         })
-
 
         const allImageObjects = await Image.find();
 
@@ -293,6 +306,59 @@ export const addGroupNames = async (req, res) => {
     console.log(req.body);
     const image = await Image.updateMany({ idolName: new RegExp(`^${idolName}$`, 'i')}, { groupName })
     res.status(200).json({image});
+}
+
+const addDimensions = async (req, res) => {
+    // const testImageURL = "https://kpopping.com/documents/07/2/1176/240605-KISS-OF-LIFE-Twitter-Update-with-Natty-documents-1.jpeg?v=73ded"
+    try {
+        const allIdolNames = await Image.find().distinct("idolName");
+        
+        const num = 40
+        const idolImages = await Image.find({ idolName: allIdolNames[num]});
+
+        idolImages.forEach(async (imageObject) => {
+            const { imageUrl } = imageObject;
+
+            let imageMetadata
+            const isValidImage = await isValidImageUrl(imageUrl);
+
+            if (isValidImage) {
+                imageMetadata = await probe(imageUrl);
+                if (imageMetadata) {
+                    const { width, height } = imageMetadata;
+                    await Image.findByIdAndUpdate(imageObject._id, { width, height } );
+                }    
+            } 
+        })
+    
+        res.status(200).json(await Image.find({ idolName: allIdolNames[num] }));
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+const isValidImageUrl = async (url) => {
+    try {
+        // Perform a HEAD request to get headers only
+        const response = await axios.head(url);
+
+        // Check for successful response
+        if (response.status !== 200) {
+            console.log(`Error: Status code is ${response.status}`);
+            return false;
+        }
+
+        // Validate content type
+        const contentType = response.headers['content-type'];
+        if (!contentType || !contentType.startsWith('image/')) {
+            console.log('Error: Content type is not an image');
+            return false;
+        }
+
+        return true; // The URL is a valid image
+    } catch (err) {
+        return false;
+    }
 }
 
 const getNewRating = (myRating, opponentRating, outcome) => {

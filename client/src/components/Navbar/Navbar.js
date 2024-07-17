@@ -1,13 +1,8 @@
 import "./Navbar.css"
 import { NavLink, useLocation } from "react-router-dom"
-import { useEffect } from "react";
 
 const Navbar = (props) => {
     const location = useLocation();
-
-    useEffect(() => {
-        console.log(location.pathname);
-    }, [])
 
     const getIsHighlighted = (path) => {
         if (path === location.pathname) {

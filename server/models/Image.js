@@ -10,6 +10,12 @@ const ImageSchema = mongoose.Schema(
             type: String,
             required: true,
         }, 
+        width: {
+            type: Number
+        },
+        height: {
+            type: Number
+        },
         idolName: {
             type: String,
             required: true,

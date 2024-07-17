@@ -153,17 +153,6 @@ const Rankings = (props) => {
         }
     }
 
-    const randomDullHslColor = () => {
-        // Generate random hue (0-360)
-        const hue = Math.floor(Math.random() * 361);
-        // Set saturation to a low value to ensure dullness (e.g., 10-20%)
-        const saturation = Math.floor(Math.random() * 11) + 10;
-        // Set lightness to a low-medium value (e.g., 30-50%)
-        const lightness = Math.floor(Math.random() * 21) + 30;
-      
-        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    }
-
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
@@ -196,12 +185,11 @@ const Rankings = (props) => {
                 Don't see any images? try reloading!
             </div>}
 
-
             <div className="flex flex-row flex-wrap gap-3 md:gap-6 flex-wrap md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} color={randomDullHslColor()}/>
+                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -239,28 +227,39 @@ const Rankings = (props) => {
 
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [whRatio, setWhRatio] = useState(0.667);
+    const [placeholderColor, setPlaceholderColor] = useState("#686b5e")
 
     useEffect(() => {
-        let img = document.createElement('img');
-        img.src = props.src;
-        
-        let poll = setInterval(function () {
-            if (img.naturalWidth) {
-                clearInterval(poll);
-                setWhRatio(img.naturalWidth / img.naturalHeight);
-            }
-        }, 10);
-    })
+        setPlaceholderColor(getRandomDullHslColor());
+    }, [])
+
+    const getRandomDullHslColor = () => {
+        // Generate random hue (0-360)
+        const hue = Math.floor(Math.random() * 361);
+        // Set saturation to a low value to ensure dullness (e.g., 10-20%)
+        const saturation = Math.floor(Math.random() * 11) + 10;
+        // Set lightness to a low-medium value (e.g., 30-50%)
+        const lightness = Math.floor(Math.random() * 21) + 30;
+      
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    const getAspectRatio = () => {
+        if (!props.width || !props.height) {
+            return 0.6667;
+        } else {
+            return props.width / props.height;
+        }
+    }
 
     return (
         <div className="flex flex-row justify-center">
-            <img className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+            <img className={`box-border md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
                 }}/>
-            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: props.color, aspectRatio: whRatio }}/>}
+            {!isLoaded && <div className={`box-border md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
 }
