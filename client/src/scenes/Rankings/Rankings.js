@@ -1,5 +1,5 @@
 import "./Rankings.css"
-import { getAllImages, getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol } from "../../requests/images.js"
+import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -19,7 +19,6 @@ const Rankings = (props) => {
     const [addInputFocused, setAddInputFocused] = useState(false);
 
     const [idolGroups, setIdolGroups] = useState([]);
-    const [selectedIdol, setSelectedIdol] = useState("All");
 
     const [queryParameters] = useSearchParams();
     const navigate = useNavigate();
@@ -54,7 +53,6 @@ const Rankings = (props) => {
     // trigger fetch when user reaches the bottom of the page
     useEffect(() => {
         if (isBottom) {
-            
             fetchImages(queryParameters.get("filter")).then((value) => {
                 setIsBottom(false);
             })
@@ -152,7 +150,6 @@ const Rankings = (props) => {
 
     const handleSelect = (e) => {
         navigate(`/rankings?filter=${e.target.value}`)
-        setSelectedIdol(e.target.value);
         setSearchMore(true);
         setStart(0);
         setImages([]);
@@ -242,7 +239,8 @@ const Rankings = (props) => {
 
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [whRatio, setWhRatio] = useState(1);
+    // const [whRatio, setWhRatio] = useState(1);
+    const [placeholderColor, setPlaceholderColor] = useState("")
 
     // useEffect(() => {
     //     let img = document.createElement('img');
@@ -257,6 +255,10 @@ const ImageWithPlaceHolder = (props) => {
     //     }, 10);
     // })
 
+    useEffect(() => {
+        setPlaceholderColor(randomDullHslColor());
+    }, [])
+
     function randomDullHslColor() {
         // Generate random hue (0-360)
         const hue = Math.floor(Math.random() * 361);
@@ -269,16 +271,13 @@ const ImageWithPlaceHolder = (props) => {
     }
 
     return (
-        // <div className="flex flex-row justify-center">
-        //     <img className=" md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl" src={image.imageUrl} alt={image.imageName} />
-        // </div>
         <div className="flex flex-row justify-center">
             <img className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
                 }}/>
-            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[6rem]  rounded-xl`} style={{ backgroundColor: randomDullHslColor() }}/>}
+            {!isLoaded && <div className={`md:border-4 border-2 border-black md:h-[20rem] h-[10rem] md:w-[12rem] w-[6rem]  rounded-xl`} style={{ backgroundColor: placeholderColor }}/>}
         </div>
     )
 }
