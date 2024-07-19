@@ -8,5 +8,5 @@ module.exports = {
   options: {
     safelist: ['dark']
   },
-  darkMode: ['variant', '&:not(.light *)'],
+  darkMode: ['selector'],
 }
