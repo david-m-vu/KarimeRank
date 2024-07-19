@@ -108,6 +108,23 @@ export const deleteIdol = async (req, res) => {
     }
 }
 
+export const deleteImageById = async (req, res) => {
+    try {
+        const { _id } = req.body;
+
+        const deletedImage = await Image.findByIdAndDelete( _id  );
+        if (!deletedImage) {
+            res.status(404).json({ message: "Image not found"});
+        }
+        // check this out next time
+        console.log(deletedImage);
+
+        res.status(204).json({ deletedImage })
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
 export const getAllImages = async (req, res) => {
     try {
         const allImages = await Image.find();
