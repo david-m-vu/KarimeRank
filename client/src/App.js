@@ -5,15 +5,16 @@ import Navbar from "./components/Navbar/Navbar.js"
 import { useState } from "react"
 
 import { Routes, Route } from "react-router-dom";
-function App() {
+
+const App = () => {
   const [totalVotes, setTotalVotes] = useState(0);
 
   return (
     <div className="App">
-      <Navbar totalVotes={totalVotes}/>
+      <Navbar totalVotes={totalVotes} />
       <Routes>
         <Route path="/" element={<Main />}></Route>
-        <Route path="/rankings" element={<Rankings setTotalVotes={setTotalVotes}/>}></Route>
+        <Route path="/rankings" element={<Rankings setTotalVotes={setTotalVotes} />}></Route>
       </Routes>
     </div>
   );
