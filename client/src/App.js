@@ -9,6 +9,14 @@ import { Routes, Route } from "react-router-dom";
 const App = () => {
   const [totalVotes, setTotalVotes] = useState(0);
 
+  useEffect(() => {
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
+
   return (
     <div className="App">
       <Navbar totalVotes={totalVotes} />

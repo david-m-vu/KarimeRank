@@ -5,5 +5,8 @@ module.exports = {
     extend: {},
   },
   plugins: [],
-  darkMode: 'selector',
+  options: {
+    safelist: ['dark']
+  },
+  darkMode: ['variant', '&:not(.light *)'],
 }
