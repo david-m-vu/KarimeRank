@@ -5,8 +5,4 @@ module.exports = {
     extend: {},
   },
   plugins: [],
-  options: {
-    safelist: ['dark']
-  },
-  darkMode: ['selector'],
 }
