@@ -39,8 +39,8 @@ const Main = () => {
     }, [selectedIdol])
 
     useEffect(() => {
-        if (imagesLoaded === images.length) {
-        //   console.log('All images loaded');
+        if (images.length !== 0 && imagesLoaded === images.length) {
+          console.log('All images loaded');
           setIsLoadingMain(false);
         } 
       }, [imagesLoaded, images.length]);
