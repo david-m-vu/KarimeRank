@@ -5,19 +5,29 @@ const Navbar = (props) => {
     const location = useLocation();
 
     const getIsHighlighted = (path) => {
-        if (path === location.pathname) {
-            return "text-black";
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            if (path === location.pathname) {
+                return "text-white";
+            } else {
+                return "text-[#8c8c8c]"
+            }
         } else {
-            return "text-[#8c8c8c]"
+            if (path === location.pathname) {
+                return "text-black";
+            } else {
+                return "text-[#8c8c8c]"
+            }
         }
+
+
     }
 
     return (
         <div className="Navbar">
             <div className="text-center w-full flex justify-center flex-row items-center">
-                {location.pathname === "/rankings" && <div className={`md:text-[32px] text-[15px] text-black absolute left-4 mx-1`}>{props.totalVotes} total votes <span className="hidden lg:inline">worldwide</span></div>}
-                <div className=" flex justify-center items-center md:text-[3.875rem] text-[2rem] m-2 text-black"><a href='/'>karimerank</a></div>
-                <div className={`md:text-[32px] text-[20px] hover:text-black absolute right-4 mx-4 ${getIsHighlighted("/rankings")}`}><NavLink to="/rankings">Rankings</NavLink></div>
+                {location.pathname === "/rankings" && <div className={`md:text-[32px] text-[15px] text-black dark:text-white absolute left-4 mx-1`}>{props.totalVotes} total votes <span className="hidden lg:inline">worldwide</span></div>}
+                <div className=" flex justify-center items-center md:text-[3.875rem] text-[2rem] m-2 text-black dark:text-white"><NavLink to='/'>karimerank</NavLink></div>
+                <div className={`md:text-[32px] text-[20px] hover:text-black dark:hover:text-white absolute right-4 mx-4 ${getIsHighlighted("/rankings")}`}><NavLink to="/rankings">Rankings</NavLink></div>
             </div>
         </div>
     )

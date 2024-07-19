@@ -156,14 +156,14 @@ const Rankings = (props) => {
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
-                {addInputFocused && <div className="contextMsg z-20 absolute text-black"><span className="decoration-solid underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700">[IDOL NAME HERE]</span></div>}
+                {addInputFocused && <div className="contextMsg z-20 absolute text-black dark:text-white"><span className="decoration-solid underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700 dark:text-purple-300">[IDOL NAME HERE]</span></div>}
                 <input className={`bg-black w-4/5 md:w-[25%] lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] `} onFocus={() => setAddInputFocused(true)} onBlur={() => setAddInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
                 <div className="resultMsg absolute">{resultMsg}</div>
 
                 <div className="flex flex-row justify-center items-center">
-                    <label className="text-[24px]">Filter: </label>
+                    <label className="md:text-[1.5rem] text-[1rem] dark:text-white">Filter: </label>
 
-                    <select name="idols" className="bg-white border-black border-2 rounded-md ml-2 text-[1.5rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
+                    <select name="idols" className="bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
@@ -185,10 +185,10 @@ const Rankings = (props) => {
                 Don't see any images? try reloading!
             </div>}
 
-            <div className="flex flex-row flex-wrap gap-3 md:gap-6 flex-wrap md:p-8 p-4 justify-center">
+            <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
-                        <div key={image._id} className={`relative rounded-xl p-1 bg-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
+                        <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
                             <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
@@ -217,7 +217,7 @@ const Rankings = (props) => {
             }
 
             {isLoadingMain &&
-                <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] border-8 border-l-transparent border-r-transparent"></div>
+                <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
             <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
@@ -254,12 +254,12 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <img className={`box-border md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
                 }}/>
-            {!isLoaded && <div className={`box-border md:border-4 border-2 border-black md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
+            {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
 }

@@ -14,7 +14,7 @@
   width: 100%;
 
   color-scheme: light dark;
-  background-color: #FFFFF0;
+  background-color: light-dark(#FFFFF0, #2c2c2c);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -32,7 +32,6 @@ html, body {
   height: 100%;
   width: 100%;
   font-family: 'Bayon'; 
-  /* overflow-y: scroll; */
 }
 
 #root {

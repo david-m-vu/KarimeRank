@@ -1,7 +1,7 @@
 import "./Main.css"
 import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNamesWithGroup, likeImage } from "../../requests/images.js"
 import heart from "../../assets/heart-filled.svg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useSpring, animated } from "react-spring"
 
@@ -17,6 +17,11 @@ const Main = () => {
     const [selectedIdol, setSelectedIdol] = useState("Random");
     const [idolGroups, setIdolGroups] = useState([]);
 
+    const [isLoadingMain, setIsLoadingMain] = useState(true);
+    const [imagesLoaded, setImagesLoaded] = useState(0);
+
+    const isInitialMount = useRef(true);
+
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
         audio.play();
@@ -28,11 +33,28 @@ const Main = () => {
     }, [])
 
     useEffect(() => {
-        fetchImages(false);
+        if (!isInitialMount.current) {
+            fetchImages(false);
+        }
     }, [selectedIdol])
+
+    useEffect(() => {
+        if (imagesLoaded === images.length) {
+        //   console.log('All images loaded');
+          setIsLoadingMain(false);
+        } 
+      }, [imagesLoaded, images.length]);
+
+    const handleImageLoad = () => {
+        setImagesLoaded(prev => prev + 1);
+    };
 
     const fetchImages = async (willDelay) => {
         let imagePair
+        if (!willDelay) {
+            setImagesLoaded(0);
+            setIsLoadingMain(true);
+        }
         if (selectedIdol.toLowerCase() === "random") {
             imagePair = await getIdolImagePair();
         } else {
@@ -41,6 +63,8 @@ const Main = () => {
 
         if (willDelay) {
             setTimeout(() => {
+                setImagesLoaded(0);
+                setIsLoadingMain(true);
                 setImages([imagePair[0], imagePair[1]]);
                 setHasLiked(0);
                 setShowRecords(false);
@@ -50,6 +74,7 @@ const Main = () => {
             setHasLiked(0);
             setShowRecords(false);
         }
+
     }
 
     const fetchAllIdolGroups = async () => {
@@ -92,16 +117,16 @@ const Main = () => {
     }
 
     return (
-        <div className="Main">
+        <div className="Main ">
             <div className=" flex flex-row justify-center">
-                <h1 className="border-4 p-2 border-black md:text-[24px]">
+                <h1 className="border-4 p-2 border-black dark:border-white md:text-[24px] dark:text-white">
                     Which Picture do you like more?
                 </h1>
             </div>
             <div className="flex flex-row justify-center items-center mt-2">
-                <label>Filter: </label>
+                <label className="dark:text-white">Filter: </label>
 
-                <select name="idols" className="bg-white border-black border-2 rounded-md ml-2" onChange={handleSelect}>
+                <select name="idols" className="bg-white dark:bg-black border-black dark:border-white dark:text-white border-2 rounded-md ml-2" onChange={handleSelect}>
                     <option>Random</option>
                     {idolGroups.sort((a, b) => {
                         if (a.groupName > b.groupName) {
@@ -122,9 +147,9 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} />
+                            <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} onLoad={() => handleImageLoad()}/>
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
-                            {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0`}>
+                            {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0 dark:text-white`}>
                                 <div>W:</div> 
                                 {
                                     (images[index].numWins === getImageStats(image._id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image._id).numWins}/>
@@ -141,7 +166,11 @@ const Main = () => {
                 })}
             </div>
 
-            {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] mt-6 lg:mt-12 md:mt-14 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
+            {isLoadingMain &&
+                <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
+            }
+
+            {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] dark:text-white mt-6 lg:mt-12 md:mt-14 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )
