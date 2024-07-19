@@ -5,21 +5,11 @@ const Navbar = (props) => {
     const location = useLocation();
 
     const getIsHighlighted = (path) => {
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            if (path === location.pathname) {
-                return "text-white";
-            } else {
-                return "text-[#8c8c8c]"
-            }
+        if (path === location.pathname) {
+            return "text-black dark:text-white";
         } else {
-            if (path === location.pathname) {
-                return "text-black";
-            } else {
-                return "text-[#8c8c8c]"
-            }
+            return "text-[#8c8c8c]"
         }
-
-
     }
 
     return (
