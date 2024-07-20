@@ -185,7 +185,7 @@ const Rankings = (props) => {
                 Don't see any images? try reloading!
             </div>}
 
-            <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
+           <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
@@ -254,11 +254,11 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+             <a href={props.src} rel="noopener noreferrer" target="_blank" ><img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
-                }}/>
+                }}/></a>
             {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
