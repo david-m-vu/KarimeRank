@@ -153,8 +153,15 @@ const Rankings = (props) => {
     }
 
     const handleDelete = async (imageId) => {
-        const res = await deleteImageById(imageId);
-        console.log(res);
+        const deletedImage = (await deleteImageById(imageId)).deletedImage;
+
+        const newImages = images.filter((image) => {
+            return image._id !== imageId;                  
+        })
+        setImages(newImages);
+        setStart((prev) => prev - 1)
+
+        console.log(deletedImage);
     }
 
     const getRankOneStyle = (index) => {

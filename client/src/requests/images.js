@@ -130,17 +130,15 @@ export const likeImage = async (firstImageID, secondImageID, chosenID) => {
 }
 
 export const deleteImageById = async (_id) => {
-    const res = await fetch(`${BACKEND_BASE_URL}/image/delete-image`, {
+    const res = await fetch(`${BACKEND_BASE_URL}/images/delete-image`, {
         method: "DELETE",
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            _id: _id
+            _id
         })
     })
-
-    console.log(_id);
 
     if (res.ok) {
         const resJSON = await res.json();

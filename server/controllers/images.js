@@ -116,10 +116,10 @@ export const deleteImageById = async (req, res) => {
         if (!deletedImage) {
             res.status(404).json({ message: "Image not found"});
         }
-        // check this out next time
-        console.log(deletedImage);
+        // // check this out next time
+        // console.log("deletedImage:", deletedImage);
 
-        res.status(204).json({ deletedImage })
+        res.status(200).json({ deletedImage })
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
