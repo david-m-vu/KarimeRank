@@ -251,11 +251,11 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-             <a href={props.src} rel="noopener noreferrer" target="_blank" ><img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
-                }}/></a>
+                }}/>
             {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
