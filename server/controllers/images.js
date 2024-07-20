@@ -17,7 +17,7 @@ export const generateImagesByIdol = async (req, res) => {
             const imageAlreadyExists = Boolean(await Image.exists({ title: imageObject.title }));
             if (!imageAlreadyExists) {
                 // console.log(imageObject);
-                let {groupName} = imageObject.groupName;
+                let {groupName} = imageObject;
                 if (!groupName) {
                     groupName = "N/A"
                 }
