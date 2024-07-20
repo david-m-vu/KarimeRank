@@ -21,6 +21,8 @@ const Rankings = (props) => {
     const [idolGroups, setIdolGroups] = useState([]);
 
     const [queryParameters] = useSearchParams();
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const navigate = useNavigate();
 
     let mybutton = document.getElementById("myBtn");
@@ -145,6 +147,10 @@ const Rankings = (props) => {
         setImagesLoaded(0);
     }
 
+    const handleCheck = (e) => {
+        setIsDeleting(e.target.checked);
+    }
+
     const getRankOneStyle = (index) => {
         if (index === 0) {
             return "idolCardRankOne shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
@@ -178,6 +184,13 @@ const Rankings = (props) => {
                         })}
                     </select>
                 </div>
+
+                <div className="flex flex-row gap-4">
+                    <label className="md:text-[1.5rem] text-[1rem] dark:text-white" checked={isDeleting} htmlFor="deleting">Delete Mode:</label>
+                    <input id="deleting" type="checkbox" checked={isDeleting} onChange={handleCheck}></input>
+
+                </div>
+
             </div>
 
             {/* message if user doesn't see any images */}
@@ -254,11 +267,11 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-             <a href={props.src} rel="noopener noreferrer" target="_blank" ><img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
-                }}/></a>
+                }}/>
             {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
