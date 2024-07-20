@@ -177,24 +177,24 @@ const Main = () => {
     )
 }
 
-const AnimatedNumber = ({ color, start, end }) => {
-    const getNumberClassName = () => {
-        if (color === "green") {
-            return "text-[#77dd77]"
-        } else if (color === "red") {
-            return "text-[#FF6961]"
-        } else {
-            return "";
-        }
-    }
+// const AnimatedNumber = ({ color, start, end }) => {
+//     const getNumberClassName = () => {
+//         if (color === "green") {
+//             return "text-[#77dd77]"
+//         } else if (color === "red") {
+//             return "text-[#FF6961]"
+//         } else {
+//             return "";
+//         }
+//     }
     
-    const { number } = useSpring({
-        from: { number: start},
-        number: end,
-        delay: 50,
-        config: { mass: 1, tension: 20, friction: 10 },
-    });
-    return <animated.div className={`${getNumberClassName()} animatedNumber`}>{number.to((n) => n.toFixed(0))}</animated.div>
-}
+//     const { number } = useSpring({
+//         from: { number: start},
+//         number: end,
+//         delay: 50,
+//         config: { mass: 1, tension: 20, friction: 10 },
+//     });
+//     return <animated.div className={`${getNumberClassName()} animatedNumber`}>{number.to((n) => n.toFixed(0))}</animated.div>
+// }
 
 export default Main;
