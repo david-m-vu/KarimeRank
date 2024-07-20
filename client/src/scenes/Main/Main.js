@@ -27,23 +27,23 @@ const Main = () => {
         audio.play();
     }
 
-    useEffect(() => {
-        fetchAllIdolGroups();
-        fetchImages();
-    }, [])
+    // useEffect(() => {
+    //     fetchAllIdolGroups();
+    //     fetchImages();
+    // }, [])
 
-    useEffect(() => {
-        if (!isInitialMount.current) {
-            fetchImages(false);
-        }
-    }, [selectedIdol])
+    // useEffect(() => {
+    //     if (!isInitialMount.current) {
+    //         fetchImages(false);
+    //     }
+    // }, [selectedIdol])
 
-    useEffect(() => {
-        if (images.length !== 0 && imagesLoaded === images.length) {
-          console.log('All images loaded');
-          setIsLoadingMain(false);
-        } 
-      }, [imagesLoaded, images.length]);
+    // useEffect(() => {
+    //     if (images.length !== 0 && imagesLoaded === images.length) {
+    //       console.log('All images loaded');
+    //       setIsLoadingMain(false);
+    //     } 
+    //   }, [imagesLoaded, images.length]);
 
     const handleImageLoad = () => {
         setImagesLoaded(prev => prev + 1);
@@ -118,7 +118,8 @@ const Main = () => {
 
     return (
         <div className="Main ">
-            <div className=" flex flex-row justify-center">
+            <div className="flex flex-row justify-center absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"><h1 className="border-4 p-2 border-black dark:border-white md:text-[24px] dark:text-white">Down for maintenance :(</h1></div>
+            {/* <div className=" flex flex-row justify-center">
                 <h1 className="border-4 p-2 border-black dark:border-white md:text-[24px] dark:text-white">
                     Which Picture do you like more?
                 </h1>
@@ -171,7 +172,7 @@ const Main = () => {
             }
 
             {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] dark:text-white mt-6 lg:mt-12 md:mt-14 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
-            {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
+            <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )
 }

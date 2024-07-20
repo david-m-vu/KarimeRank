@@ -25,35 +25,35 @@ const Rankings = (props) => {
 
     let mybutton = document.getElementById("myBtn");
 
-    useEffect(() => {
-        window.addEventListener("scroll", handleScroll)
-        fetchAllIdolGroups();
-        retrieveTotalVotes();
+    // useEffect(() => {
+    //     window.addEventListener("scroll", handleScroll)
+    //     fetchAllIdolGroups();
+    //     retrieveTotalVotes();
 
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [])
+    //     return () => window.removeEventListener("scroll", handleScroll);
+    // }, [])
 
-    // trigger fetch when user selects a new idol
-    useEffect(() => {
-        // console.log(`filter: ${queryParameters.get("filter")}`);
-        fetchImages(queryParameters.get("filter"));
-    }, [queryParameters])
+    // // trigger fetch when user selects a new idol
+    // useEffect(() => {
+    //     // console.log(`filter: ${queryParameters.get("filter")}`);
+    //     fetchImages(queryParameters.get("filter"));
+    // }, [queryParameters])
 
-    // trigger fetch when user reaches the bottom of the page
-    useEffect(() => {
-        if (isBottom) {
-            fetchImages(queryParameters.get("filter")).then((value) => {
-                setIsBottom(false);
-            })
-        }
-    }, [isBottom])
+    // // trigger fetch when user reaches the bottom of the page
+    // useEffect(() => {
+    //     if (isBottom) {
+    //         fetchImages(queryParameters.get("filter")).then((value) => {
+    //             setIsBottom(false);
+    //         })
+    //     }
+    // }, [isBottom])
 
-    useEffect(() => {
-        if (images.length !== 0 && imagesLoaded === images.length) {
-        //   console.log('All images loaded');
-          setIsLoadingMain(false);
-        } 
-      }, [imagesLoaded, images.length]);
+    // useEffect(() => {
+    //     if (images.length !== 0 && imagesLoaded === images.length) {
+    //     //   console.log('All images loaded');
+    //       setIsLoadingMain(false);
+    //     } 
+    //   }, [imagesLoaded, images.length]);
 
     const handleImageLoad = () => {
         setImagesLoaded(prev => prev + 1);
@@ -154,8 +154,10 @@ const Rankings = (props) => {
     }
 
     return (
-        <div className="Rankings relative">
-            <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
+        <div className="Rankings">
+            <div className="flex flex-row justify-center absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"><h1 className="border-4 p-2 border-black dark:border-white md:text-[24px] dark:text-white">Down for maintenance :(</h1></div>
+
+            {/*<div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
 
                 <div className="flex flex-row justify-center items-center">
                     <label className="md:text-[1.5rem] text-[1rem] dark:text-white">Filter: </label>
@@ -177,7 +179,6 @@ const Rankings = (props) => {
                 </div>
             </div>
 
-            {/* message if user doesn't see any images */}
             {(images.length === 0 && !isLoadingMain) && <div className="noImagesMessage text-center text-2xl md:text-4xl mt-40">
                 Don't see any images? try reloading!
             </div>}
@@ -187,7 +188,6 @@ const Rankings = (props) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
                             <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
-                            {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
                                 <div className="flex flex-col justify-center flex-1 items-center">
@@ -217,7 +217,7 @@ const Rankings = (props) => {
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
-            <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
+            <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>*/}
         </div>
     )
 }
