@@ -1,8 +1,9 @@
 import "./Rankings.css"
-import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol } from "../../requests/images.js"
+import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol, deleteImageById } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
+import closeIcon from "../../assets/close.svg";
 import crown from "../../assets/crown.png"
 
 const Rankings = (props) => {
@@ -19,8 +20,8 @@ const Rankings = (props) => {
     const [addInputFocused, setAddInputFocused] = useState(false);
 
     const [idolGroups, setIdolGroups] = useState([]);
-
     const [queryParameters] = useSearchParams();
+
     const [isDeleting, setIsDeleting] = useState(false);
 
     const navigate = useNavigate();
@@ -151,16 +152,21 @@ const Rankings = (props) => {
         setIsDeleting(e.target.checked);
     }
 
+    const handleDelete = async (imageId) => {
+        const res = await deleteImageById(imageId);
+        console.log(res);
+    }
+
     const getRankOneStyle = (index) => {
         if (index === 0) {
-            return "idolCardRankOne shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]"
+            return `${!isDeleting && "idolCardRankOne"} shadow-[#fcba03] bg-gradient-to-r from-[#fcba03] to-[#de7134]`
         } else {
-            return "idolCard"
+            return `${!isDeleting && "idolCard"}`
         }
     }
 
     return (
-        <div className="Rankings relative">
+        <div className={`Rankings relative`}>
             <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
                 {addInputFocused && <div className="contextMsg z-20 absolute text-black dark:text-white"><span className="decoration-solid underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700 dark:text-purple-300">[IDOL NAME HERE]</span></div>}
                 <input className={`bg-black w-4/5 md:w-[25%] lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] `} onFocus={() => setAddInputFocused(true)} onBlur={() => setAddInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
@@ -213,6 +219,11 @@ const Rankings = (props) => {
                                     </div>
                                 </div>
                             </div>
+
+                            {isDeleting && <div className="cursor-pointer" onClick={() => handleDelete(image._id)}>
+                                <img src={closeIcon} className="absolute right-[0.5rem] bottom-[0.5rem]" alt="close-icon"></img>
+                            </div>}
+
                             {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown" />}
                         </div>
                     )
@@ -232,6 +243,8 @@ const Rankings = (props) => {
             {isLoadingMain &&
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
+
+            {isDeleting && <div className="w-dvw h-dvh fixed inset-0 z-20 bg-[#ff4760] opacity-20 pointer-events-none"></div>}
 
             <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
         </div>
