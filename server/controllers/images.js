@@ -62,10 +62,8 @@ export const generateImagesByIdol = async (req, res) => {
    }
 }
 
-
 export const generateImageSet = async (req, res) => {
-   const idolsToGen = ["karina2", "winter", "ningning", "giselle", "hanni", "haerin2", "minji11", "danielle", "hyein4"];
-
+   const idolsToGen = ["karina2", "winter", "ningning", "giselle", "hanni", "haerin2", "minji11", "danielle", "hyein4", "yeojin"];
 
    let imagesAdded = 0;
    const newImagesSet = idolsToGen.map(async (idolName) => {

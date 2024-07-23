@@ -33,7 +33,10 @@ const Main = () => {
     }, [])
 
     useEffect(() => {
-        if (!isInitialMount.current) {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+        } else {
+            console.log("bye")
             fetchImages(false);
         }
     }, [selectedIdol])
