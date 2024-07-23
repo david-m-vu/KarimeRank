@@ -64,6 +64,10 @@
     box-shadow: 0 20px 25px 17px rgba(252, 186, 3, 0.4)
 }
 
+.eolMessage {
+    animation: 0.7s ease slide-in-left;
+}
+
 
 @keyframes fade-in {
     0%, 10% {
@@ -80,6 +84,17 @@
     }
     100% {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes slide-in-left {
+    0% {
+        opacity: 0;
+        transform: translate3d(-100%, 0, 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
     }
 }
 

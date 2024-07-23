@@ -44,6 +44,10 @@ export const getTotalVotes = async () => {
         totalVotes = await totalVotesRes.json();
     }
 
+    if (totalVotesRes.status === 404) {
+        return 0;
+    }
+
     return totalVotes.totalVotes;
 }
 
