@@ -1,5 +1,7 @@
 import { getImagesByIdol } from "../requests/images.js"
 import Image from "../models/Image.js";
+import TestImage from "../models/TestImage.js";
+import ArchivedImage from "../models/ArchivedImage.js";
 import probe from "probe-image-size";
 import axios from "axios"
 
@@ -8,16 +10,18 @@ export const generateImagesByIdol = async (req, res) => {
         const { idolName } = req.body;
         const imageObjects = await getImagesByIdol(idolName.toLowerCase());
 
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
         if (!imageObjects) {
             return res.status(404).json({ message: "Idol doesn't exist!" })
         }
 
         let imagesAdded = 0;
         imageObjects.forEach(async (imageObject) => {
-            const imageAlreadyExists = Boolean(await Image.exists({ title: imageObject.title }));
+            const imageAlreadyExists = Boolean(await model.exists({ title: imageObject.title }));
             if (!imageAlreadyExists) {
                 // console.log(imageObject);
-                let {groupName} = imageObject;
+                let { groupName } = imageObject;
                 if (!groupName) {
                     groupName = "N/A"
                 }
@@ -32,15 +36,16 @@ export const generateImagesByIdol = async (req, res) => {
                     imageMetadata = await probe(imageUrl);
                     if (imageMetadata) {
                         const { width, height } = imageMetadata;
-                        const newImage = await new Image({...imageObject, groupName, width, height});
+
+                        const newImage = await new model({ ...imageObject, groupName, width, height });
                         await newImage.save();
                         imagesAdded++;
-                    }    
+                    }
                 }
             }
         })
 
-        const allImageObjects = await Image.find();
+        const allImageObjects = await model.find();
 
         return res.status(201).json({ allImages: allImageObjects, imagesAdded })
     } catch (err) {
@@ -48,9 +53,60 @@ export const generateImagesByIdol = async (req, res) => {
     }
 }
 
+export const generateImageSet = async (req, res) => {
+    const idolsToGen = ["karina2", "winter", "ningning", "giselle", "hanni", "haerin2", "minji11", "danielle", "hyein4"];
+
+    let imagesAdded = 0;
+    const newImagesSet = idolsToGen.map(async (idolName) => {
+        const imageObjects = await getImagesByIdol(idolName.toLowerCase());
+
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+    
+        if (!imageObjects) {
+            return res.status(404).json({ message: "Idol doesn't exist!" })
+        }
+    
+        imageObjects.forEach(async (imageObject) => {
+            const imageAlreadyExists = Boolean(await model.exists({ title: imageObject.title }));
+            if (!imageAlreadyExists) {
+                // console.log(imageObject);
+                let { groupName } = imageObject;
+                if (!groupName) {
+                    groupName = "N/A"
+                }
+    
+                // get dimensions
+                const { imageUrl } = imageObject;
+    
+                let imageMetadata
+                const isValidImage = await isValidImageUrl(imageUrl);
+    
+                if (isValidImage) {
+                    imageMetadata = await probe(imageUrl);
+                    if (imageMetadata) {
+                        const { width, height } = imageMetadata;
+    
+                        const newImage = await new model({ ...imageObject, groupName, width, height });
+                        await newImage.save();
+                        imagesAdded++;
+                    }
+                }
+            }
+        })
+    
+        const allImageObjects = await model.find();
+        return allImageObjects;
+    })
+
+    return res.status(200).json({ newImagesSet, imagesAdded });
+
+}
+
 export const getTotalVotes = async (req, res) => {
     try {
-        const result = await Image.aggregate([
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const result = await model.aggregate([
             {
                 $group: {
                     _id: null,
@@ -59,7 +115,11 @@ export const getTotalVotes = async (req, res) => {
             }
         ])
 
-        res.status(200).json({totalVotes: result[0].totalVotes})
+        if (result.length === 0) {
+            res.status(404).json({ message: "no votes"});
+        } else {
+            res.status(200).json({ totalVotes: result[0].totalVotes })
+        }
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
@@ -67,7 +127,9 @@ export const getTotalVotes = async (req, res) => {
 
 export const updateAllIdols = async (req, res) => {
     try {
-        const allIdolNames = await Image.find().distinct("idolName");
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const allIdolNames = await model.find().distinct("idolName");
 
         allIdolNames.forEach(async () => {
             const imageObjects = await getImagesByIdol(idolName.toLowerCase());
@@ -75,21 +137,21 @@ export const updateAllIdols = async (req, res) => {
             if (!imageObjects) {
                 return res.status(404).json({ message: "An idol doesn't exist!" })
             }
-    
+
             let imagesAdded = 0;
             imageObjects.forEach(async (imageObject) => {
-                const imageAlreadyExists = Boolean(await Image.exists({ title: imageObject.title }));
+                const imageAlreadyExists = Boolean(await model.exists({ title: imageObject.title }));
                 if (!imageAlreadyExists) {
-                    const newImage = await new Image(imageObject)
+                    const newImage = await new model(imageObject);
                     await newImage.save();
                     imagesAdded++;
                 }
             })
         })
 
-        const allImageObjects = await Image.find();
+        const allImageObjects = await model.find();
 
-        res.status(200).json({ allImages: allImageObjects, imagesAdded});
+        res.status(200).json({ allImages: allImageObjects, imagesAdded });
     } catch (err) {
         res.status(404).json({ message: err.message });
     }
@@ -99,10 +161,13 @@ export const deleteIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
 
-        const imagesDeleted = await Image.deleteMany({ idolName: new RegExp(`^${idolName}$`, 'i') });
-        const newImageObjects = await Image.find();
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
 
-        res.status(200).json({allImages: newImageObjects, imagesDeleted: imagesDeleted.length})
+
+        const imagesDeleted = await model.deleteMany({ idolName: new RegExp(`^${idolName}$`, 'i') });
+        const newImageObjects = await model.find();
+
+        res.status(200).json({ allImages: newImageObjects, imagesDeleted: imagesDeleted.length })
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
@@ -112,9 +177,11 @@ export const deleteImageById = async (req, res) => {
     try {
         const { _id } = req.body;
 
-        const deletedImage = await Image.findByIdAndDelete( _id  );
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const deletedImage = await model.findByIdAndDelete(_id);
         if (!deletedImage) {
-            res.status(404).json({ message: "Image not found"});
+            res.status(404).json({ message: "Image not found" });
         }
         // // check this out next time
         // console.log("deletedImage:", deletedImage);
@@ -127,7 +194,9 @@ export const deleteImageById = async (req, res) => {
 
 export const getAllImages = async (req, res) => {
     try {
-        const allImages = await Image.find();
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const allImages = await model.find();
         res.status(200).json({ images: allImages })
     } catch (err) {
         res.status(404).json({ message: err.message });
@@ -136,13 +205,15 @@ export const getAllImages = async (req, res) => {
 
 export const getStartToEndImages = async (req, res) => {
     try {
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
         const { idolname, start, end } = req.query;
 
         let images;
         if (idolname) {
-            images = await Image.find({ idolName: new RegExp(`^${idolname}$`, 'i') }).sort({ score: -1, _id: 1 }).skip(start).limit(end - start);
+            images = await model.find({ idolName: new RegExp(`^${idolname}$`, 'i') }).sort({ score: -1, _id: 1 }).skip(start).limit(end - start);
         } else {
-            images = await Image.find().sort({ score: -1, _id: 1 }).skip(start).limit(end - start);
+            images = await model.find().sort({ score: -1, _id: 1 }).skip(start).limit(end - start);
         }
         res.status(200).json({ images })
     } catch (err) {
@@ -150,22 +221,25 @@ export const getStartToEndImages = async (req, res) => {
     }
 }
 
+// redundant
+// export const getStartToEndImagesByIdol = async (req, res) => {
+//     try {
+//         const { idolName, start, end } = req.query;
 
-export const getStartToEndImagesByIdol = async (req, res) => {
-    try {
-        const { idolName, start, end } = req.query;
+//         const images = process.env.TEST_MODE === "TEST_MODE" ? await TestImage.find({ idolName }).sort({score: -1}).skip(start).limit(end - start) : await Image.find({ idolName }).sort({score: -1}).skip(start).limit(end - start);
+//         res.status(200).json({ images: images })
+//     } catch (err) {
+//         res.status(404).json({ message: err.message });
+//     }
+// }
 
-        const images = await Image.find({ idolName }).sort({score: -1}).skip(start).limit(end - start);
-        res.status(200).json({ images: images })
-    } catch (err) {
-        res.status(404).json({ message: err.message });
-    }
-}
 export const getAllIdolNames = async (req, res) => {
     try {
-        const allIdolNames = await Image.find().distinct("idolName");
+        const model = Image //(process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
 
-        res.status(200).json({ idolNames: allIdolNames});
+        const allIdolNames = await model.find().distinct("idolName");
+
+        res.status(200).json({ idolNames: allIdolNames });
     } catch (err) {
         res.status(404).json({ message: err.message });
     }
@@ -173,27 +247,30 @@ export const getAllIdolNames = async (req, res) => {
 
 export const getAllIdolNamesWithGroup = async (req, res) => {
     try {
-        const uniqueIdolGroups = await Image.aggregate([
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        let uniqueIdolGroups;
+        uniqueIdolGroups = await model.aggregate([
             {
-              $project: {
-                idolName: { $toLower: "$idolName" },
-                groupName: { $toLower: "$groupName" }
-              }
+                $project: {
+                    idolName: { $toLower: "$idolName" },
+                    groupName: { $toLower: "$groupName" }
+                }
             },
             {
-              $group: {
-                _id: { idolName: "$idolName", groupName: "$groupName" }
-              }
+                $group: {
+                    _id: { idolName: "$idolName", groupName: "$groupName" }
+                }
             },
             {
-              $project: {
-                _id: 0,
-                idolName: "$_id.idolName",
-                groupName: "$_id.groupName"
-              }
+                $project: {
+                    _id: 0,
+                    idolName: "$_id.idolName",
+                    groupName: "$_id.groupName"
+                }
             }
-          ]);
-          
+        ]);
+
         res.status(200).json({ uniqueIdolGroups });
     } catch (err) {
         res.status(404).json({ message: err.message });
@@ -209,15 +286,16 @@ export const getAllIdolNamesWithGroup = async (req, res) => {
 
 export const getRandomImagePair = async (req, res) => {
     try {
-        const allIdolNames = await Image.find().distinct("idolName");
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const allIdolNames = await model.find().distinct("idolName");
 
         const randIndex = Math.floor(Math.random() * allIdolNames.length);
         const randomIdolName = allIdolNames[randIndex];
 
         // get all images of one idol --> array
         // const escapedName = escapeRegExp(randomIdolName);
-        const allIdolImages = await Image.find({ idolName: new RegExp(`^${randomIdolName}$`, 'i') });
-
+        const allIdolImages = await model.find({ idolName: new RegExp(`^${randomIdolName}$`, 'i') });
 
         // create one random set of two images for that one idol --> array of 2
         let firstIndex = Math.floor(Math.random() * allIdolImages.length);
@@ -239,9 +317,11 @@ export const getRandomImagePairByIdol = async (req, res) => {
     try {
         const { idolName } = req.params;
 
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
         // get all images of one idol --> array
         // const escapedName = escapeRegExp(idolName);
-        const allIdolImages = await Image.find({ idolName: new RegExp(`^${idolName}$`, 'i') });
+        const allIdolImages = await model.find({ idolName: new RegExp(`^${idolName}$`, 'i') });
 
         // create one random set of two images for that one idol --> array of 2
         let firstIndex = Math.floor(Math.random() * allIdolImages.length);
@@ -267,8 +347,10 @@ export const likeImage = async (req, res) => {
             chosenID
         } = req.body
 
-        const firstImage = await Image.findById(firstImageID);
-        const secondImage = await Image.findById(secondImageID);
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const firstImage = await model.findById(firstImageID);
+        const secondImage = await model.findById(secondImageID);
 
         let firstScore = firstImage.score;
         let firstWins = firstImage.numWins;
@@ -292,7 +374,7 @@ export const likeImage = async (req, res) => {
             res.status(400).json({ message: "invalid chosenID" })
         }
 
-        const updatedFirstImage = await Image.findByIdAndUpdate(
+        const updatedFirstImage = await model.findByIdAndUpdate(
             firstImageID,
             {
                 score: firstScore,
@@ -302,7 +384,7 @@ export const likeImage = async (req, res) => {
             { new: true }
         )
 
-        const updatedSecondImage = await Image.findByIdAndUpdate(
+        const updatedSecondImage = await model.findByIdAndUpdate(
             secondImageID,
             {
                 score: secondScore,
@@ -321,17 +403,62 @@ export const likeImage = async (req, res) => {
 export const addGroupNames = async (req, res) => {
     const { idolName, groupName } = req.body;
     console.log(req.body);
-    const image = await Image.updateMany({ idolName: new RegExp(`^${idolName}$`, 'i')}, { groupName })
-    res.status(200).json({image});
+
+    const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+    const image = await model.updateMany({ idolName: new RegExp(`^${idolName}$`, 'i') }, { groupName })
+    res.status(200).json({ image });
 }
+
+export const testAnything = async (req, res) => {
+    try {
+        console.log(process.env.TEST_MODE);
+        console.log(process.env.TEST_MODE === "TEST_MODE")
+        res.status(200).json({ message: "successssss" });
+    } catch (err) {
+        console.log(err.message);
+    }
+}
+
+export const archiveImages = async (req, res) => {
+    try {
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const archivedImages = moveDocuments(model, ArchivedImage);
+        if (!archivedImages) {
+            res.status(500).json({ message: "move didn't work"})
+        }
+
+        res.status(200).json({ archivedImages })
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const moveDocuments = async (SourceCollection, DestinationCollection) => {
+    try {
+        const images = await SourceCollection.find();
+        await DestinationCollection.insertMany(images);
+        await SourceCollection.deleteMany({});
+
+        console.log("poggers");
+        const archivedImages = await DestinationCollection.find();
+        return archivedImages
+    } catch (err) {
+        return null;
+    }
+}
+
 
 const addDimensions = async (req, res) => {
     // const testImageURL = "https://kpopping.com/documents/07/2/1176/240605-KISS-OF-LIFE-Twitter-Update-with-Natty-documents-1.jpeg?v=73ded"
     try {
-        const allIdolNames = await Image.find().distinct("idolName");
-        
+        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+
+        const allIdolNames = await model.find().distinct("idolName");
+
         const num = 40
-        const idolImages = await Image.find({ idolName: allIdolNames[num]});
+        const idolImages = await model.find({ idolName: allIdolNames[num] });
 
         idolImages.forEach(async (imageObject) => {
             const { imageUrl } = imageObject;
@@ -343,12 +470,12 @@ const addDimensions = async (req, res) => {
                 imageMetadata = await probe(imageUrl);
                 if (imageMetadata) {
                     const { width, height } = imageMetadata;
-                    await Image.findByIdAndUpdate(imageObject._id, { width, height } );
-                }    
-            } 
+                    await model.findByIdAndUpdate(imageObject._id, { width, height });
+                }
+            }
         })
-    
-        res.status(200).json(await Image.find({ idolName: allIdolNames[num] }));
+
+        res.status(200).json(await model.find({ idolName: allIdolNames[num] }));
     } catch (err) {
         res.status(500).json({ message: err.message })
     }

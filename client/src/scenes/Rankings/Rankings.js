@@ -13,6 +13,7 @@ const Rankings = (props) => {
     const [searchMore, setSearchMore] = useState(true);
     const [isLoadingMain, setIsLoadingMain] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(0);
+    const [showEndIndicator, setShowEndIndicator] = useState(false);
 
     const [resultMsg, setResultMsg] = useState("");
     const [idolNameInput, setIdolNameInput] = useState("");
@@ -21,6 +22,7 @@ const Rankings = (props) => {
 
     const [idolGroups, setIdolGroups] = useState([]);
     const [queryParameters] = useSearchParams();
+    const [daysUntilNextMonth, setDaysUntilNextMonth] = useState("X");
 
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -32,6 +34,7 @@ const Rankings = (props) => {
         window.addEventListener("scroll", handleScroll)
         fetchAllIdolGroups();
         retrieveTotalVotes();
+        getDaysUntilNextMonth();
 
         return () => window.removeEventListener("scroll", handleScroll);
     }, [])
@@ -53,10 +56,10 @@ const Rankings = (props) => {
 
     useEffect(() => {
         if (images.length !== 0 && imagesLoaded === images.length) {
-        //   console.log('All images loaded');
-          setIsLoadingMain(false);
-        } 
-      }, [imagesLoaded, images.length]);
+            //   console.log('All images loaded');
+            setIsLoadingMain(false);
+        }
+    }, [imagesLoaded, images.length]);
 
     const handleImageLoad = () => {
         setImagesLoaded(prev => prev + 1);
@@ -99,6 +102,8 @@ const Rankings = (props) => {
                 setStart((prev) => prev + 20);
                 setImages((prev) => [...prev, ...newImages])
             } else {
+                // console.log("done")
+                setShowEndIndicator(true);
                 setSearchMore(false);
                 setIsLoadingMain(false);
             }
@@ -156,12 +161,41 @@ const Rankings = (props) => {
         const deletedImage = (await deleteImageById(imageId)).deletedImage;
 
         const newImages = images.filter((image) => {
-            return image._id !== imageId;                  
+            return image._id !== imageId;
         })
         setImages(newImages);
         setStart((prev) => prev - 1)
 
         console.log(deletedImage);
+    }
+
+    const getDaysUntilNextMonth = () => {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        const nextMonthYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+
+        const firstDayOfNextMonth = new Date(nextMonthYear, nextMonth, 1);
+
+        const diffInMs = firstDayOfNextMonth - today;
+        const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+        setDaysUntilNextMonth(diffInDays);
+        // return diffInDays
+    }
+
+    const getDaysCountClass = () => {
+        if (daysUntilNextMonth > 19) {
+            return "text-[#9ff7a5]"
+        } else if (daysUntilNextMonth > 9) {
+            return "dark:text-[#ded380] text-[#fcba03]"
+        } else if (daysUntilNextMonth > 4) {
+            return "text-[#c280a8]"
+        } else {
+            return "text-[#ff5770]"
+        }
     }
 
     const getRankOneStyle = (index) => {
@@ -174,34 +208,38 @@ const Rankings = (props) => {
 
     return (
         <div className={`Rankings relative`}>
-            <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-4 gap-8">
-                {addInputFocused && <div className="contextMsg z-20 absolute text-black dark:text-white"><span className="decoration-solid underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700 dark:text-purple-300">[IDOL NAME HERE]</span></div>}
-                <input className={`bg-black w-4/5 md:w-[25%] lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] `} onFocus={() => setAddInputFocused(true)} onBlur={() => setAddInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
-                <div className="resultMsg absolute">{resultMsg}</div>
+            <div className="flex flex-col items-center">
+                <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-7 gap-4">
+                    {addInputFocused && <div className="contextMsg z-20 absolute text-black dark:text-white"><span className="decoration-solid underline">SOURCE</span>: https://kpopping.com/profiles/idol/<span className="text-purple-700 dark:text-purple-300">[IDOL NAME HERE]</span></div>}
+                    <input className={`bg-black w-4/5 md:w-[25%] lg:w-1/5 text-white bg-opacity-50 rounded-md text-center p-[0.5rem] text-[1.5rem] `} onFocus={() => setAddInputFocused(true)} onBlur={() => setAddInputFocused(false)} onKeyDown={handleSearch} placeholder="Add Idol (Ex: Winter)" value={idolNameInput} onChange={handleIdolNameInputChange} type="text" name="search"></input>
+                    <div className="resultMsg absolute">{resultMsg}</div>
 
-                <div className="flex flex-row justify-center items-center">
-                    <label className="md:text-[1.5rem] text-[1rem] dark:text-white">Filter: </label>
-
-                    <select name="idols" className="bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
-                        <option>All</option>
-                        {idolGroups.sort((a, b) => {
-                            if (a.groupName > b.groupName) {
-                                return 1;
-                            } else if (a.groupName < b.groupName) {
-                                return -1;
-                            } else {
-                                return 0;
-                            }
-                        }).map((idolGroups, index) => {
-                            return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
-                        })}
-                    </select>
+                    <div className="flex flex-row justify-center items-center">
+                        <label className="md:text-[2rem] text-[1.5rem] dark:text-white">Filter: </label>
+                        <select name="idols" className="bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
+                            <option>All</option>
+                            {idolGroups.sort((a, b) => {
+                                if (a.groupName > b.groupName) {
+                                    return 1;
+                                } else if (a.groupName < b.groupName) {
+                                    return -1;
+                                } else {
+                                    return 0;
+                                }
+                            }).map((idolGroups, index) => {
+                                return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
+                            })}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="flex flex-row gap-4">
                     <label className="md:text-[1.5rem] text-[1rem] dark:text-white" checked={isDeleting} htmlFor="deleting">Delete Mode:</label>
                     <input id="deleting" type="checkbox" checked={isDeleting} onChange={handleCheck}></input>
+                </div>
 
+                <div className={`md:text-[2rem] min-[1320px]:absolute md:right-4 md:mx-4 text-[1.5rem] dark:text-white`}>
+                    NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
 
             </div>
@@ -211,11 +249,11 @@ const Rankings = (props) => {
                 Don't see any images? try reloading!
             </div>}
 
-           <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
+            <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
+                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height} />
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -251,9 +289,13 @@ const Rankings = (props) => {
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
-            {isDeleting && <div className="w-dvw h-dvh fixed inset-0 z-20 bg-[#ff4760] opacity-20 pointer-events-none"></div>}
+            {(showEndIndicator && images.length !== 0) &&
+                <div className="eolMessage flex justify-center md:text-[2rem] text-[1.5rem] dark:text-white pb-8">END OF LIST</div>
+            }
 
             <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
+            {isDeleting && <div className="w-dvw h-dvh fixed inset-0 z-20 bg-[#ff4760] opacity-20 pointer-events-none"></div>}
+
         </div>
     )
 }
@@ -273,7 +315,7 @@ const ImageWithPlaceHolder = (props) => {
         const saturation = Math.floor(Math.random() * 11) + 10;
         // Set lightness to a low-medium value (e.g., 30-50%)
         const lightness = Math.floor(Math.random() * 21) + 30;
-      
+
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
@@ -287,12 +329,12 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt}
                 onLoad={() => {
-                    setIsLoaded(true); 
+                    setIsLoaded(true);
                     props.handleImageLoad();
-                }}/>
-            {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
+                }} />
+            {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }} />}
         </div>
     )
 }
