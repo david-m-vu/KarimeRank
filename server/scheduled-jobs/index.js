@@ -8,7 +8,7 @@ import schedule from "node-schedule";
 // const job = schedule.scheduleJob("0 0 1 * *", () => {
 //     console.log("HI")
 // })
-const job = schedule.scheduleJob("0 30 10 * * *", async () => {
+const job = schedule.scheduleJob("0 35 10 * * *", async () => {
     const newList = await deleteIdol();
 })
 
