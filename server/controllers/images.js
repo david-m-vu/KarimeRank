@@ -1,7 +1,6 @@
 import { getImagesByIdol } from "../requests/images.js"
 import Image from "../models/Image.js";
 import TestImage from "../models/TestImage.js";
-import ArchivedImage from "../models/ArchivedImage.js";
 import probe from "probe-image-size";
 import axios from "axios"
 
@@ -108,10 +107,7 @@ export const generateImageSet = async (req, res) => {
        return allImageObjects;
    })
 
-
    return res.status(200).json({ newImagesSet, imagesAdded });
-
-
 }
 
 
@@ -186,9 +182,6 @@ export const deleteIdol = async (req, res) => {
 
 
        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-
-
 
        const imagesDeleted = await model.deleteMany({ idolName: new RegExp(`^${idolName}$`, 'i') });
        const newImageObjects = await model.find();
@@ -491,43 +484,6 @@ export const testAnything = async (req, res) => {
        console.log(err.message);
    }
 }
-
-
-export const archiveImages = async (req, res) => {
-   try {
-       const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-
-       const archivedImages = moveDocuments(model, ArchivedImage);
-       if (!archivedImages) {
-           res.status(500).json({ message: "move didn't work"})
-       }
-
-
-       res.status(200).json({ archivedImages })
-   } catch (err) {
-       res.status(500).json({ message: err.message });
-   }
-}
-
-
-const moveDocuments = async (SourceCollection, DestinationCollection) => {
-   try {
-       const images = await SourceCollection.find();
-       await DestinationCollection.insertMany(images);
-       await SourceCollection.deleteMany({});
-
-
-       console.log("poggers");
-       const archivedImages = await DestinationCollection.find();
-       return archivedImages
-   } catch (err) {
-       return null;
-   }
-}
-
-
-
 
 const addDimensions = async (req, res) => {
    // const testImageURL = "https://kpopping.com/documents/07/2/1176/240605-KISS-OF-LIFE-Twitter-Update-with-Natty-documents-1.jpeg?v=73ded"

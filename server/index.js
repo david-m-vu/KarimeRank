@@ -7,6 +7,8 @@ import morgan from "morgan";
 
 import imageRoutes from "./routes/images.js";
 
+import "./scheduled-jobs/index.js";
+
 dotenv.config();
 
 const app = express();
