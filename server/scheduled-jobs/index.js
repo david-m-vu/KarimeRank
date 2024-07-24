@@ -8,13 +8,13 @@ import schedule from "node-schedule";
 // const job = schedule.scheduleJob("0 0 1 * *", () => {
 //     console.log("HI")
 // })
-const job = schedule.scheduleJob("* 0 7 * * *", async () => {
-    await deleteIdol()
+const job = schedule.scheduleJob("0 30 10 * * *", async () => {
+    const newList = await deleteIdol();
 })
 
 const deleteIdol = async () => {
     try {
-        const idolName = "wonhee";
+        const idolName = "lisa";
  
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
  
