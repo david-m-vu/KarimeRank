@@ -8,14 +8,13 @@ import schedule from "node-schedule";
 // const job = schedule.scheduleJob("0 0 1 * *", () => {
 //     console.log("HI")
 // })
-const job = schedule.scheduleJob("0 35 10 * * *", async () => {
-    const newList = await deleteIdol();
+const job = schedule.scheduleJob("0 * * * * *", async () => {
+    const newList = await deleteIdol("lisa");
+    console.log("here");
 })
 
-const deleteIdol = async () => {
+const deleteIdol = async (idolName) => {
     try {
-        const idolName = "lisa";
- 
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
  
         const imagesDeleted = await model.deleteMany({ idolName: new RegExp(`^${idolName}$`, 'i') });
