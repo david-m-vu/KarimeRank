@@ -10,9 +10,11 @@ import schedule from "node-schedule";
 let idolsToGen = []
 const aespaMembers = ["karina2", "winter", "ningning", "giselle"];
 const newjeansMembers = ["hanni", "haerin2", "minji11", "danielle", "hyein4"];
+const kissMembers = ["belle", "natty", "haneul9", "julie3"]
 
 idolsToGen.push(...aespaMembers);
 idolsToGen.push(...newjeansMembers);
+idolsToGen.push(...kissMembers);
 idolsToGen.push("yeojin", "jeewon");
 
 // node schedule
