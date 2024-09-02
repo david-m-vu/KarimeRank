@@ -60,7 +60,7 @@ export const generateImageSet = async (req, res) => {
 
     idolsToGen.push(...aespaMembers);
     idolsToGen.push(...newjeansMembers);
-    idolsToGen.push("yeojin", "jeewon");
+    idolsToGen.push("yeojin", "jeewon", "chloe2");
 
     let imagesAdded = 0;
     const newImagesSet = [];
