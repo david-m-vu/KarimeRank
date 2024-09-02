@@ -1,1 +1,1 @@
-# Ranking for Karime
+# Korean Performer Image Ranking App
