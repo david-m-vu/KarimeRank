@@ -11,14 +11,16 @@ let idolsToGen = []
 const aespaMembers = ["karina2", "winter", "ningning", "giselle"];
 const newjeansMembers = ["hanni", "haerin2", "minji11", "danielle", "hyein4"];
 const kissMembers = ["belle", "natty", "haneul9", "julie3"]
+const illitMembers = ["wonhee", "yunah", "iroha", "moka", "Minju6"]
 
 idolsToGen.push(...aespaMembers);
 idolsToGen.push(...newjeansMembers);
 idolsToGen.push(...kissMembers);
-idolsToGen.push("yeojin", "jeewon");
+idolsToGen.push(...illitMembers);
+idolsToGen.push("Yena2", "Yuri2");
 
 // node schedule
-const job = schedule.scheduleJob("0 0 1 * *", async () => {
+const job = schedule.scheduleJob("0 0 18 1 *", async () => {
     await archiveImages();
     await generateNewImageSet(idolsToGen);
 })
@@ -92,7 +94,6 @@ const archiveImages = async () => {
         console.log(err.message);
     }
 }
-
 
 const moveDocuments = async (SourceCollection, DestinationCollection) => {
     try {

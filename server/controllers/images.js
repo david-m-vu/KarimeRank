@@ -150,11 +150,9 @@ export const updateAllIdols = async (req, res) => {
         allIdolNames.forEach(async () => {
             const imageObjects = await getImagesByIdol(idolName.toLowerCase());
 
-
             if (!imageObjects) {
                 return res.status(404).json({ message: "An idol doesn't exist!" })
             }
-
 
             let imagesAdded = 0;
             imageObjects.forEach(async (imageObject) => {
