@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import crown from "../../assets/crown.png"
+import blockerPlaceholder from "../../assets/blocker-placeholder.jpg"
 
 const Rankings = (props) => {
     const [images, setImages] = useState([]);
@@ -48,9 +49,10 @@ const Rankings = (props) => {
     }, [isBottom])
 
     useEffect(() => {
-        console.log(`imagesLoaded: ${imagesLoaded}, numImages: ${images.length}`)
+        // console.log(`imagesLoaded: ${imagesLoaded}, numImages: ${images.length}`)
         if (images.length !== 0 && imagesLoaded >= images.length) {
           console.log('All images loaded');
+          setImagesLoaded(images.length);
           setIsLoadingMain(false);
         } 
       }, [imagesLoaded, images.length]);
@@ -102,6 +104,26 @@ const Rankings = (props) => {
                 setSearchMore(false);
                 setIsLoadingMain(false);
             }
+        }
+    }
+
+    const getUrlToLoad = (name, thumbnailUrl, trueImgUrl) => {
+        const thumbnail = new Image();
+        const trueImg = new Image();
+        thumbnail.src = thumbnailUrl;
+        trueImg.src = trueImgUrl;
+
+        const { width: thumbnailWidth, height: thumbnailHeight } = thumbnail;
+        const { width: trueWidth , height: trueHeight} = trueImg;
+
+        // console.log(name, thumbnailWidth, thumbnailHeight, trueWidth, trueHeight)
+
+        if (thumbnailWidth === 1200 && thumbnailHeight === 630 && trueWidth === 1200 && trueHeight === 630) {
+            return blockerPlaceholder;
+        } else if (thumbnailWidth === 1200 && thumbnailHeight === 630) {
+            return trueImgUrl;
+        } else {
+            return thumbnailUrl;
         }
     }
 
@@ -197,7 +219,7 @@ const Rankings = (props) => {
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder thumbnail={image.thumbnailUrl} image={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
+                            <ImageWithPlaceHolder src={getUrlToLoad(image.imageName, image.thumbnailUrl, image.imageUrl)} originUrl={image.originUrl} trueImage={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -239,7 +261,6 @@ const Rankings = (props) => {
 
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [urlToLoad, setUrlToLoad] = useState(props.thumbnail);
     const [placeholderColor, setPlaceholderColor] = useState("#686b5e")
 
     useEffect(() => {
@@ -267,19 +288,11 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <a href={props.image} target="_blank" rel="noreferrer">
-            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={urlToLoad} alt={props.alt} 
+            <a href={props.originUrl} target="_blank" rel="noreferrer">
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
-                    
-                    const thumbnailImg = new Image();
-                    thumbnailImg.src = props.thumbnail
-                    const { width, height } = thumbnailImg;
-
-                    if (width === 1200 && height === 630) {
-                        setUrlToLoad(props.image);
-                    }
                 }}/>
             </a>
 
