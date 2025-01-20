@@ -29,7 +29,7 @@ const Main = () => {
 
     useEffect(() => {
         fetchAllIdolGroups();
-        fetchImages();
+        fetchImages(false);
     }, [])
 
     useEffect(() => {
@@ -54,6 +54,8 @@ const Main = () => {
 
     const fetchImages = async (willDelay) => {
         let imagePair
+
+        // this indicates that we just started the app
         if (!willDelay) {
             setImagesLoaded(0);
             setIsLoadingMain(true);
@@ -150,7 +152,7 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.imageUrl} alt={image.imageName} onLoad={() => handleImageLoad()}/>
+                            <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.thumbnailUrl} alt={image.imageName} onLoad={() => handleImageLoad()}/>
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
                             {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0 dark:text-white`}>
                                 <div>W:</div> 

@@ -24,10 +24,11 @@ export const getImagesByIdol = async (idolName) => {
         const originUrl = album.url;
         const title = album.title;
 
-        let imageObjects = album.pictureURLs.map(((imageUrl, index) => {
+        let imageObjects = album.pictureURLs.map(((pictureObj, index) => {
             return {
                 originUrl,
-                imageUrl,
+                thumbnailUrl: pictureObj.thumbnailUrl,
+                imageUrl: pictureObj.imageUrl,
                 idolName,
                 groupName,
                 title,

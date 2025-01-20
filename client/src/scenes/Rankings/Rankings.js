@@ -79,6 +79,7 @@ const Rankings = (props) => {
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
 
+        // indicate that we are at the bottom of the screen
         if (scrollTop + windowHeight >= documentHeight - 5) {
             setIsBottom(true);
         }
@@ -93,7 +94,7 @@ const Rankings = (props) => {
             if (newImages.length !== 0) {
                 setStart((prev) => prev + 20);
                 setImages((prev) => [...prev, ...newImages])
-            } else {
+            } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
                 // console.log("done")
                 setShowEndIndicator(true);
                 setSearchMore(false);
@@ -194,7 +195,7 @@ const Rankings = (props) => {
                 {images.map((image, index) => {
                     return (
                         <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
+                            <ImageWithPlaceHolder thumbnail={image.thumbnailUrl} image={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -263,11 +264,14 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+            <a href={props.image} target="_blank" rel="noreferrer">
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.thumbnail} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
                 }}/>
+            </a>
+
             {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
