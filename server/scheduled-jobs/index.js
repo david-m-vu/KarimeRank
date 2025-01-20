@@ -16,7 +16,7 @@ idolsToGen.push(...kpopGroups.iveMembers);
 idolsToGen.push("Yena2", "Yuri2");
 
 // node schedule
-const job = schedule.scheduleJob("10 20 19 1 *", async () => {
+const job = schedule.scheduleJob("0 0 1 * *", async () => {
     console.log("image reset starting!")
     await archiveImages();
     await generateNewImageSet(idolsToGen);
