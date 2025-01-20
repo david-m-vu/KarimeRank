@@ -1,6 +1,5 @@
 import "./Rankings.css"
-import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol } from "../../requests/images.js"
-import { isKpoppingBlocker } from "../../util/index.js"; 
+import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
