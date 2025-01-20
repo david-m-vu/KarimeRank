@@ -36,13 +36,13 @@ const Main = () => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
         } else {
-            console.log("bye")
+            // console.log("bye")
             fetchImages(false);
         }
     }, [selectedIdol])
 
     useEffect(() => {
-        if (images.length !== 0 && imagesLoaded === images.length) {
+        if (images.length !== 0 && imagesLoaded >= images.length) {
           console.log('All images loaded');
           setIsLoadingMain(false);
         } 
@@ -134,6 +134,7 @@ const Main = () => {
                 <select name="idols" className="bg-white dark:bg-black border-black dark:border-white dark:text-white border-2 rounded-md ml-2" onChange={handleSelect}>
                     <option>Random</option>
                     {idolGroups.sort((a, b) => {
+                        // need to do this because you cant subtract two strings
                         if (a.groupName > b.groupName) {
                             return 1;
                         } else if (a.groupName < b.groupName) {
@@ -152,7 +153,7 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image._id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.thumbnailUrl} alt={image.imageName} onLoad={() => handleImageLoad()}/>
+                            <ImageChoice imageId={image._id} alt={image.imageName} thumbnail={image.thumbnailUrl} image={image.imageUrl} handleImageLoad={handleImageLoad} hasLiked={hasLiked} selectImage={selectImage}/>
                             {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
                             {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0 dark:text-white`}>
                                 <div>W:</div> 
@@ -178,6 +179,25 @@ const Main = () => {
             {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] dark:text-white mt-5 lg:mt-12 md:mt-14 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
+    )
+}
+
+const ImageChoice = (props) => {
+    const [urlToLoad, setUrlToLoad] = useState(props.thumbnail);
+    
+    return (
+        <img onClick={async () => { if (!props.hasLiked) await props.selectImage(props.imageId) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={urlToLoad} alt={props.alt} 
+            onLoad={() => {
+                props.handleImageLoad();
+                const thumbnailImg = new Image();
+                thumbnailImg.src = props.thumbnail;
+                const { width, height } = thumbnailImg;
+
+                if (width === 1200 && height === 630) {
+                    setUrlToLoad(props.image);
+                }
+            }}
+        />
     )
 }
 

@@ -1,5 +1,6 @@
 import "./Rankings.css"
 import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages, generateImagesByIdol } from "../../requests/images.js"
+import { isKpoppingBlocker } from "../../util/index.js"; 
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -47,8 +48,9 @@ const Rankings = (props) => {
     }, [isBottom])
 
     useEffect(() => {
-        if (images.length !== 0 && imagesLoaded === images.length) {
-        //   console.log('All images loaded');
+        console.log(`imagesLoaded: ${imagesLoaded}, numImages: ${images.length}`)
+        if (images.length !== 0 && imagesLoaded >= images.length) {
+          console.log('All images loaded');
           setIsLoadingMain(false);
         } 
       }, [imagesLoaded, images.length]);
@@ -237,6 +239,7 @@ const Rankings = (props) => {
 
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const [urlToLoad, setUrlToLoad] = useState(props.thumbnail);
     const [placeholderColor, setPlaceholderColor] = useState("#686b5e")
 
     useEffect(() => {
@@ -265,10 +268,18 @@ const ImageWithPlaceHolder = (props) => {
     return (
         <div className="flex flex-row justify-center">
             <a href={props.image} target="_blank" rel="noreferrer">
-            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.thumbnail} alt={props.alt} 
+            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={urlToLoad} alt={props.alt} 
                 onLoad={() => {
                     setIsLoaded(true); 
                     props.handleImageLoad();
+                    
+                    const thumbnailImg = new Image();
+                    thumbnailImg.src = props.thumbnail
+                    const { width, height } = thumbnailImg;
+
+                    if (width === 1200 && height === 630) {
+                        setUrlToLoad(props.image);
+                    }
                 }}/>
             </a>
 
