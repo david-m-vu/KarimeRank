@@ -73,8 +73,6 @@ export const getStartToEndImages = async (idolName, count, lastDocId) => {
         pagination = await paginationRes.json();
     }
 
-    console.log(pagination);
-
     return pagination;
 }
 
