@@ -6,11 +6,11 @@ export const getImagesByIdol = async (idolName) => {
         method: "POST",
         url: `${process.env.WEBSCRAPING_BASE_URL}/scraper`,
         headers: {
-            "content-type": "application/json"
+            "Content-Type": "application/json"
         },
         data: {
             idolName
-        }   
+        }
     })
 
     if (res.data === "Idol doesn't exist") {
@@ -18,13 +18,13 @@ export const getImagesByIdol = async (idolName) => {
     }
 
     const data = res.data;
-    const groupName = data.groupName
+    const groupName = data.groupName;
 
     const albumArr = data.albums.map((album) => {
         const originUrl = album.url;
         const title = album.title;
 
-        let imageObjects = album.pictureURLs.map(((pictureObj, index) => {
+        let imageObjects = album.pictureURLs.map((pictureObj, index) => {
             return {
                 originUrl,
                 thumbnailUrl: pictureObj.thumbnailUrl,
@@ -37,12 +37,11 @@ export const getImagesByIdol = async (idolName) => {
                 numWins: 0,
                 numLosses: 0
             }
-        }))
+        })
 
-        return imageObjects
+        return imageObjects;
     })
 
     const allImageObjects = albumArr.flat();
     return allImageObjects;
-}   
-
+}
