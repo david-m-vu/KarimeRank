@@ -1,5 +1,5 @@
 import { db } from "../firebase/firebaseConfig.js";
-import { collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where } from "firebase/firestore"
+import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction } from "firebase/firestore"
 import axios from "axios";
 
 import { saveManyImages } from "../firebase/firestoreService.js";
@@ -15,7 +15,7 @@ import ArchivedImage from "../models/ArchivedImage.js";
 
 import probe from "probe-image-size";
 
-// Firebase version
+// Firebase version (admin)
 export const generateImagesByIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
@@ -44,12 +44,6 @@ export const generateImagesByIdol = async (req, res) => {
                 const buffer = Buffer.concat(chunks);
                 const added = await uploadImage(buffer, `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`, imageObj);
 
-                // // attach groupName
-                // let { groupName } = imageObject;
-                // if (!groupName) {
-                //     groupName = "N/A"
-                // }
-
                 // attach dimensions
                 const imageMetadata = await probe(imageObj.url);
                 if (imageMetadata) {
@@ -57,8 +51,6 @@ export const generateImagesByIdol = async (req, res) => {
                     imageObj.width = width;
                     imageObj.height = height;
                 }
-
-                console.log(imageObj);
 
                 return added;
             } catch (err) {
@@ -77,6 +69,7 @@ export const generateImagesByIdol = async (req, res) => {
     }
 }
 
+// (admin)
 export const generateImageSet = async (req, res) => {
     let idolsToGen = []
 
@@ -125,7 +118,7 @@ export const getTotalVotes = async (req, res) => {
     }
 }
 
-
+// admin function
 export const updateAllIdols = async (req, res) => {
     try {
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -158,7 +151,7 @@ export const updateAllIdols = async (req, res) => {
     }
 }
 
-
+// admin function
 export const deleteIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
@@ -174,7 +167,7 @@ export const deleteIdol = async (req, res) => {
     }
 }
 
-
+// admin function
 export const deleteImageById = async (req, res) => {
     try {
         const { _id } = req.body;
@@ -255,7 +248,7 @@ export const getStartToEndImages = async (req, res) => {
     }
 }
 
-
+// not very useful anymore
 export const getAllIdolNames = async (req, res) => {
     try {
         const model = Image //(process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -268,6 +261,7 @@ export const getAllIdolNames = async (req, res) => {
     }
 }
 
+// Firebase version
 export const getAllIdolNamesWithGroup = async (req, res) => {
     try {
         const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
@@ -302,40 +296,7 @@ export const getAllIdolNamesWithGroup = async (req, res) => {
     }
 }
 
-
-// export const getRandomImagePairM = async (req, res) => {
-//     try {
-//         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-//         const allIdolNames = await model.find().distinct("idolName");
-
-//         if (allIdolNames.length === 0) {
-//             res.status(500).json({ message: "There are no idol names currently in the database"})
-//         }
-
-//         const randIndex = Math.floor(Math.random() * allIdolNames.length);
-//         const randomIdolName = allIdolNames[randIndex];
-
-//         // get all images of one idol --> array
-//         // const escapedName = escapeRegExp(randomIdolName);
-//         const allIdolImages = await model.find({ idolName: new RegExp(`^${randomIdolName}$`, 'i') });
-
-//         // create one random set of two images for that one idol --> array of 2
-//         let firstIndex = Math.floor(Math.random() * allIdolImages.length);
-//         let secondIndex = Math.floor(Math.random() * allIdolImages.length);
-
-//         while (firstIndex === secondIndex) {
-//             secondIndex = Math.floor(Math.random() * allIdolImages.length);
-//         }
-
-//         const firstImage = allIdolImages[firstIndex];
-//         const secondImage = allIdolImages[secondIndex];
-//         res.status(200).json({ images: [firstImage, secondImage] })
-//     } catch {
-//         res.status(500).json({ message: err.message });
-//     }
-// }
-
+// Firebase version
 export const getRandomImagePair = async (req, res) => {
     try {
         const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
@@ -393,67 +354,16 @@ export const getRandomImagePair = async (req, res) => {
     }
 }
 
-
+// Firebase version
 export const getRandomImagePairByIdol = async (req, res) => {
-    try {
-        const { idolName } = req.params;
-
-        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-
-        // get all images of one idol --> array
-        // const escapedName = escapeRegExp(idolName);
-        const allIdolImages = await model.find({ idolName: new RegExp(`^${idolName}$`, 'i') });
-
-
-        // create one random set of two images for that one idol --> array of 2
-        let firstIndex = Math.floor(Math.random() * allIdolImages.length);
-        let secondIndex = Math.floor(Math.random() * allIdolImages.length);
-
-
-        while (firstIndex === secondIndex) {
-            secondIndex = Math.floor(Math.random() * allIdolImages.length);
-        }
-
-
-        const firstImage = allIdolImages[firstIndex];
-        const secondImage = allIdolImages[secondIndex];
-        res.status(200).json({ images: [firstImage, secondImage] })
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-}
-
-export const getRandomImagePairByIdolF = async (req, res) => {
     try {
         const { idolName } = req.params;
         
         const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
         const imagesRef = collection(db, collectionName);
 
-        // get all unique idol names
-        const idolSet = new Set();
-        const imagesDocs = await getDocs(imagesRef);
-
-        if (imagesDocs.empty) {
-            return res.status(500).json({ message: "There are no idol names currently in the database"})
-        }
-
-        imagesDocs.forEach((doc) => {
-            const data = doc.data();
-            if (data.idolName) {
-                idolSet.add(data.idolName.toLowerCase()); // ensure uniqueness
-            }
-        });
-
-        const allIdolNames = Array.from(idolSet);
-
-        // pick a random idol
-        const randIndex = Math.floor(Math.random() * allIdolNames.length);
-        const randomIdolName = allIdolNames[randIndex];
-
-        // get all images of the chosen idol
-        const idolQuery = query(imagesRef, where("idolName", "==", randomIdolName));
+        // get idol's images docs
+        const idolQuery = query(imagesRef, where("idolName", "==", idolName.toLowerCase() ));
         const idolDocs = await getDocs(idolQuery);
 
         const allIdolImages = idolDocs.docs.map((doc) => {
@@ -464,7 +374,7 @@ export const getRandomImagePairByIdolF = async (req, res) => {
         })
 
         if (allIdolImages.length < 2) {
-            return res.status(500).json({ message: "Not enough images for this idol." });
+            return res.status(404).json({ message: "Not enough images for this idol." });
         }
 
         // pick two random unique images of the chosen idol
@@ -479,76 +389,101 @@ export const getRandomImagePairByIdolF = async (req, res) => {
         const secondImage = allIdolImages[secondIndex];
         res.status(200).json({ images: [firstImage, secondImage] })
     } catch (err) {
+        console.log(err.message);
         res.status(500).json({ message: err.message })
     }
 }
 
-
+// Firebase version
 export const likeImage = async (req, res) => {
     try {
         const {
             firstImageID,
             secondImageID,
             chosenID
-        } = req.body
+        } = req.body;
 
-        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+        const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
 
-        const firstImage = await model.findById(firstImageID);
-        const secondImage = await model.findById(secondImageID);
+        // the third argument is the firestore document ID, also known as __name__
+        const firstDocRef = doc(db, collectionName, firstImageID);
+        const secondDocRef = doc(db, collectionName, secondImageID);
 
-        let firstScore = firstImage.score;
-        let firstWins = firstImage.numWins;
-        let firstLosses = firstImage.numLosses;
+        let updatedFirstImage = {};
+        let updatedSecondImage = {};
 
-        let secondScore = secondImage.score;
-        let secondWins = secondImage.numWins;
-        let secondLosses = secondImage.numLosses;
+        // in a set of atomic operations, either all of the operations succeed, or none of them are applied.
+        // this eliminates the chance for race conditions, since we need to read AND write to a document at the same time
+        // "if a transaction reads documents and another client modifies any of those documents, 
+        // Cloud Firestore retries the transaction. This feature ensures that the transaction runs on up-to-date 
+        // and consistent data."
+        await runTransaction(db, async (transaction) => {
+            // read both documents atomically
+            const firstSnap = await transaction.get(firstDocRef);
+            const secondSnap = await transaction.get(secondDocRef);
 
-        if (chosenID === firstImageID) {
-            firstScore = getNewRating(firstScore, secondScore, 1);
-            secondScore = getNewRating(secondScore, firstScore, 0);
-            firstWins++;
-            secondLosses++;
-        } else if (chosenID === secondImageID) {
-            firstScore = getNewRating(firstScore, secondScore, 0);
-            secondScore = getNewRating(secondScore, firstScore, 1);
-            secondWins++;
-            firstLosses++;
-        } else {
-            res.status(400).json({ message: "invalid chosenID" })
-        }
+            if (!firstSnap.exists()) {
+                throw new Error("First image not found)");
+            }
+            if (!secondSnap.exists()) {
+                throw new Error("Second image not found");
+            }
 
+            // extract data from each doc
+            let { score: firstScore, numWins: firstWins, numLosses: firstLosses } = firstSnap.data();
+            let { score: secondScore, numWins: secondWins, numLosses: secondLosses } = secondSnap.data();
 
-        const updatedFirstImage = await model.findByIdAndUpdate(
-            firstImageID,
-            {
+            // update scores locally
+            if (chosenID === firstImageID) {
+                firstScore = getNewRating(firstScore, secondScore, 1);
+                secondScore = getNewRating(secondScore, firstScore, 0);
+                firstWins++;
+                secondLosses++;
+            } else if (chosenID === secondImageID) {
+                firstScore = getNewRating(firstScore, secondScore, 0);
+                secondScore = getNewRating(secondScore, firstScore, 1);
+                secondWins++;
+                firstLosses++;
+            } else {
+                throw new Error("Invalid chosenID");
+            }
+
+            // update both docs in the database in the same transaction
+            transaction.update(firstDocRef, {
                 score: firstScore,
                 numWins: firstWins,
                 numLosses: firstLosses
-            },
-            { new: true }
-        )
+            });
 
+            transaction.update(secondDocRef, {
+                score: secondScore,
+                numWins: secondWins,
+                numLosses: secondLosses
+            })
 
-        const updatedSecondImage = await model.findByIdAndUpdate(
-            secondImageID,
-            {
+            // store updated data
+            updatedFirstImage = {
+                id: firstImageID,
+                score: firstScore,
+                numWins: firstWins,
+                numLosses: firstLosses,
+            };
+            updatedSecondImage = {
+                id: secondImageID,
                 score: secondScore,
                 numWins: secondWins,
                 numLosses: secondLosses,
-            },
-            { new: true }
-        )
-
+            };
+        })
 
         res.status(200).json({ updatedFirstImage, updatedSecondImage });
     } catch (err) {
-        res.status(404).json({ message: err.message });
+        res.status(404).json({ message: err.message })
     }
 }
 
-export const addGroupNames = async (req, res) => {
+// admin function
+export const addGroupName = async (req, res) => {
     const { idolName, groupName } = req.body;
 
     const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -590,6 +525,7 @@ export const addDimensions = async (req, res) => {
     }
 }
 
+// admin function
 export const archiveImages = async (req, res) => {
     try {
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -606,6 +542,7 @@ export const archiveImages = async (req, res) => {
     }
 }
 
+// debug function
 export const testAnything = async (req, res) => {
     try {
         console.log(process.env.TEST_MODE);
@@ -616,6 +553,7 @@ export const testAnything = async (req, res) => {
     }
 }
 
+// old mongoose function
 const createImagesSet = async (imageObjects) => {
     let imagesAdded = 0;
     const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -651,8 +589,4 @@ const createImagesSet = async (imageObjects) => {
     }
 
     return imagesAdded;
-}
-
-const escapeRegExp = (string) => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }

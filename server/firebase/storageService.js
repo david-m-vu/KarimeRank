@@ -1,7 +1,7 @@
 import { storage } from './firebaseConfig.js';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// uploads a file into the storage and returns the download URL for the file
+// uploads a file into the storage and returns the 1 for image add, 0 for exist. Also edits the imageObj to have the downloadUrl as the url attribute
 export const uploadImage = async (fileBuffer, filePath, imageObj) => {
     const existingUrl = await fileExists(filePath);
 
