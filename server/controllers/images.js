@@ -40,7 +40,7 @@ export const generateImagesByIdol = async (req, res) => {
                 }
 
                 // join the chunks into a single buffer
-                // not we can't really use array.join because Buffer is designed specifically for binary data
+                // note we can't really use array.join because Buffer is designed specifically for binary data
                 const buffer = Buffer.concat(chunks);
                 const added = await uploadImage(buffer, `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`, imageObj);
 
@@ -60,7 +60,7 @@ export const generateImagesByIdol = async (req, res) => {
         });
 
         // imageObject was passed by reference, so newImageObjects is the same as imageObjects
-        const imagesAdded = (await Promise.all(uploadPromises)).reduce((partialSum, a) => partialSum + a, 0);
+        const imagesAdded = (await Promise.all(uploadPromises)).reduce((partialSum, a) => partialSum + (a || 0), 0);
         await saveManyImages(collectionName, imageObjects);
 
         return res.status(201).json({ allImages: imageObjects, imagesAdded});
@@ -69,37 +69,71 @@ export const generateImagesByIdol = async (req, res) => {
     }
 }
 
-// (admin)
+// Firebase version (admin)
 export const generateImageSet = async (req, res) => {
-    let idolsToGen = []
+    let idolsToGen = [
+        ...kpopGroups.aespaMembers, 
+    ]
 
-    idolsToGen.push(...kpopGroups.aespaMembers);
-    idolsToGen.push(...kpopGroups.illitMembers);
-    idolsToGen.push(...kpopGroups.iveMembers);
-    idolsToGen.push("Yena2", "Yuri2");
+    const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
+    console.log(collectionName);
 
-    let imagesAdded = 0;
-    const newImagesSet = [];
+    try {
+        let imagesAdded = 0;
+        let newImagesSet = [];
+        for (const idolName of idolsToGen) {
+            console.log(`Generating images for ${idolName}...`)
+            const imageObjects = await getImagesByIdol(idolName.toLowerCase());
 
-    for (const idolName of idolsToGen) {
-        console.log(`adding ${idolName}...`)
-        const imageObjects = await getImagesByIdol(idolName.toLowerCase());
+            const uploadPromises = imageObjects.map(async (imageObj) => {
+                const { thumbnailUrl, imageName } = imageObj;
+                try {
+                    // convert the array to bytes
+                    const response = await axios({
+                        method: "GET",
+                        url: thumbnailUrl,
+                        responseType: "stream"
+                    });
 
-        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
+                    const chunks = [];
+                    for await (const chunk of response.data) {
+                        chunks.push(chunk);
+                    }
 
-        if (!imageObjects) {
-            console.log(`Idol ${idolName} doesn't exist!`)
-        } else {
-            imagesAdded += await createImagesSet(imageObjects);
+                    const buffer = Buffer.concat(chunks);
+                    const added = await uploadImage(buffer, `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`, imageObj);
 
-            console.log(idolName, "added!")
-    
-            const allImageObjects = await model.find({ idolName });
-            newImagesSet.push(allImageObjects);
+                    const imageMetadata = await probe(imageObj.url);
+                    if (imageMetadata) {
+                        const { width, height } = imageMetadata;
+                        imageObj.width = width;
+                        imageObj.height = height;
+                    }
+
+                    return added;
+
+                } catch (err) {
+                    console.error(`Failed to upload ${imageName}:`, err);
+                    return null; // return null for failed uploads
+                }
+            })
+
+            let results = await Promise.all(uploadPromises);
+            let addedCount = results.reduce((partialSum, cur) => partialSum + cur, 0);
+            imagesAdded += addedCount;
+
+            await saveManyImages(collectionName, imageObjects);
+            console.log(`Added ${addedCount} images for ${idolName}`)
+
+            newImagesSet.push(imageObjects);
         }
-    }
 
-    return res.status(200).json({ newImagesSet, imagesAdded });
+        return res.status(201).json({ newImagesSet, imagesAdded })
+
+    } catch (err) {
+        console.error("Unexpected error in generateImageSet:", err);
+        res.status(500).json({message: err.message});
+    }
 }
 
 // firebase version

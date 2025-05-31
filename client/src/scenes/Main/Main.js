@@ -5,8 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import { useSpring, animated } from "react-spring"
 
 import heart from "../../assets/heart-filled.svg";
-import blockerPlaceholder from "../../assets/blocker-placeholder.jpg"
-
 
 const Main = () => {
     const [images, setImages] = useState([]);

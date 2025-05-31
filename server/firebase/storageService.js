@@ -6,7 +6,7 @@ export const uploadImage = async (fileBuffer, filePath, imageObj) => {
     const existingUrl = await fileExists(filePath);
 
     if (existingUrl) {
-        // since imageObj will always be coming from the webscraper result, it will never have the firebase url
+        // since imageObj will always be coming from the webscraper result, it will never have the firebase url.
         // as a result, we always need to set the url even if the image in the storage already exists so that we 
         // can successfully return the imageObj from the controller
         imageObj.url = existingUrl;
