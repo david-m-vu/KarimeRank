@@ -24,6 +24,7 @@ export const generateImagesByIdol = async (req, res) => {
         const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
 
         // Convert images to buffers and upload them in parallel
+        // promises resolve to 1 if the image was added, 0 if the image already existed, and null if upload failed
         const uploadPromises = imageObjects.map(async (imageObj) => {
             const { thumbnailUrl, imageName } = imageObj;
             try {
@@ -42,6 +43,8 @@ export const generateImagesByIdol = async (req, res) => {
                 // join the chunks into a single buffer
                 // note we can't really use array.join because Buffer is designed specifically for binary data
                 const buffer = Buffer.concat(chunks);
+
+                // upload image to firebase storage
                 const added = await uploadImage(buffer, `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`, imageObj);
 
                 // attach dimensions
@@ -60,7 +63,10 @@ export const generateImagesByIdol = async (req, res) => {
         });
 
         // imageObject was passed by reference, so newImageObjects is the same as imageObjects
-        const imagesAdded = (await Promise.all(uploadPromises)).reduce((partialSum, a) => partialSum + (a || 0), 0);
+        const imagesAdded = ((await Promise.all(uploadPromises))).reduce((partialSum, a) => partialSum + (a || 0), 0);
+
+        // save images to firestore as well for efficient querying, retrieval and also to save additional metadata
+        // main reason: Firebase storage is optimized for big files, but theres no advanced querying - mostly fetch by a known path or url
         await saveManyImages(collectionName, imageObjects);
 
         return res.status(201).json({ allImages: imageObjects, imagesAdded});

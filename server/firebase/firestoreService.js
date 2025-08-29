@@ -48,8 +48,10 @@ export const saveManyImages = async (collectionName, imageObjects) => {
         })
     
         const results = await Promise.all(savePromises);
+
         // return just the images we've added
         return results.filter(image => image !== null); // filter out all the images that returned null due to already existing
+        
     } catch (err) {
         console.log(err.message);
         return null;

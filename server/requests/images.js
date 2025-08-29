@@ -20,9 +20,10 @@ export const getImagesByIdol = async (idolName) => {
     const data = res.data;
     const groupName = data.groupName;
 
-    // if (!groupName) {
-    //     groupName = "N/A"
-    // }
+    // current scraper never returns no groupname
+    if (!groupName) {
+        groupName = "N/A"
+    }
 
     const albumArr = data.albums.map((album) => {
         const originUrl = album.url;
