@@ -13,63 +13,123 @@ import Image from "../models/Image.js";
 import TestImage from "../models/TestImage.js";
 import ArchivedImage from "../models/ArchivedImage.js";
 
+import https from "https";
 import probe from "probe-image-size";
+
+const httpAgent = new https.Agent({ keepAlive: true }); 
+
+const client = axios.create({
+    timeout: 15000,
+    httpsAgent: httpAgent,
+    headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "Referer": "https://kpopping.com/",
+        "Upgrade-Insecure-Requests": "1", // "I prefer HTTPS versions", make header set look more browser-like
+    }
+})
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const fetchImageBufferWithRetry = async ({ originUrl, thumbnailUrl, maxAttempts = 3 }) => {
+    let lastError;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const response = await client({
+                method: "GET",
+                url: thumbnailUrl,
+                responseType: "stream",
+                headers: {
+                    Referer: originUrl
+                }
+            });
+
+            // response.data is a ReadableStream of image bytes
+            // need to read it as an iterable because each chunk is just whatever bytes have arrived so far from the network
+            // can't just grab the whole ile in one shot from the stream - have to read it chunk by chunk until the stream ends
+            const chunks = [];
+            for await (const chunk of response.data) {
+                chunks.push(chunk);
+            }
+
+            // join the chunks into a single buffer
+            // note we can't really use array.join because Buffer is designed specifically for binary data
+            return Buffer.concat(chunks);
+        } catch (err) {
+            lastError = err;
+            console.warn(`Attempt ${attempt} failed for ${thumbnailUrl}: ${err.message}`);
+            if (attempt < maxAttempts) {
+                await wait(500 * attempt);
+            }
+        }
+    }
+
+    throw lastError;
+};
+
+const saveIdolImages = async (idolName, collectionName, imageObjects) => {
+    const uploadPromises = imageObjects.map(async (imageObj) => {
+        const { originUrl, thumbnailUrl, imageName } = imageObj;
+        try {
+            const buffer = await fetchImageBufferWithRetry({ originUrl, thumbnailUrl });
+
+            // upload image to firebase storage
+            const added = await uploadImage(
+                buffer,
+                `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`,
+                imageObj
+            );
+
+            // attach dimensions
+            const metadataSource = imageObj.url || thumbnailUrl;
+            if (metadataSource) {
+                try {
+                    const imageMetadata = await probe(metadataSource);
+                    if (imageMetadata) {
+                        const { width, height } = imageMetadata;
+                        imageObj.width = width;
+                        imageObj.height = height;
+                    }
+                } catch (metadataErr) {
+                    console.warn(`Failed to probe metadata for ${imageName}:`, metadataErr.message);
+                }
+            }
+
+            return added;
+        } catch (err) {
+            console.error(`Failed to upload ${imageName} with url ${thumbnailUrl}:`, err);
+            return null;
+        }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const imagesAddedCount = results.reduce((partialSum, cur) => partialSum + (cur || 0), 0);
+
+    await saveManyImages(collectionName, imageObjects);
+    console.log(`Added ${imagesAddedCount} images for ${idolName}`);
+
+    return imagesAddedCount;
+};
 
 // Firebase version (admin)
 export const generateImagesByIdol = async (req, res) => {
     try {
         const { idolName } = req.body;
-        const imageObjects = await getImagesByIdol(idolName.toLowerCase());
-
+        const idolLower = idolName.toLowerCase();
+        const imageObjects = await getImagesByIdol(idolLower);
         const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
 
-        // Convert images to buffers and upload them in parallel
-        // promises resolve to 1 if the image was added, 0 if the image already existed, and null if upload failed
-        const uploadPromises = imageObjects.map(async (imageObj) => {
-            const { thumbnailUrl, imageName } = imageObj;
-            try {
-                const response = await axios({
-                    method: "GET",
-                    url: thumbnailUrl,
-                    responseType: "stream"
-                });
-        
-                const chunks = [];
-                // response.data is a ReadableStream
-                for await (const chunk of response.data) {
-                    chunks.push(chunk);
-                }
+        const imagesAddedCount = await saveIdolImages(
+            idolLower,
+            collectionName,
+            imageObjects
+        );
 
-                // join the chunks into a single buffer
-                // note we can't really use array.join because Buffer is designed specifically for binary data
-                const buffer = Buffer.concat(chunks);
-
-                // upload image to firebase storage
-                const added = await uploadImage(buffer, `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`, imageObj);
-
-                // attach dimensions
-                const imageMetadata = await probe(imageObj.url);
-                if (imageMetadata) {
-                    const { width, height } = imageMetadata;
-                    imageObj.width = width;
-                    imageObj.height = height;
-                }
-
-                return added;
-            } catch (err) {
-                console.error(`Failed to upload ${imageName}:`, err);
-                return null; // Return null for failed uploads
-            }
-        });
-
-        // imageObject was passed by reference, so newImageObjects is the same as imageObjects
-        const imagesAdded = ((await Promise.all(uploadPromises))).reduce((partialSum, a) => partialSum + (a || 0), 0);
-
-        // save images to firestore as well for efficient querying, retrieval and also to save additional metadata
-        // main reason: Firebase storage is optimized for big files, but theres no advanced querying - mostly fetch by a known path or url
-        await saveManyImages(collectionName, imageObjects);
-
-        return res.status(201).json({ allImages: imageObjects, imagesAdded});
+        return res.status(201).json({ allImages: imageObjects, imagesAdded: imagesAddedCount});
     } catch (err) {
         res.status(500).json({message: err.message});
     }
@@ -77,64 +137,38 @@ export const generateImagesByIdol = async (req, res) => {
 
 // Firebase version (admin)
 export const generateImageSet = async (req, res) => {
-    let idolsToGen = [
-        ...kpopGroups.aespaMembers, 
-    ]
+    const { kpopGroupsToGen } = req.body;
+
+    if (!kpopGroupsToGen || kpopGroupsToGen.length === 0) {
+        return res.status(200).json({ message: "No valid kpop groups in request", newImagesSet: [], imagesAdded: 0 });
+    }
+
+    const idolsToGen = []
+    for (const kpopGroup of kpopGroupsToGen) {
+        idolsToGen.push(...kpopGroups[kpopGroup]);
+    }
 
     const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
-    console.log(collectionName);
 
     try {
-        let imagesAdded = 0;
+        let totalImagesAddedCount = 0;
         let newImagesSet = [];
         for (const idolName of idolsToGen) {
-            console.log(`Generating images for ${idolName}...`)
-            const imageObjects = await getImagesByIdol(idolName.toLowerCase());
+            console.log(`Generating images for ${idolName}...`);
+            const idolLower = idolName.toLowerCase();
+            const imageObjects = await getImagesByIdol(idolLower);
 
-            const uploadPromises = imageObjects.map(async (imageObj) => {
-                const { thumbnailUrl, imageName } = imageObj;
-                try {
-                    // convert the array to bytes
-                    const response = await axios({
-                        method: "GET",
-                        url: thumbnailUrl,
-                        responseType: "stream"
-                    });
+            const imagesAddedCount = await saveIdolImages(
+                idolLower,
+                collectionName,
+                imageObjects
+            );
 
-                    const chunks = [];
-                    for await (const chunk of response.data) {
-                        chunks.push(chunk);
-                    }
-
-                    const buffer = Buffer.concat(chunks);
-                    const added = await uploadImage(buffer, `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`, imageObj);
-
-                    const imageMetadata = await probe(imageObj.url);
-                    if (imageMetadata) {
-                        const { width, height } = imageMetadata;
-                        imageObj.width = width;
-                        imageObj.height = height;
-                    }
-
-                    return added;
-
-                } catch (err) {
-                    console.error(`Failed to upload ${imageName}:`, err);
-                    return null; // return null for failed uploads
-                }
-            })
-
-            let results = await Promise.all(uploadPromises);
-            let addedCount = results.reduce((partialSum, cur) => partialSum + cur, 0);
-            imagesAdded += addedCount;
-
-            await saveManyImages(collectionName, imageObjects);
-            console.log(`Added ${addedCount} images for ${idolName}`)
-
+            totalImagesAddedCount += imagesAddedCount;
             newImagesSet.push(imageObjects);
         }
 
-        return res.status(201).json({ newImagesSet, imagesAdded })
+        return res.status(201).json({ newImagesSet, imagesAdded: totalImagesAddedCount })
 
     } catch (err) {
         console.error("Unexpected error in generateImageSet:", err);
@@ -522,7 +556,7 @@ export const likeImage = async (req, res) => {
     }
 }
 
-// admin function
+// (old) admin function
 export const addGroupName = async (req, res) => {
     const { idolName, groupName } = req.body;
 
@@ -570,7 +604,6 @@ export const archiveImages = async (req, res) => {
     try {
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
 
-
         const archivedImages = moveDocuments(model, ArchivedImage);
         if (!archivedImages) {
             res.status(500).json({ message: "move didn't work" })
@@ -591,42 +624,4 @@ export const testAnything = async (req, res) => {
     } catch (err) {
         console.log(err.message);
     }
-}
-
-// old mongoose function
-const createImagesSet = async (imageObjects) => {
-    let imagesAdded = 0;
-    const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-    for (let imageObject of imageObjects) {
-        const imageAlreadyExists = Boolean(await model.exists({ imageName: imageObject.imageName }));
-
-        if (!imageAlreadyExists) {
-            // console.log(imageObject);
-            let { groupName } = imageObject;
-            if (!groupName) {
-                groupName = "N/A"
-            }
-
-            // get dimensions of thumbnail that we will be rendering
-            const { thumbnailUrl } = imageObject;
-
-            let imageMetadata
-            const isValidImage = await isValidImageUrl(thumbnailUrl);
-
-            if (isValidImage) {
-                imageMetadata = await probe(thumbnailUrl);
-                if (imageMetadata) {
-                    const { width, height } = imageMetadata;
-
-                    const newImage = await new model({ ...imageObject, groupName, width, height });
-                    await newImage.save();
-
-                    imagesAdded++;
-                }
-            }
-        }
-    }
-
-    return imagesAdded;
 }

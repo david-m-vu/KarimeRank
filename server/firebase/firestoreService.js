@@ -33,17 +33,23 @@ export const saveManyImages = async (collectionName, imageObjects) => {
     
         // existingDocsQuery.docs returns an array of all the docs, which all contain the .data attribute
         const existingDocsQuery = await getDocs(collectionRef);
-        const existingImageNames = new Set(existingDocsQuery.docs.map((doc) => doc.data().imageName));
+        const existingDocsData = existingDocsQuery.docs.map((doc) => doc.data());
+        const existingImageNames = new Set(existingDocsData.map((doc) => doc.imageName));
+        const existingThumbnailUrls = new Set(existingDocsData.map((doc) => doc.thumbnailUrl));
     
         const savePromises = imageObjects.map(async (imageObj) => {
-            if (existingImageNames.has(imageObj.imageName)) {
-                // console.log(`Skipping duplicate: image with imageName ${imageObj.imageName} already exists`);
+            if (existingImageNames.has(imageObj.imageName) || existingThumbnailUrls.has(imageObj.thumbnailUrl)) {
+                // console.log(`Skipping duplicate: image with imageName ${imageObj.imageName} or thumbnailUrl ${thumbnailUrl} already exists`);
                 return null;
             }
     
             imageObj.createdAt = Timestamp.now();
     
             const imageRef = await addDoc(collectionRef, imageObj);
+
+            // so that we don't add duplicates within the same image input batch
+            existingImageNames.add(imageObj.imageName);
+            existingThumbnailUrls.add(imageObj.thumbnailUrl);
             return { id: imageRef.id, ...imageObj};
         })
     

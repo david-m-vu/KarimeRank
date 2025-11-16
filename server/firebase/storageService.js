@@ -9,20 +9,23 @@ export const uploadImage = async (fileBuffer, filePath, imageObj) => {
     if (existingUrl) {
         // since imageObj will always be coming from the webscraper result, it will never have the firebase url.
         // as a result, we always need to set the url even if the image in the storage already exists so that we 
-        // can successfully return the imageObj from the controller
+        // can successfully return the imageObj from the controller.
+        // Firebase storage only stores the bytes of the image, not any other attributes like url
         // NOTE: important because imageObj.url is used outside this function
         imageObj.url = existingUrl;
         return 0; // return 0 to indicate that no image was added
-    }
-    
-    const storageRef = ref(storage, filePath);
-    await uploadBytes(storageRef, fileBuffer);
-    const downloadURL = await getDownloadURL(storageRef);
+    } else {
+        const storageRef = ref(storage, filePath);
+        await uploadBytes(storageRef, fileBuffer);
+        const downloadURL = await getDownloadURL(storageRef);
 
-    imageObj.url = downloadURL;
-    return 1; // return 1 to indicate that 1 image was added
+        imageObj.url = downloadURL;
+        return 1; // return 1 to indicate that 1 image was added
+    }
 }
 
+// returns the download URL if the file already exists in the firebase storage
+// otherwise, return null indicating the file doesn't exist
 const fileExists = async (filePath) => {
     try {
         const storageRef = ref(storage, filePath);

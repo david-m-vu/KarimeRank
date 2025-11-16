@@ -67,20 +67,21 @@ const Main = () => {
             imagePair = await getIdolImagePairByIdol(selectedIdol);
         }
 
-        if (willDelay) {
-            setTimeout(() => {
-                setImagesLoaded(0);
-                setIsLoadingMain(true);
+        if (imagePair) {
+            if (willDelay) {
+                setTimeout(() => {
+                    setImagesLoaded(0);
+                    setIsLoadingMain(true);
+                    setImages([imagePair[0], imagePair[1]]);
+                    setHasLiked(0);
+                    setShowRecords(false);
+                }, 2500)
+            } else {
                 setImages([imagePair[0], imagePair[1]]);
                 setHasLiked(0);
                 setShowRecords(false);
-            }, 2500)
-        } else {
-            setImages([imagePair[0], imagePair[1]]);
-            setHasLiked(0);
-            setShowRecords(false);
+            }
         }
-
     }
 
     const fetchAllIdolGroups = async () => {

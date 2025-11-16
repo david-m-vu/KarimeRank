@@ -1,6 +1,20 @@
 import axios from "axios";
 
-// returns an array of Image objects
+/**
+ * Returns an array of imageObjects scraped for a specific idol from WEBSCRAPING_BASE_URL.
+ * Each image object has the shape:
+ * {
+ *   originUrl: string,      // Source page for the album on kpopping
+ *   thumbnailUrl: string,   // Small preview image
+ *   idolName: string,       // Idol the image belongs to
+ *   groupName: string,      // Idol's group or "N/A" if they don't have one
+ *   title: string,          // Album title
+ *   imageName: string,      // Title + index-based label
+ *   score: number,          // ELO score starting value
+ *   numWins: number,        // Initial win count
+ *   numLosses: number       // Initial loss count
+ * }
+ */
 export const getImagesByIdol = async (idolName) => {
     const res = await axios.request({
         method: "POST",
