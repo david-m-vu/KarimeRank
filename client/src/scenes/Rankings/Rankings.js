@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import crown from "../../assets/crown.png"
-import blockerPlaceholder from "../../assets/blocker-placeholder.jpg"
 
 const Rankings = (props) => {
     const [images, setImages] = useState([]);
-    const [start, setStart] = useState(0);
+    const [lastDocId, setLastDocId] = useState(null);
+
     const [isBottom, setIsBottom] = useState(false);
     const [searchMore, setSearchMore] = useState(true);
     const [isLoadingMain, setIsLoadingMain] = useState(true);
@@ -17,9 +17,10 @@ const Rankings = (props) => {
     const [showEndIndicator, setShowEndIndicator] = useState(false);
 
     const [idolGroups, setIdolGroups] = useState([]);
-    const [queryParameters] = useSearchParams();
     const [daysUntilNextMonth, setDaysUntilNextMonth] = useState("X");
+    
     const navigate = useNavigate();
+    const [queryParameters] = useSearchParams();
 
     let mybutton = document.getElementById("myBtn");
 
@@ -92,37 +93,17 @@ const Rankings = (props) => {
         if (searchMore) {
             // console.log("fetching");
             setIsLoadingMain(true);
-            const newImages = await getStartToEndImages(start, 20, idolName);
+            const pagination = await getStartToEndImages(idolName, 20, lastDocId);
 
-            if (newImages.length !== 0) {
-                setStart((prev) => prev + 20);
-                setImages((prev) => [...prev, ...newImages])
+            if (pagination.images.length !== 0) {
+                setImages((prev) => [...prev, ...pagination.images])
+                setLastDocId(pagination.lastDocId);
             } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
                 // console.log("done")
                 setShowEndIndicator(true);
                 setSearchMore(false);
                 setIsLoadingMain(false);
             }
-        }
-    }
-
-    const getUrlToLoad = (name, thumbnailUrl, trueImgUrl) => {
-        const thumbnail = new Image();
-        const trueImg = new Image();
-        thumbnail.src = thumbnailUrl;
-        trueImg.src = trueImgUrl;
-
-        const { width: thumbnailWidth, height: thumbnailHeight } = thumbnail;
-        const { width: trueWidth , height: trueHeight} = trueImg;
-
-        // console.log(name, thumbnailWidth, thumbnailHeight, trueWidth, trueHeight)
-
-        if (thumbnailWidth === 1200 && thumbnailHeight === 630 && trueWidth === 1200 && trueHeight === 630) {
-            return blockerPlaceholder;
-        } else if (thumbnailWidth === 1200 && thumbnailHeight === 630) {
-            return trueImgUrl;
-        } else {
-            return thumbnailUrl;
         }
     }
 
@@ -139,7 +120,7 @@ const Rankings = (props) => {
     const handleSelect = (e) => {
         navigate(`/rankings?filter=${e.target.value}`)
         setSearchMore(true);
-        setStart(0);
+        setLastDocId(null);
         setImages([]);
         setImagesLoaded(0);
         setShowEndIndicator(false);
@@ -217,8 +198,8 @@ const Rankings = (props) => {
            <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
-                        <div key={image._id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={getUrlToLoad(image.imageName, image.thumbnailUrl, image.imageUrl)} originUrl={image.originUrl} trueImage={image.imageUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
+                        <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
+                            <ImageWithPlaceHolder src={image.url} link={image.originUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -258,6 +239,7 @@ const Rankings = (props) => {
     )
 }
 
+// react component that is a wrapper for an image
 const ImageWithPlaceHolder = (props) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [placeholderColor, setPlaceholderColor] = useState("#686b5e")
@@ -287,12 +269,12 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <a href={props.originUrl} target="_blank" rel="noreferrer">
-            <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
-                onLoad={() => {
-                    setIsLoaded(true); 
-                    props.handleImageLoad();
-                }}/>
+            <a href={props.link} target="_blank" rel="noreferrer">
+                <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
+                    onLoad={() => {
+                        setIsLoaded(true); 
+                        props.handleImageLoad();
+                    }}/>
             </a>
 
             {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}

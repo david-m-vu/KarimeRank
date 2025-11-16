@@ -5,8 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import { useSpring, animated } from "react-spring"
 
 import heart from "../../assets/heart-filled.svg";
-import blockerPlaceholder from "../../assets/blocker-placeholder.jpg"
-
 
 const Main = () => {
     const [images, setImages] = useState([]);
@@ -69,43 +67,26 @@ const Main = () => {
             imagePair = await getIdolImagePairByIdol(selectedIdol);
         }
 
-        if (willDelay) {
-            setTimeout(() => {
-                setImagesLoaded(0);
-                setIsLoadingMain(true);
+        if (imagePair) {
+            if (willDelay) {
+                setTimeout(() => {
+                    setImagesLoaded(0);
+                    setIsLoadingMain(true);
+                    setImages([imagePair[0], imagePair[1]]);
+                    setHasLiked(0);
+                    setShowRecords(false);
+                }, 2500)
+            } else {
                 setImages([imagePair[0], imagePair[1]]);
                 setHasLiked(0);
                 setShowRecords(false);
-            }, 2500)
-        } else {
-            setImages([imagePair[0], imagePair[1]]);
-            setHasLiked(0);
-            setShowRecords(false);
+            }
         }
-
     }
 
     const fetchAllIdolGroups = async () => {
         const uniqueIdolGroups = await getAllIdolNamesWithGroup();
         setIdolGroups(uniqueIdolGroups);
-    }
-
-    const getUrlToLoad = (thumbnailUrl, trueImgUrl) => {
-        const thumbnail = new Image();
-        const trueImg = new Image();
-        thumbnail.src = thumbnailUrl;
-        trueImg.src = trueImgUrl;
-
-        const { width: thumbnailWidth, height: thumbnailHeight } = thumbnail;
-        const { width: trueWidth , height: trueHeight} = trueImg;
-
-        if (thumbnailWidth === 1200 && thumbnailHeight === 630 && trueWidth === 1200 && trueHeight === 630) {
-            return blockerPlaceholder;
-        } else if (thumbnailWidth === 1200 && thumbnailHeight === 630) {
-            return trueImgUrl;
-        } else {
-            return thumbnailUrl;
-        }
     }
 
     const selectImage = async (chosenImageId) => {
@@ -114,11 +95,11 @@ const Main = () => {
             playAudio();
 
             // get new stats
-            const updatedImages = await likeImage(images[0]._id, images[1]._id, chosenImageId);
+            const updatedImages = await likeImage(images[0].id, images[1].id, chosenImageId);
             const { updatedFirstImage, updatedSecondImage } = updatedImages;
 
-            setFirstNewStats({ id: updatedFirstImage._id, numLosses: updatedFirstImage.numLosses, numWins: updatedFirstImage.numWins, score: updatedFirstImage.score });
-            setSecondNewStats({ id: updatedSecondImage._id, numLosses: updatedSecondImage.numLosses, numWins: updatedSecondImage.numWins, score: updatedSecondImage.score })
+            setFirstNewStats({ id: updatedFirstImage.id, numLosses: updatedFirstImage.numLosses, numWins: updatedFirstImage.numWins, score: updatedFirstImage.score });
+            setSecondNewStats({ id: updatedSecondImage.id, numLosses: updatedSecondImage.numLosses, numWins: updatedSecondImage.numWins, score: updatedSecondImage.score })
 
             setWinnerID(chosenImageId);
             setShowRecords(true);
@@ -129,9 +110,9 @@ const Main = () => {
     }
 
     const getImageStats = (imageID) => {
-        if (images[0]._id === imageID) {
+        if (images[0].id === imageID) {
             return firstNewStats;
-        } else if (images[1]._id === imageID) {
+        } else if (images[1].id === imageID) {
             return secondNewStats;
         } else {
             return { numWins: "", numLosses: "", score: "" };
@@ -173,25 +154,25 @@ const Main = () => {
 
                 {images.map((image, index) => {
                     return (
-                        <div className="relative" key={image._id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image._id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={getUrlToLoad(image.thumbnailUrl, image.imageUrl)} alt={image.imageName} 
+                        <div className="relative" key={image.id}>
+                            <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.url} alt={image.imageName} 
                                 onLoad={() => {
                                     handleImageLoad();
                                 }}
                             />
-                            {(Boolean(hasLiked) && hasLiked === image._id) && <img className="heart absolute " src={heart} alt="like" />}
+                            {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute " src={heart} alt="like" />}
                             {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0 dark:text-white`}>
                                 <div>W:</div> 
                                 {
-                                    (images[index].numWins === getImageStats(image._id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image._id).numWins}/>
+                                    (images[index].numWins === getImageStats(image.id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image.id).numWins}/>
                                 }
                                  <div>L:</div>  
                                 {
-                                    (images[index].numLosses === getImageStats(image._id).numLosses) ? <div>{images[index].numLosses}</div> : <AnimatedNumber color="red" start={images[index].numLosses} end={getImageStats(image._id).numLosses}/>
+                                    (images[index].numLosses === getImageStats(image.id).numLosses) ? <div>{images[index].numLosses}</div> : <AnimatedNumber color="red" start={images[index].numLosses} end={getImageStats(image.id).numLosses}/>
                                 }                                
-                                 <div>Score:</div>  <AnimatedNumber color={winnerID === image._id ? "green" : "red"} start={images[index].score} end={getImageStats(image._id).score}></AnimatedNumber>
+                                 <div>Score:</div>  <AnimatedNumber color={winnerID === image.id ? "green" : "red"} start={images[index].score} end={getImageStats(image.id).score}></AnimatedNumber>
                             </div>}
-                            {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image._id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image._id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image._id).score - images[index].score)}</div>}
+                            {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image.id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image.id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image.id).score - images[index].score)}</div>}
                         </div>
                     )
                 })}

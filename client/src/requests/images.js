@@ -51,21 +51,29 @@ export const getTotalVotes = async () => {
     return totalVotes.totalVotes;
 }
 
-export const getStartToEndImages = async (start, count, idolName) => {
-    let imagesRes;
+export const getStartToEndImages = async (idolName, count, lastDocId) => {
+    let paginationRes;
 
-    if (!idolName || idolName === "All"){
-        imagesRes = await fetch(`${BACKEND_BASE_URL}/images/some?start=${start}&end=${start + count}`)
+    if (lastDocId) {
+        if (!idolName || idolName === "All"){
+            paginationRes = await fetch(`${BACKEND_BASE_URL}/images/some?count=${count}&lastdocid=${lastDocId}`)
+        } else {
+            paginationRes = await fetch(`${BACKEND_BASE_URL}/images/some?count=${count}&lastdocid=${lastDocId}&idolname=${idolName}`);
+        }
     } else {
-        imagesRes = await fetch(`${BACKEND_BASE_URL}/images/some?start=${start}&end=${start + count}&idolname=${idolName}`);
+        if (!idolName || idolName === "All"){
+            paginationRes = await fetch(`${BACKEND_BASE_URL}/images/some?count=${count}`)
+        } else {
+            paginationRes = await fetch(`${BACKEND_BASE_URL}/images/some?count=${count}&idolname=${idolName}`);
+        }
     }
 
-    let images;
-    if (imagesRes.ok) {
-        images = await imagesRes.json();
+    let pagination;
+    if (paginationRes.ok) {
+        pagination = await paginationRes.json();
     }
 
-    return images.images;
+    return pagination;
 }
 
 export const getAllIdolNames = async () => {

@@ -10,10 +10,10 @@ import schedule from "node-schedule";
 
 let idolsToGen = []
 
-idolsToGen.push(...kpopGroups.aespaMembers);
-idolsToGen.push(...kpopGroups.illitMembers);
-idolsToGen.push(...kpopGroups.iveMembers);
-idolsToGen.push("Yena2", "Yuri2");
+// idolsToGen.push(...kpopGroups.aespaMembers);
+// idolsToGen.push(...kpopGroups.illitMembers);
+// idolsToGen.push(...kpopGroups.iveMembers);
+// idolsToGen.push("Yena2", "Yuri2");
 
 // node schedule
 const job = schedule.scheduleJob("0 0 1 * *", async () => {

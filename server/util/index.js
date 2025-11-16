@@ -1,5 +1,12 @@
 import axios from "axios";
 
+export const sanitizeFileName = (name) => {
+    return name
+        .replace(/\s+/g, "_")         // Replace spaces with underscores
+        .replace(/[^a-zA-Z0-9_\-\.]/g, "") // Remove special characters except `_`, `-`, `.`
+        .replace(/^\.+|\.+$/g, "");   // Remove leading/trailing dots
+}
+
 export const isValidImageUrl = async (url) => {
     try {
         // Perform a HEAD request to get headers only
