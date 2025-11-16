@@ -137,7 +137,7 @@ export const generateImagesByIdol = async (req, res) => {
 
 // Firebase version (admin)
 export const generateImageSet = async (req, res) => {
-    const { kpopGroupsToGen } = req.body;
+    const { kpopGroupsToGen, individualIdols } = req.body;
 
     if (!kpopGroupsToGen || kpopGroupsToGen.length === 0) {
         return res.status(200).json({ message: "No valid kpop groups in request", newImagesSet: [], imagesAdded: 0 });
@@ -145,7 +145,11 @@ export const generateImageSet = async (req, res) => {
 
     const idolsToGen = []
     for (const kpopGroup of kpopGroupsToGen) {
-        idolsToGen.push(...kpopGroups[kpopGroup]);
+        idolsToGen.push(...(kpopGroups[kpopGroup] || []));
+    }
+
+    if (individualIdols) {
+        idolsToGen.push(...individualIdols)
     }
 
     const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
