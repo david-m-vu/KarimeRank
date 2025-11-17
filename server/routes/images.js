@@ -1,5 +1,5 @@
 import express from "express";
-import { generateImagesByIdol, generateImageSet, getTotalVotes, updateAllIdols, deleteIdol, deleteImageById, getAllImages, getStartToEndImages, getAllIdolNames, getAllIdolNamesWithGroup, getRandomImagePair, getRandomImagePairByIdol, likeImage, addGroupName, testAnything, archiveImages } from "../controllers/images.js"
+import { generateImagesByIdol, generateImageSet, getTotalVotes, updateAllIdols, deleteIdol, deleteImageById, getAllImages, getStartToEndImages, getAllIdolNames, getAllIdolNamesWithGroup, getRandomImagePair, getRandomImagePairByIdol, likeImage, addGroupName, testAnything, archiveImagesCollection } from "../controllers/images.js"
 
 const router = express.Router();
 router.get("/", getAllImages);
@@ -22,6 +22,6 @@ router.delete("/delete-image", deleteImageById);
 router.patch("/add-group", addGroupName);
 
 router.get("/test", testAnything);
-// router.post("/archive", archiveImages)
+router.post("/archive", archiveImagesCollection)
 
 export default router;

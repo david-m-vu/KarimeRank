@@ -1,0 +1,31 @@
+name: Monthly Image Refresh
+
+on:
+  schedule:
+    - cron: "0 8 1 * *"
+  workflow_dispatch: # optional: lets you run it manually from the UI
+
+jobs:
+  refresh-images:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger archive
+        env:
+          API_URL: ${{ secrets.KARIMERANK_API_URL }}
+          API_KEY: ${{ secrets.KARIMERANK_API_KEY }}
+        run: | # -sS --fail are fr making curl exit with an error message if endpoint returns an error
+          curl -sS --fail -X POST "$API_URL/images/archive" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $API_KEY"
+
+      - name: Trigger generate-set
+        env:
+          API_URL: ${{ secrets.KARIMERANK_API_URL }}
+          API_KEY: ${{ secrets.KARIMERANK_API_KEY }}
+          PAYLOAD: ${{ secrets.KARIMERANK_GENERATE_PAYLOAD }}
+        run: |
+          curl -sS --fail -X POST "$API_URL/images/generate-set" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $API_KEY" \
+            --data "$PAYLOAD"

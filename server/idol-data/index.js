@@ -8,5 +8,8 @@ export const kpopGroups = {
         "yooyeon", "mayu", "xinyu", "SoHyun3", "NaKyoung", "DaHyun4", "Nien", "SeoYeon12", "JiYeon5", "Kotone",
         "ChaeYeon", "YuBin7", "JiWoo11", "Kaede", "ShiOn2", "Lynn2", "Sullin", "HyeRin2", "ChaeWon2", "HaYeon6", "SooMin4", 
         "YeonJi3", "JooBin", "SeoAh2"
+    ],
+    h2h: [
+        "carmen", "jiwoo10", "yuha", "stella", "juun", "a-na", "ian5", "ye-on"
     ]
 }

@@ -1,5 +1,5 @@
 import { db } from "../firebase/firebaseConfig.js";
-import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction, deleteDoc } from "firebase/firestore"
+import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction, deleteDoc, writeBatch, Timestamp } from "firebase/firestore"
 import axios from "axios";
 
 import { saveManyImages } from "../firebase/firestoreService.js";
@@ -34,6 +34,15 @@ const client = axios.create({
 })
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const verifyKarimeRankKey = (req, res) => {
+    const providedKey = req.headers.authorization?.replace("Bearer ", "");
+    if (!providedKey || providedKey !== process.env.KARIMERANK_API_KEY) {
+        res.status(401).json({ message: "Unauthorized" });
+        return false;
+    }
+    return true;
+};
 
 const fetchImageBufferWithRetry = async ({ originUrl, thumbnailUrl, maxAttempts = 3 }) => {
     let lastError;
@@ -117,6 +126,10 @@ const saveIdolImages = async (idolName, collectionName, imageObjects) => {
 
 // Firebase version (admin)
 export const generateImagesByIdol = async (req, res) => {
+    if (!verifyKarimeRankKey(req, res)) {
+        return;
+    }
+
     try {
         const { idolName } = req.body;
         const idolLower = idolName.toLowerCase();
@@ -137,6 +150,10 @@ export const generateImagesByIdol = async (req, res) => {
 
 // Firebase version (admin)
 export const generateImageSet = async (req, res) => {
+    if (!verifyKarimeRankKey(req, res)) {
+        return;
+    }
+
     const { kpopGroupsToGen, individualIdols } = req.body;
 
     if (!kpopGroupsToGen || kpopGroupsToGen.length === 0) {
@@ -180,6 +197,53 @@ export const generateImageSet = async (req, res) => {
     }
 }
 
+export const archiveImagesCollection = async (req, res) => {
+    if (!verifyKarimeRankKey(req, res)) {
+        return;
+    }
+
+    const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
+    const archivedCollectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_archived_images" : "archived_images";
+
+    try {
+        const imagesRef = collection(db, collectionName);
+        const archivedRef = collection(db, archivedCollectionName);
+        const snapshot = await getDocs(imagesRef);
+
+        if (snapshot.empty) {
+            return res.status(200).json({ message: "No images to archive", archivedCount: 0 });
+        }
+
+        const imagesDocs = snapshot.docs;
+        const BATCH_LIMIT = 500;
+        let archivedCount = 0;
+
+        // batch write preferred over transactions because don't need to read and can work offline
+        for (let i = 0; i < imagesDocs.length; i += BATCH_LIMIT) {
+            const batch = writeBatch(db);
+            const chunk = imagesDocs.slice(i, i + BATCH_LIMIT);
+
+            chunk.forEach((imageDoc) => {
+                const archivedDocRef = doc(archivedRef); // gives a unique spot with an id in the collection to write the archived record
+                batch.set(archivedDocRef, { ...imageDoc.data(), archivedAt: Timestamp.now() }); // creates the doc
+                batch.delete(imageDoc.ref);
+                archivedCount++;
+            });
+
+            // commits up to 500 writes
+            await batch.commit();
+        }
+
+        return res.status(200).json({
+            message: `Archived ${archivedCount} images from ${collectionName} to ${archivedCollectionName}`,
+            archivedCount
+        });
+    } catch (err) {
+        console.error("Failed to archive images:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // firebase version
 export const getTotalVotes = async (req, res) => {
     try {
@@ -196,7 +260,7 @@ export const getTotalVotes = async (req, res) => {
     }
 }
 
-// admin function
+// admin function (mongoose)
 export const updateAllIdols = async (req, res) => {
     try {
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -229,8 +293,12 @@ export const updateAllIdols = async (req, res) => {
     }
 }
 
-// admin function (firebase version)
+// admin function
 export const deleteIdol = async (req, res) => {
+    if (!verifyKarimeRankKey(req, res)) {
+        return;
+    }
+    
     const { idolName } = req.body;
     if (!idolName) {
         return res.status(400).json({ message: "idolName is required" });
@@ -271,9 +339,6 @@ export const deleteImageById = async (req, res) => {
         if (!deletedImage) {
             res.status(404).json({ message: "Image not found" });
         }
-        // // check this out next time
-        // console.log("deletedImage:", deletedImage);
-
 
         res.status(200).json({ deletedImage })
     } catch (err) {
@@ -339,7 +404,7 @@ export const getStartToEndImages = async (req, res) => {
     }
 }
 
-// not very useful anymore
+// not very useful anymore (mongoose)
 export const getAllIdolNames = async (req, res) => {
     try {
         const model = Image //(process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
@@ -573,7 +638,7 @@ export const likeImage = async (req, res) => {
     }
 }
 
-// (old) admin function
+// (old) admin function (mongoose)
 export const addGroupName = async (req, res) => {
     const { idolName, groupName } = req.body;
 
@@ -583,7 +648,7 @@ export const addGroupName = async (req, res) => {
     res.status(200).json({ image });
 }
 
-// debug function
+// debug function (mongoose)
 export const addDimensions = async (req, res) => {
     // const testImageURL = "https://kpopping.com/documents/07/2/1176/240605-KISS-OF-LIFE-Twitter-Update-with-Natty-documents-1.jpeg?v=73ded"
     try {
@@ -613,22 +678,6 @@ export const addDimensions = async (req, res) => {
         res.status(200).json(await model.find({ idolName: allIdolNames[num] }));
     } catch (err) {
         res.status(500).json({ message: err.message })
-    }
-}
-
-// admin function
-export const archiveImages = async (req, res) => {
-    try {
-        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-        const archivedImages = moveDocuments(model, ArchivedImage);
-        if (!archivedImages) {
-            res.status(500).json({ message: "move didn't work" })
-        }
-
-        res.status(200).json({ archivedImages })
-    } catch (err) {
-        res.status(500).json({ message: err.message });
     }
 }
 
