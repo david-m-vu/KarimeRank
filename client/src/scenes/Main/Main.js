@@ -126,14 +126,14 @@ const Main = () => {
     return (
         <div className="Main ">
             <div className=" flex flex-row justify-center">
-                <h1 className="border-4 p-2 border-black dark:border-white md:text-[24px] dark:text-white">
+                <h1 className="border-4 p-2 border-black dark:border-white text-[2.5vh] md:text-[3vh] dark:text-white">
                     Which Picture do you like more?
                 </h1>
             </div>
             <div className="flex flex-row justify-center items-center mt-2">
-                <label className="dark:text-white">Filter: </label>
+                <label className="dark:text-white text-[2vh] md:text-[2.5vh]">Filter: </label>
 
-                <select name="idols" className="bg-white dark:bg-black border-black dark:border-white dark:text-white border-2 rounded-md ml-2" onChange={handleSelect}>
+                <select name="idols" className="bg-white dark:bg-black border-black dark:border-white dark:text-white border-2 rounded-md ml-2 text-[1vh] md:text-[2vh]" onChange={handleSelect}>
                     <option>Random</option>
                     {idolGroups.sort((a, b) => {
                         // need to do this because you cant subtract two strings
@@ -155,7 +155,7 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image.id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto lg:h-[60vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.url} alt={image.imageName} 
+                            <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] lg:h-[40vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.url} alt={image.imageName} 
                                 onLoad={() => {
                                     handleImageLoad();
                                 }}
@@ -182,7 +182,8 @@ const Main = () => {
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
-            {<div className="text-center text-[1rem] md:text-[1.5rem] lg:text-[3rem] dark:text-white mt-5 lg:mt-12 md:mt-14 ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
+            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white mt-[2vh] lg:mt-[5vh] md:mt-[4vh] ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}
+            </div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )
