@@ -1,5 +1,5 @@
 import { db } from "../firebase/firebaseConfig.js";
-import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction } from "firebase/firestore"
+import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction, deleteDoc } from "firebase/firestore"
 import axios from "axios";
 
 import { saveManyImages } from "../firebase/firestoreService.js";
@@ -229,30 +229,43 @@ export const updateAllIdols = async (req, res) => {
     }
 }
 
-// admin function
+// admin function (firebase version)
 export const deleteIdol = async (req, res) => {
-    try {
-        const { idolName } = req.body;
-
-        const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
-        const imagesDeleted = await model.deleteMany({ idolName: new RegExp(`^${idolName}$`, 'i') });
-        const newImageObjects = await model.find();
-
-        res.status(200).json({ allImages: newImageObjects, imagesDeleted: imagesDeleted.length })
-    } catch (err) {
-        res.status(500).json({ message: err.message })
+    const { idolName } = req.body;
+    if (!idolName) {
+        return res.status(400).json({ message: "idolName is required" });
     }
-}
 
-// admin function
+    const normalizedIdolName = idolName.toLowerCase();
+    const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
+
+    try {
+        const imagesRef = collection(db, collectionName);
+        const idolQuery = query(imagesRef, where("idolName", "==", normalizedIdolName));
+        const snapshot = await getDocs(idolQuery);
+
+        if (snapshot.empty) {
+            return res.status(200).json({ message: `No images found for idol ${idolName}`, imagesDeleted: 0 });
+        }
+
+        await Promise.all(snapshot.docs.map((docSnapshot) => deleteDoc(docSnapshot.ref)));
+
+        return res.status(200).json({
+            message: `Deleted ${snapshot.size} images for ${idolName}`,
+            imagesDeleted: snapshot.size
+        });
+    } catch (err) {
+        console.error("Failed to delete idol from Firestore:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// admin function (mongoose)
 export const deleteImageById = async (req, res) => {
     try {
         const { _id } = req.body;
 
-
         const model = (process.env.TEST_MODE === "TEST_MODE") ? TestImage : Image;
-
 
         const deletedImage = await model.findByIdAndDelete(_id);
         if (!deletedImage) {
