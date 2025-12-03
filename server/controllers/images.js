@@ -5,7 +5,7 @@ import axios from "axios";
 import { saveManyImages } from "../firebase/firestoreService.js";
 import { uploadImage } from "../firebase/storageService.js";
 
-import { getImagesByIdol } from "../requests/images.js"
+import { getImagesByIdol } from "../requests/scraping.js"
 import { isValidImageUrl, getNewRating, moveDocuments, sanitizeFileName } from "../util/index.js";
 import { kpopGroups } from "../idol-data/index.js";
 
@@ -168,6 +168,8 @@ export const generateImageSet = async (req, res) => {
     if (individualIdols) {
         idolsToGen.push(...individualIdols)
     }
+
+    console.log("Generating images for these idols:", idolsToGen)
 
     const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
 

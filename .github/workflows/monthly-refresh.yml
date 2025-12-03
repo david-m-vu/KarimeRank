@@ -14,7 +14,7 @@ jobs:
         env:
           API_URL: ${{ secrets.KARIMERANK_API_URL }}
           API_KEY: ${{ secrets.KARIMERANK_API_KEY }}
-        run: | # -sS --fail are fr making curl exit with an error message if endpoint returns an error
+        run: | # -sS --fail are for making curl exit with an error message if endpoint returns an error, -X defines HTTP method
           curl -sS --fail -X POST "$API_URL/images/archive" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $API_KEY"

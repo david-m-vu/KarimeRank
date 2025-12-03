@@ -1,7 +1,7 @@
 import Image from "../models/Image.js";
 import TestImage from "../models/TestImage.js";
 import ArchivedImage from "../models/ArchivedImage.js";
-import { getImagesByIdol } from "../requests/images.js"
+import { getImagesByIdol } from "../requests/scraping.js"
 import { isValidImageUrl } from "../util/index.js";
 import { kpopGroups } from "../idol-data/index.js";
 import probe from "probe-image-size";
