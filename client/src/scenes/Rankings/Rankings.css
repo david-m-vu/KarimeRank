@@ -68,6 +68,15 @@
     animation: 0.7s ease slide-in-left;
 }
 
+.image-hover-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.image-hover-container:hover img {
+    filter: grayscale(50%) brightness(0.7);
+    transition: filter 0.3s ease;
+}
+
 
 @keyframes fade-in {
     0%, 10% {

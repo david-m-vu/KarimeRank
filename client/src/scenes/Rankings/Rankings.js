@@ -199,7 +199,7 @@ const Rankings = (props) => {
                 {images.map((image, index) => {
                     return (
                         <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.url} link={image.originUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height}/>
+                            <ImageWithPlaceHolder src={image.url} link={image.originUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height} idolName={image.idolName}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
@@ -269,12 +269,19 @@ const ImageWithPlaceHolder = (props) => {
 
     return (
         <div className="flex flex-row justify-center">
-            <a href={props.link} target="_blank" rel="noreferrer">
+            <a href={props.link} target="_blank" rel="noreferrer" className="relative image-hover-container group">
                 <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
                     onLoad={() => {
                         setIsLoaded(true); 
                         props.handleImageLoad();
                     }}/>
+                {isLoaded && (
+                    <div className="image-hover-overlay absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl md:border-4 border-2 border-black dark:border-gray-500">
+                        <div className="text-white text-center md:text-[2rem] text-[1.2rem] font-bold z-10 px-4">
+                            {props.idolName.replace(/[0-9]/g, '')}
+                        </div>
+                    </div>
+                )}
             </a>
 
             {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
