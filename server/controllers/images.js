@@ -59,7 +59,7 @@ const fetchImageBufferWithRetry = async ({ originUrl, thumbnailUrl, maxAttempts 
 
             // response.data is a ReadableStream of image bytes
             // need to read it as an iterable because each chunk is just whatever bytes have arrived so far from the network
-            // can't just grab the whole ile in one shot from the stream - have to read it chunk by chunk until the stream ends
+            // can't just grab the whole file in one shot from the stream - have to read it chunk by chunk until the stream ends
             const chunks = [];
             for await (const chunk of response.data) {
                 chunks.push(chunk);
@@ -94,7 +94,7 @@ const saveIdolImages = async (idolName, collectionName, imageObjects) => {
             );
 
             // attach dimensions
-            const metadataSource = imageObj.url || thumbnailUrl;
+            const metadataSource = imageObj.firebaseUrl || thumbnailUrl;
             if (metadataSource) {
                 try {
                     const imageMetadata = await probe(metadataSource);
@@ -507,6 +507,7 @@ export const getRandomImagePair = async (req, res) => {
         const firstImage = allIdolImages[firstIndex];
         const secondImage = allIdolImages[secondIndex];
         res.status(200).json({ images: [firstImage, secondImage] })
+        
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
