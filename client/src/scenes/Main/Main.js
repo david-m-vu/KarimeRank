@@ -182,7 +182,7 @@ const Main = () => {
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
-            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white mt-[2vh] lg:mt-[5vh] md:mt-[4vh] ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}
+            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white mt-[2vh] md:mt-[4vh] lg:mt-[5vh]">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}
             </div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>

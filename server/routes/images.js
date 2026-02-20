@@ -17,7 +17,7 @@ router.post("/update-all", updateAllIdols);
 router.get("/random", getRandomImagePair);
 router.get("/random/:idolName", getRandomImagePairByIdol);
 
-router.patch("/like", requireAuth, likeImage);
+router.patch("/like", likeImage);
 router.delete("/delete-idol", deleteIdol);
 router.delete("/delete-image", deleteImageById);
 
