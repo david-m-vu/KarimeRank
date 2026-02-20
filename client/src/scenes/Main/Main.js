@@ -1,6 +1,6 @@
 import "./Main.css"
 import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNamesWithGroup, likeImage } from "../../requests/images.js"
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useSpring, animated } from "react-spring"
 
@@ -21,40 +21,14 @@ const Main = () => {
     const [isLoadingMain, setIsLoadingMain] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(0);
 
-    const isInitialMount = useRef(true);
-
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
         audio.play();
     }
 
-    useEffect(() => {
-        fetchAllIdolGroups();
-        fetchImages(false);
-    }, [])
-
-    useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-        } else {
-            // console.log("bye")
-            fetchImages(false);
-        }
-    }, [selectedIdol])
-
-    useEffect(() => {
-        if (images.length !== 0 && imagesLoaded >= images.length) {
-          console.log('All images loaded');
-          setIsLoadingMain(false);
-        } 
-      }, [imagesLoaded, images.length]);
-
-    const handleImageLoad = () => {
-        setImagesLoaded(prev => prev + 1);
-    };
-
-    const fetchImages = async (willDelay) => {
-        let imagePair
+    // pass willDelay as false if initial mount
+    const fetchImages = useCallback(async (willDelay) => {
+        let imagePair;
 
         // this indicates that we just started the app
         if (!willDelay) {
@@ -82,12 +56,33 @@ const Main = () => {
                 setShowRecords(false);
             }
         }
-    }
+    }, [selectedIdol])
 
-    const fetchAllIdolGroups = async () => {
-        const uniqueIdolGroups = await getAllIdolNamesWithGroup();
-        setIdolGroups(uniqueIdolGroups);
-    }
+    // fetch idol groups on initial render
+    useEffect(() => {
+        const fetchAllIdolGroups = async () => {
+            const uniqueIdolGroups = await getAllIdolNamesWithGroup();
+            setIdolGroups(uniqueIdolGroups);
+        }
+        fetchAllIdolGroups();
+    }, [])
+
+    // fetch images on initial render and when selected idol changes
+    useEffect(() => {
+        fetchImages(false);
+    }, [fetchImages])
+
+    // if all (2) images have loaded, set isLoadingMain to false
+    useEffect(() => {
+        if (images.length !== 0 && imagesLoaded >= images.length) {
+          console.log('All images loaded');
+          setIsLoadingMain(false);
+        } 
+      }, [imagesLoaded, images.length]);
+
+    const handleImageLoad = () => {
+        setImagesLoaded(prev => prev + 1);
+    };
 
     const selectImage = async (chosenImageId) => {
         if (!hasLiked) {

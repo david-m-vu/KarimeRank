@@ -1,11 +1,11 @@
 import "./Rankings.css"
 import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import crown from "../../assets/crown.png"
 
-const Rankings = (props) => {
+const Rankings = ({ setTotalVotes }) => {
     const [images, setImages] = useState([]);
     const [lastDocId, setLastDocId] = useState(null);
 
@@ -13,40 +13,89 @@ const Rankings = (props) => {
     const [searchMore, setSearchMore] = useState(true);
     const [isLoadingMain, setIsLoadingMain] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
     const [showEndIndicator, setShowEndIndicator] = useState(false);
+    const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
     const [idolGroups, setIdolGroups] = useState([]);
     const [daysUntilNextMonth, setDaysUntilNextMonth] = useState("X");
     
     const navigate = useNavigate();
     const [queryParameters] = useSearchParams();
+    const selectedFilter = queryParameters.get("filter");
 
-    let mybutton = document.getElementById("myBtn");
+    const fetchImages = useCallback(async (idolName, cursor, canSearchMore) => {
+        if (canSearchMore) {
+            // console.log("fetching");
+            setIsLoadingMain(true);
+            const pagination = await getStartToEndImages(idolName, 20, cursor);
 
+            if (pagination.images.length !== 0) {
+                setImages((prev) => [...prev, ...pagination.images])
+                setLastDocId(pagination.lastDocId);
+            } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
+                // console.log("done")
+                setShowEndIndicator(true);
+                setSearchMore(false);
+                setIsLoadingMain(false);
+            }
+        }
+    }, [])
+
+    const retrieveTotalVotes = useCallback(async () => {
+        const totalVotes = await getTotalVotes();
+        setTotalVotes(totalVotes);
+    }, [setTotalVotes]);
+
+    const handleScroll = useCallback(() => {
+        const scrollTop = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        setShowScrollTopButton(scrollTop > 2000);
+
+        // indicate that we are at the bottom of the screen
+        if (scrollTop + windowHeight >= documentHeight - 5) {
+            setIsBottom(true);
+        }
+    }, []);
+
+    // on initial render
     useEffect(() => {
+        const fetchAllIdolGroups = async () => {
+            const uniqueIdolGroups = await getAllIdolNamesWithGroup();
+            setIdolGroups(uniqueIdolGroups);
+        };
+        
         window.addEventListener("scroll", handleScroll)
         fetchAllIdolGroups();
         retrieveTotalVotes();
         getDaysUntilNextMonth();
 
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [])
+
+    }, [handleScroll, retrieveTotalVotes])
 
     // trigger fetch when user selects a new idol
     useEffect(() => {
         // console.log(`filter: ${queryParameters.get("filter")}`);
-        fetchImages(queryParameters.get("filter"));
-    }, [queryParameters])
+        setSearchMore(true);
+        setLastDocId(null);
+        setImages([]);
+        setImagesLoaded(0);
+        setShowEndIndicator(false);
+        fetchImages(selectedFilter, null, true);
+    }, [selectedFilter, fetchImages])
 
     // trigger fetch when user reaches the bottom of the page
     useEffect(() => {
         if (isBottom) {
-            fetchImages(queryParameters.get("filter")).then((value) => {
+            // same as await fetchImages(...); setIsBottom(false)
+            fetchImages(selectedFilter, lastDocId, searchMore).then(() => {
                 setIsBottom(false);
             })
         }
-    }, [isBottom])
+    }, [isBottom, fetchImages, selectedFilter, lastDocId, searchMore])
 
     useEffect(() => {
         // console.log(`imagesLoaded: ${imagesLoaded}, numImages: ${images.length}`)
@@ -61,60 +110,12 @@ const Rankings = (props) => {
         setImagesLoaded(prev => prev + 1);
     };
 
-    function scrollFunction() {
-        if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
-            mybutton.style.display = "block";
-        } else {
-            mybutton.style.display = "none";
-        }
-    }
-    window.onscroll = function () { scrollFunction() };
-
     const topFunction = () => {
         window.scrollTo({
             top: 0,
             left: 0,
             behavior: 'smooth'
         });
-    }
-
-    const handleScroll = (e) => {
-        const scrollTop = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        // indicate that we are at the bottom of the screen
-        if (scrollTop + windowHeight >= documentHeight - 5) {
-            setIsBottom(true);
-        }
-    }
-
-    const fetchImages = async (idolName) => {
-        if (searchMore) {
-            // console.log("fetching");
-            setIsLoadingMain(true);
-            const pagination = await getStartToEndImages(idolName, 20, lastDocId);
-
-            if (pagination.images.length !== 0) {
-                setImages((prev) => [...prev, ...pagination.images])
-                setLastDocId(pagination.lastDocId);
-            } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
-                // console.log("done")
-                setShowEndIndicator(true);
-                setSearchMore(false);
-                setIsLoadingMain(false);
-            }
-        }
-    }
-
-    const fetchAllIdolGroups = async () => {
-        const uniqueIdolGroups = await getAllIdolNamesWithGroup();
-        setIdolGroups(uniqueIdolGroups);
-    }
-
-    const retrieveTotalVotes = async () => {
-        const totalVotes = await getTotalVotes();
-        props.setTotalVotes(totalVotes);
     }
 
     const handleSelect = (e) => {
@@ -234,7 +235,7 @@ const Rankings = (props) => {
                 <div className="eolMessage flex justify-center md:text-[2rem] text-[1.5rem] dark:text-white pb-8">END OF LIST</div>
             }
 
-            <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
+            <button id="myBtn" onClick={() => topFunction()} className={`fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl ${showScrollTopButton ? "block" : "hidden"}`}>↑</button>
         </div>
     )
 }
