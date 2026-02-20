@@ -1,5 +1,73 @@
 import { db } from "./firebaseConfig.js";
-import { collection, addDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc } from "firebase/firestore";
+
+export const saveUser = async (collectionName, userObj) => {
+    try {
+        const { usernameLower } = userObj;
+        
+        const collectionRef = collection(db, collectionName);
+        const usernamesCollectionName = collectionName === "test_users" ? "test_usernames" : "usernames";
+        
+        // the usernames collection is a lock/index collection for uniqueness where each doc ID is usernameLower
+        const usernameLockRef = doc(db, usernamesCollectionName, usernameLower); // usernameLower is the index
+
+        // claim username and write user atomically to avoid duplcate usernames under concurrency
+        const createdUser = await runTransaction(db, async (transaction) => {
+            const usernameLockSnap = await transaction.get(usernameLockRef);
+            if (usernameLockSnap.exists()) {
+                return null;
+            }
+
+            const now = Timestamp.now();
+            const userRef = doc(collectionRef);
+            const newUser = { ...userObj, createdAt: now }
+
+            transaction.set(userRef, newUser);
+            transaction.set(usernameLockRef, {
+                userId: userRef.id,
+                createdAt: now,
+            })
+
+            return { id: userRef.id, ...newUser }
+        })
+
+        return createdUser;
+
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+}
+
+export const getUserByUsernameLower = async (collectionName, usernameLower) => {
+    try {
+        const usernamesCollectionName = collectionName === "test_users" ? "test_usernames" : "usernames";
+        const usernameLockRef = doc(db, usernamesCollectionName, usernameLower);
+
+        // get userId from username lock/index doc
+        const usernameLockSnap = await getDoc(usernameLockRef);
+        if (!usernameLockSnap.exists()) {
+            return null;
+        }
+
+        const { userId } = usernameLockSnap.data();
+        if (!userId) {
+            return null;
+        }
+
+        // get user from userId
+        const userRef = doc(db, collectionName, userId);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+            return null;
+        }
+
+        return { id: userSnap.id, ...userSnap.data() };
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+}
 
 // Save one imageObj to Firestore
 export const saveImage = async (collectionName, imageObj) => {
@@ -18,7 +86,8 @@ export const saveImage = async (collectionName, imageObj) => {
         imageObj.createdAt = Timestamp.now();
     
         const imageRef = await addDoc(collectionRef, imageObj);
-        return { id: imageRef.id, ...imageObj } ;
+        return { id: imageRef.id, ...imageObj };
+
     } catch (err) {
         console.log(err.message);
         return null;
@@ -29,7 +98,6 @@ export const saveImage = async (collectionName, imageObj) => {
 export const saveManyImages = async (collectionName, imageObjects) => {
     try {
         const collectionRef = collection(db, collectionName);
-        const addedImages = [];
     
         // existingDocsQuery.docs returns an array of all the docs, which all contain the .data attribute
         const existingDocsQuery = await getDocs(collectionRef);
