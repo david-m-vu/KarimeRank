@@ -150,23 +150,32 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="relative" key={image.id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] lg:h-[40vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" src={image.url} alt={image.imageName} 
+                            <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
+                                className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] 
+                                            lg:h-[40vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" 
+                                src={image.url} 
+                                alt={image.imageName} 
                                 onLoad={() => {
                                     handleImageLoad();
                                 }}
                             />
-                            {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute " src={heart} alt="like" />}
-                            {showRecords && <div className={`bottom-[-1.5rem] md:bottom-[-2.5rem] lg:bottom-[-3.5rem] resultsInfo absolute text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] flex flex-row items-center gap-[0.2rem] md:gap-[0.5rem] lg:gap-[1rem] w-full text-wrap p-0 dark:text-white`}>
-                                <div>W:</div> 
-                                {
-                                    (images[index].numWins === getImageStats(image.id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image.id).numWins}/>
-                                }
-                                 <div>L:</div>  
-                                {
-                                    (images[index].numLosses === getImageStats(image.id).numLosses) ? <div>{images[index].numLosses}</div> : <AnimatedNumber color="red" start={images[index].numLosses} end={getImageStats(image.id).numLosses}/>
-                                }                                
-                                 <div>Score:</div>  <AnimatedNumber color={winnerID === image.id ? "green" : "red"} start={images[index].score} end={getImageStats(image.id).score}></AnimatedNumber>
-                            </div>}
+                            {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute" src={heart} alt="like" />}
+                            {showRecords && 
+                                <div className={`top-full resultsInfo absolute mt-2 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] leading-[2.5rem]
+                                                flex flex-row flex-wrap items-center gap-x-[0.2rem] md:gap-x-[0.5rem] 
+                                                lg:gap-x-[1rem] w-full p-0 dark:text-white`}>
+                                    <div>W:</div> 
+                                    {
+                                        (images[index].numWins === getImageStats(image.id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image.id).numWins}/>
+                                    }
+                                    <div>L:</div>  
+                                    {
+                                        (images[index].numLosses === getImageStats(image.id).numLosses) ? <div>{images[index].numLosses}</div> : <AnimatedNumber color="red" start={images[index].numLosses} end={getImageStats(image.id).numLosses}/>
+                                    }                                
+                                    <div>Score:</div>  
+                                    <AnimatedNumber color={winnerID === image.id ? "green" : "red"} start={images[index].score} end={getImageStats(image.id).score}></AnimatedNumber>
+                                </div>
+                            }
                             {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image.id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image.id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image.id).score - images[index].score)}</div>}
                         </div>
                     )
@@ -177,8 +186,7 @@ const Main = () => {
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
-            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white mt-[2vh] md:mt-[4vh] lg:mt-[5vh]">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}
-            </div>}
+            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white mt-[2vh] md:mt-[4vh] lg:mt-[5vh]">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )

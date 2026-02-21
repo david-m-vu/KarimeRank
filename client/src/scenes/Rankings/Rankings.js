@@ -30,7 +30,7 @@ const Rankings = ({ setTotalVotes }) => {
             setIsLoadingMain(true);
             const pagination = await getStartToEndImages(idolName, 20, cursor);
 
-            if (pagination.images.length !== 0) {
+            if (pagination.images.length > 0) {
                 setImages((prev) => [...prev, ...pagination.images])
                 setLastDocId(pagination.lastDocId);
             } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
@@ -166,8 +166,7 @@ const Rankings = ({ setTotalVotes }) => {
 
     return (
         <div className="Rankings relative">
-            <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-7 gap-4">
-
+            <div className="flex justify-center mb-11 z-10 relative w-full flex-col items-center md:flex-row md:gap-6 gap-4">
                 <div className="flex flex-row justify-center items-center">
                     <label className="md:text-[2rem] text-[1.5rem] dark:text-white">Filter: </label>
 
@@ -186,7 +185,7 @@ const Rankings = ({ setTotalVotes }) => {
                         })}
                     </select>
                 </div>
-                <div className={`md:text-[2rem] lg:absolute md:right-4 md:mx-4 text-[1.5rem] dark:text-white`}>
+                <div className={`md:text-[2rem] lg:absolute lg:right-6 text-[1.5rem] dark:text-white text-center`}>
                     NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
             </div>
@@ -196,14 +195,15 @@ const Rankings = ({ setTotalVotes }) => {
                 Don't see any images? try reloading!
             </div>}
 
-           <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
+            {/* gallery */}
+            <div className="flex flex-row flex-wrap gap-x-3 gap-y-7 md:gap-x-6 md:gap-y-10 md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
-                        <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
+                        <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl ${getRankOneStyle(index)}`}>
                             <ImageWithPlaceHolder src={image.url} link={image.originUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height} idolName={image.idolName}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
-                                <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
+                                <div className="md:text-[2.5rem] text-[1rem]">{index + 1}.</div>
                                 <div className="flex flex-col justify-center flex-1 items-center">
                                     <div className="text-center text-[1rem] md:text-[1.5rem]">W: {image.numWins} L: {image.numLosses}</div>
                                     <div className="text-center text-[0.7rem] md:text-[1rem]">
@@ -220,10 +220,8 @@ const Rankings = ({ setTotalVotes }) => {
             </div>
             {isLoading &&
                 <div className="loadingScreen">
-                    <div className="loader">
-                    </div>
-                    <div className="darkOverlay">
-                    </div>
+                    <div className="loader"></div>
+                    <div className="darkOverlay"></div>
                 </div>
             }
 

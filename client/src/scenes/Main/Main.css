@@ -10,6 +10,7 @@
     width: 20px;
     height: auto;
 }
+
 .resultsInfo {
     animation: slide-in 0.2s linear forwards;
 }

@@ -14,8 +14,8 @@ const Navbar = (props) => {
 
     return (
         <div className="Navbar">
-        <div className="w-full grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center py-2">
-            <div className="min-w-0 mx-4"> {/* this wrapper keeps a permanent first grid cell, so the title stays centered on all pages*/}
+        <div className="w-full grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center my-2">
+            <div className="min-w-0 ml-6 mr-4"> {/* this wrapper keeps a permanent first grid cell, so the title stays centered on all pages*/}
                 {location.pathname === "/rankings" && 
                     <div 
                         className={`text-[2.5vh] md:text-[3.5vh] text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
@@ -31,7 +31,7 @@ const Navbar = (props) => {
                 <NavLink to='/'>karimerank</NavLink>
             </div>
             <div 
-                className={`justify-self-end text-[2.5vh] md:text-[3.5vh] hover:text-black dark:hover:text-white mx-4 ${getIsHighlighted("/rankings")}`}
+                className={`justify-self-end text-[2.5vh] md:text-[3.5vh] hover:text-black dark:hover:text-white ml-4 mr-6 ${getIsHighlighted("/rankings")}`}
             >
                 <NavLink to="/rankings">Rankings</NavLink>
             </div>

@@ -37,8 +37,6 @@ export const moveDocuments = async (SourceCollection, DestinationCollection) => 
         await DestinationCollection.insertMany(images);
         await SourceCollection.deleteMany({});
 
-
-        console.log("poggers");
         const archivedImages = await DestinationCollection.find();
         return archivedImages
     } catch (err) {
