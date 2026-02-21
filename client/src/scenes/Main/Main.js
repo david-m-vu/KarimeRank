@@ -149,21 +149,26 @@ const Main = () => {
 
                 {images.map((image, index) => {
                     return (
-                        <div className="relative" key={image.id}>
-                            <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
-                                className="relative md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] 
-                                            lg:h-[40vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl" 
-                                src={image.url} 
-                                alt={image.imageName} 
-                                onLoad={() => {
-                                    handleImageLoad();
-                                }}
-                            />
-                            {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute" src={heart} alt="like" />}
-                            {showRecords && 
-                                <div className={`top-full resultsInfo absolute mt-2 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] leading-[2.5rem]
+                        <div className="inline-flex flex-col items-start min-w-0 relative" key={image.id}>
+                            <div className="relative">
+                                <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
+                                    className="md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] 
+                                                lg:h-[40vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl block" 
+                                    src={image.url} 
+                                    alt={image.imageName} 
+                                    onLoad={() => {
+                                        handleImageLoad();
+                                    }}
+                                />
+                                {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute" src={heart} alt="like" />}
+                                {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image.id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image.id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image.id).score - images[index].score)}</div>}
+                            </div>
+                            
+                            <div className="w-0 min-w-full mt-1 md:mt-2 min-h-8 md:min-h-12 lg:min-h-20 xl:absolute xl:top-full">
+                                {showRecords && 
+                                <div className={`resultsInfo w-full min-w-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] leading-[1rem] md:leading-[1.5rem] lg:leading-[2.5rem]
                                                 flex flex-row flex-wrap items-center gap-x-[0.2rem] md:gap-x-[0.5rem] 
-                                                lg:gap-x-[1rem] w-full p-0 dark:text-white`}>
+                                                lg:gap-x-[1rem] p-0 whitespace-normal break-words dark:text-white`}>
                                     <div>W:</div> 
                                     {
                                         (images[index].numWins === getImageStats(image.id).numWins) ? <div>{images[index].numWins}</div> : <AnimatedNumber color="green" start={images[index].numWins} end={getImageStats(image.id).numWins}/>
@@ -175,8 +180,8 @@ const Main = () => {
                                     <div>Score:</div>  
                                     <AnimatedNumber color={winnerID === image.id ? "green" : "red"} start={images[index].score} end={getImageStats(image.id).score}></AnimatedNumber>
                                 </div>
-                            }
-                            {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image.id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image.id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image.id).score - images[index].score)}</div>}
+                                }
+                            </div>
                         </div>
                     )
                 })}
