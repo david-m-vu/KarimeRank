@@ -1,6 +1,6 @@
 import './App.css';
-import Main from "./scenes/Main/Main.js"
-import Rankings from "./scenes/Rankings/Rankings.js"
+import Main from "./scenes/Main/Main.jsx"
+import Rankings from "./scenes/Rankings/Rankings.jsx"
 import Navbar from "./components/Navbar/Navbar.jsx"
 import { useState } from "react"
 
