@@ -1,7 +1,6 @@
 import "./Main.css"
 import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNamesWithGroup, likeImage } from "../../requests/images.js"
 import { useState, useEffect, useCallback } from "react";
-
 import { useSpring, animated } from "react-spring"
 
 import heart from "../../assets/heart-filled.svg";
@@ -119,7 +118,7 @@ const Main = () => {
     }
 
     return (
-        <div className="Main ">
+        <div className="Main">
             <div className=" flex flex-row justify-center">
                 <h1 className="border-4 p-2 border-black dark:border-white text-[2.5vh] md:text-[3vh] dark:text-white">
                     Which Picture do you like more?
@@ -145,11 +144,11 @@ const Main = () => {
                 </select>
 
             </div>
-            <div className="imagePair mt-4 md:mt-8 flex flex-row flex-wrap justify-center md:gap-x-10 md:gap-y-12 gap-y-6 gap-x-4">
+            <div className="mt-4 md:mt-8 flex flex-row flex-wrap justify-center md:gap-x-10 md:gap-y-12 gap-y-6 gap-x-4">
 
                 {images.map((image, index) => {
                     return (
-                        <div className="inline-flex flex-col items-start min-w-0 relative" key={image.id}>
+                        <div className="inline-flex flex-col items-start min-w-0 relative mb-4 md:mb-9 lg:mb-11" key={image.id}>
                             <div className="relative">
                                 <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
                                     className="md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] 
@@ -161,9 +160,13 @@ const Main = () => {
                                     }}
                                 />
                                 {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute" src={heart} alt="like" />}
-                                {showRecords && <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image.id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>{showRecords && ((images[index].numWins === getImageStats(image.id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image.id).score - images[index].score)}</div>}
+                                {showRecords && 
+                                <div className={`updateText absolute z-30 top-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] ${images[index].numWins === getImageStats(image.id).numWins ? "text-[#FF6961]" : "text-[#77dd77]"}`}>
+                                    {showRecords && ((images[index].numWins === getImageStats(image.id).numWins) ? '-' : '+')}{Math.abs(getImageStats(image.id).score - images[index].score)}
+                                </div>}
                             </div>
                             
+                            {/* stats */}
                             <div className="w-0 min-w-full mt-1 md:mt-2 min-h-8 md:min-h-12 lg:min-h-20 xl:absolute xl:top-full">
                                 {showRecords && 
                                 <div className={`resultsInfo w-full min-w-0 text-[1rem] md:text-[1.5rem] lg:text-[2.5rem] leading-[1rem] md:leading-[1.5rem] lg:leading-[2.5rem]
@@ -191,7 +194,7 @@ const Main = () => {
                 <div className="loadingMain fixed bottom-4 left-4 rounded-[50%] w-14 h-14 border-[#067c91] dark:border-[#72d3e4] border-8 border-l-transparent border-r-transparent dark:border-l-transparent dark:border-r-transparent"></div>
             }
 
-            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white mt-[2vh] md:mt-[4vh] lg:mt-[5vh]">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
+            {<div className="text-center text-[2vh] md:text-[3vh] lg:text-[5vh] dark:text-white ">{`${images[0]?.idolName.replace(/[0-9]/g, '') || ""} `}</div>}
             {/* <div className="flex flex-row justify-center" onClick={() => console.log(selectedIdol)}><button className="undoButton md:text-[24px] m-4 p-2 rounded-md border-4 border-black">Undo last selection</button></div> */}
         </div>
     )

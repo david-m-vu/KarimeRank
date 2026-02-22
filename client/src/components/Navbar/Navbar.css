@@ -1,0 +1,15 @@
+.available-paths {  
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.available-paths.closed {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    pointer-events: none;
+}
+
+.available-paths.open {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+}

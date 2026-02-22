@@ -167,6 +167,9 @@ const Rankings = ({ setTotalVotes }) => {
     return (
         <div className="Rankings relative">
             <div className="flex justify-center mb-11 z-10 relative w-full flex-col items-center md:flex-row md:gap-6 gap-4">
+                <div className={`md:text-[2rem] lg:absolute lg:left-6 text-[1.5rem] dark:text-white text-center`}>
+                    NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
+                </div>
                 <div className="flex flex-row justify-center items-center">
                     <label className="md:text-[2rem] text-[1.5rem] dark:text-white">Filter: </label>
 
@@ -184,9 +187,6 @@ const Rankings = ({ setTotalVotes }) => {
                             return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
                         })}
                     </select>
-                </div>
-                <div className={`md:text-[2rem] lg:absolute lg:right-6 text-[1.5rem] dark:text-white text-center`}>
-                    NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
             </div>
 
@@ -214,7 +214,6 @@ const Rankings = ({ setTotalVotes }) => {
                             {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown" />}
                         </div>
                     )
-
                 }
                 )}
             </div>

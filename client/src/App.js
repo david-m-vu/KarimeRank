@@ -1,7 +1,7 @@
 import './App.css';
 import Main from "./scenes/Main/Main.js"
 import Rankings from "./scenes/Rankings/Rankings.js"
-import Navbar from "./components/Navbar/Navbar.js"
+import Navbar from "./components/Navbar/Navbar.jsx"
 import { useState } from "react"
 
 import { Routes, Route } from "react-router-dom";
