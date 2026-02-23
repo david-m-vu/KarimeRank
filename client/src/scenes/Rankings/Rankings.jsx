@@ -167,14 +167,19 @@ const Rankings = ({ setTotalVotes }) => {
     return (
         <div className="Rankings relative">
             {/* headers */}
-            <div className="flex justify-center mb-11 sm:mb-7 z-10 relative w-full flex-col items-center md:flex-row md:gap-6 gap-4">
-                <div className={`md:text-[2rem] lg:absolute lg:left-6 text-[1.5rem] dark:text-white text-center`}>
+            <div className="flex flex-col items-center md:justify-between md:flex-row md:gap-6 gap-1 px-6 mb-7 md:mb-11 z-10 relative w-full ">
+                <div className={`md:text-[2rem] text-[1.5rem] dark:text-white text-center`}>
                     NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
                 <div className="flex flex-row justify-center items-center">
                     <label className="md:text-[2rem] text-[1.5rem] dark:text-white">Filter: </label>
 
-                    <select name="idols" className="bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
+                    <select 
+                        name="idols" 
+                        className="min-w-40 bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" 
+                        value={queryParameters.get("filter") || "All"} 
+                        onChange={handleSelect}
+                    >
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
@@ -185,7 +190,10 @@ const Rankings = ({ setTotalVotes }) => {
                                 return 0;
                             }
                         }).map((idolGroups, index) => {
-                            return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
+                            return <option 
+                                value={idolGroups.idolName} key={idolGroups.idolName}>
+                                    {`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}
+                                </option>
                         })}
                     </select>
                 </div>
