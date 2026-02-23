@@ -166,7 +166,8 @@ const Rankings = ({ setTotalVotes }) => {
 
     return (
         <div className="Rankings relative">
-            <div className="flex justify-center mb-11 z-10 relative w-full flex-col items-center md:flex-row md:gap-6 gap-4">
+            {/* headers */}
+            <div className="flex justify-center mb-11 sm:mb-7 z-10 relative w-full flex-col items-center md:flex-row md:gap-6 gap-4">
                 <div className={`md:text-[2rem] lg:absolute lg:left-6 text-[1.5rem] dark:text-white text-center`}>
                     NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
