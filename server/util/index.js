@@ -7,6 +7,20 @@ export const sanitizeFileName = (name) => {
         .replace(/^\.+|\.+$/g, "");   // Remove leading/trailing dots
 }
 
+export const isValidUsername = (username) => {
+    if (typeof username !== "string") {
+        return false;
+    }
+    return /^(?=.{3,20}$)[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$/.test(username.trim())
+}
+
+export const isValidNickname = (nickname) => {
+    if (typeof nickname !== "string") {
+        return false;
+    }
+    return /^(?=.{2,30}$)[A-Za-z0-9]+(?:[ ._-][A-Za-z0-9]+)*$/.test(nickname.trim());
+}
+
 export const isValidImageUrl = async (url) => {
     try {
         // Perform a HEAD request to get headers only

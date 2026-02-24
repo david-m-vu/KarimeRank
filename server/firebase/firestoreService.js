@@ -1,6 +1,9 @@
 import { db } from "./firebaseConfig.js";
-import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc } from "firebase/firestore";
 
+/*
+ * users
+ */
 export const saveUser = async (collectionName, userObj) => {
     try {
         const { usernameLower } = userObj;
@@ -69,6 +72,22 @@ export const getUserByUsernameLower = async (collectionName, usernameLower) => {
     }
 }
 
+// updates the nickname property of the given user and returns the updated user
+export const updateNicknameByUserId = async (collectionName, userId, newNickname) => {
+    const userRef = doc(db, collectionName, userId);
+    let userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+        return null;
+    }
+
+    await updateDoc(userRef, { nickname: newNickname })
+    userSnap = await getDoc(userRef);
+    return { id: userSnap.id, ...userSnap.data()};
+}
+
+/*
+ * images
+ */
 // Save one imageObj to Firestore
 export const saveImage = async (collectionName, imageObj) => {
     try {

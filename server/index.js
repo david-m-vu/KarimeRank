@@ -7,6 +7,7 @@ import morgan from "morgan";
 
 import imageRoutes from "./routes/images.js";
 import authRoutes from "./routes/auth.js";
+import usersRoutes from "./routes/users.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 
 app.use("/images", imageRoutes)
 app.use("/auth", authRoutes);
+app.use("/users", usersRoutes);
 
 const PORT = process.env.PORT || 6001;
 

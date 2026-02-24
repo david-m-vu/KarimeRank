@@ -165,7 +165,7 @@ const Rankings = ({ setTotalVotes }) => {
     }
 
     return (
-        <div className="Rankings relative">
+        <div className="Rankings relative flex-1">
             {/* headers */}
             <div className="flex flex-col items-center md:justify-between md:flex-row md:gap-6 gap-1 px-6 mb-7 md:mb-11 z-10 relative w-full ">
                 <div className={`md:text-[2rem] text-[1.5rem] dark:text-white text-center`}>

@@ -118,7 +118,7 @@ const Main = () => {
     }
 
     return (
-        <div className="Main">
+        <div className="Main flex-1">
             <div className=" flex flex-row justify-center">
                 <h1 className="border-4 p-2 border-black dark:border-white text-[2.5vh] md:text-[3vh] dark:text-white">
                     Which Picture do you like more?

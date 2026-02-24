@@ -1,4 +1,5 @@
 import { getUserByUsernameLower, saveUser } from "../firebase/firestoreService.js";
+import { isValidUsername, isValidNickname } from "../util/index.js";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -14,18 +15,18 @@ export const register = async (req, res) => {
         }
 
         // if normalizedUsername doesn't satisfy regex
-        if (!/^[a-zA-Z0-9_]{3,24}$/.test(normalizedUsername)) {
+        if (!isValidUsername(normalizedUsername)) {
             return res.status(400).json({
-                message: "username must be 3-24 characters and only contain letters, numbers, and underscores",
+                message: "username must be 3-20 characters and only contain letters, numbers, and underscores with no leading/trailing and repeating separators",
             });
         }
 
-        if (typeof password !== "string" || password.length < 8 || password.length > 72) {
-            return res.status(400).json({ message: "password must be between 8 and 72 characters" });
+        if (typeof password !== "string" || password.length < 6 || password.length > 72) {
+            return res.status(400).json({ message: "password must be between 6 and 72 characters" });
         }
 
-        if (normalizedNickname && (normalizedNickname.length < 2 || normalizedNickname.length > 30)) {
-            return res.status(400).json({ message: "nickname must be between 2 and 30 characters" });
+        if (normalizedNickname && !isValidNickname(normalizedNickname)) {
+            return res.status(400).json({ message: "nickname must be 2-30 characters with no leading/trailing and repeating separators/spaces" });
         }
 
         // if user didn't input nickname, set it to normalizedUsername
