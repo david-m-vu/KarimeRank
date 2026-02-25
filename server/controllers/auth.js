@@ -1,4 +1,4 @@
-import { getUserByUsernameLower, saveUser } from "../firebase/firestoreService.js";
+import { getUserByUsernameLower, getUserByUserId, saveUser } from "../firebase/firestoreService.js";
 import { isValidUsername, isValidNickname } from "../util/index.js";
 
 import bcrypt from "bcrypt";
@@ -120,4 +120,19 @@ export const login = async (req, res) => {
         console.error(err);
         return res.status(500).json({ message: err.message })
     }
+}
+
+export const reauthenticateUser = async (req, res) => {
+    const { userId } = req.auth;
+
+    const collectionName = process.env.TEST_MODE === "TEST_MODE" ? "test_users" : "users";
+
+    const user = await getUserByUserId(collectionName, userId);
+
+    if (!user) {
+        return res.status(404).json({ message: "User not found given user Id" })
+    }
+
+    delete user.passwordHash;
+    return res.status(200).json({ user })
 }

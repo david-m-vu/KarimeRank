@@ -42,6 +42,22 @@ export const saveUser = async (collectionName, userObj) => {
     }
 }
 
+export const getUserByUserId = async(collectionName, userId) => {
+    try {
+        const userRef = doc(db, collectionName, userId);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+            return null;
+        }
+
+        return { id: userSnap.id, ...userSnap.data()}
+        
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+}
+
 export const getUserByUsernameLower = async (collectionName, usernameLower) => {
     try {
         const usernamesCollectionName = collectionName === "test_users" ? "test_usernames" : "usernames";

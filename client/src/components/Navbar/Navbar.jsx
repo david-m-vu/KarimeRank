@@ -3,9 +3,11 @@ import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 
 import { ReactComponent as ExpandMoreIcon } from "../../assets/icons/expand_more.svg";
-import { ReactComponent as LoginIcon } from "../../assets/icons/login.svg"
-import PrimaryButton from "../PrimaryButton/PrimaryButton"
+import { ReactComponent as LoginIcon } from "../../assets/icons/login.svg";
+import { ReactComponent as PersonIcon } from "../../assets/icons/person_outline.svg";
+import PrimaryButton from "../PrimaryButton/PrimaryButton";
 
+import { useAuth } from "../../context/AuthContext.jsx";
 
 const NAV_ITEMS = [
     { path: "/", label: "Voting"},
@@ -26,6 +28,8 @@ const Navbar = (props) => {
         })
         return availablePages;
     }
+
+    const { user, isAuthenticated } = useAuth();
 
     return (
         <div className="Navbar">
@@ -87,13 +91,19 @@ const Navbar = (props) => {
                         </div>
 
                         {/* sign-in button / profile */}
-                        <PrimaryButton 
-                            className="px-5 max-[499px]:px-2 rounded-full leading-[2.5vh] md:leading-[3.5vh]"
-                            onClick={() => navigate("login")}
-                        >
-                            <span className="max-[499px]:hidden">Sign in</span>
-                            <LoginIcon className="hidden max-[499px]:block w-5 h-auto"/>
-                        </PrimaryButton>
+                        {isAuthenticated ? 
+                            <button className="w-12 h-auto rounded-full border flex justify-center items-center" >
+                                {user ? user.nickname.slice(0, 1) : <PersonIcon className="text-black dark:text-white"></PersonIcon>}
+                            </button>
+                            : 
+                            <PrimaryButton 
+                                className="px-5 max-[499px]:px-2 rounded-full leading-[2.5vh] md:leading-[3.5vh]"
+                                onClick={() => navigate("login")}
+                            >
+                                <span className="max-[499px]:hidden">Sign in</span>
+                                <LoginIcon className="hidden max-[499px]:block w-5 h-auto"/>
+                            </PrimaryButton>
+                        }
                     </div>
                 }
             </div>

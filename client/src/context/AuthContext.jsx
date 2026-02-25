@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useReducer } from "react";
+import { createContext, useCallback, useContext, useMemo, useEffect, useReducer } from "react";
 
 const AUTH_BASE_URL = `${process.env.REACT_APP_BACKEND_BASE_URL}/auth`;
 
@@ -6,7 +6,8 @@ const initialAuthState = {
     user: null,
     isAuthenticated: false,
     isLoading: false,
-    error: ""
+    error: "",
+    isBootstrapping: false
 };
 
 const authActionTypes = {
@@ -15,7 +16,11 @@ const authActionTypes = {
     LOGIN_FAILURE: "LOGIN_FAILURE",
     CLEAR_ERROR: "CLEAR_ERROR",
     LOGOUT: "LOGOUT",
-    UPDATE_USER: "UPDATE_USER"
+    UPDATE_USER: "UPDATE_USER",
+
+    BOOTSTRAP_START: "BOOTSTRAP_START",
+    BOOTSTRAP_SUCCESS: "BOOTSTRAP_SUCCESS",
+    BOOTSTRAP_FAILURE: "BOOTSTRAP_FAILURE"
 }
 
 const authReducer = (state, action) => {
@@ -64,6 +69,31 @@ const authReducer = (state, action) => {
             return {
                 ...state,
                 user: action.payload.user,
+            }
+        }
+        case authActionTypes.BOOTSTRAP_START: {
+            return {
+                ...state,
+                isBootstrapping: true,
+                error: "",
+            }
+        }
+        case authActionTypes.BOOTSTRAP_SUCCESS: {
+            return {
+                ...state,
+                user: action.payload.user,
+                isAuthenticated: true,
+                isBootstrapping: false,
+                error: ""
+            }
+        }
+        case authActionTypes.BOOTSTRAP_FAILURE: {
+            return {
+                ...state,
+                user: null,
+                isAuthenticated: false,
+                isBootstrapping: false,
+                error: ""
             }
         }
         default: {
@@ -138,15 +168,52 @@ export const AuthProvider = ({ children }) => {
         })
     }, [])
 
+    const bootstrapAuth = useCallback(async () => {
+        dispatch({ type: authActionTypes.BOOTSTRAP_START });
+
+        try {
+            const res = await fetch(`${AUTH_BASE_URL}/me`, {
+                method: "GET",
+                credentials: "include",
+            })
+
+            const responseJson = await res.json();
+            if (!res.ok) {
+                dispatch({ 
+                    type: authActionTypes.BOOTSTRAP_FAILURE, 
+                })
+                return;
+            }
+
+            // success
+            dispatch({
+                type: authActionTypes.BOOTSTRAP_SUCCESS,
+                payload: {
+                    user: responseJson.user
+                }
+            })
+
+        } catch {
+            dispatch({
+                type: authActionTypes.BOOTSTRAP_FAILURE,
+            })
+        }
+    }, [])
+
+    useEffect(() => {
+        bootstrapAuth();
+    }, [bootstrapAuth])
+
     const value = useMemo(() => {
         return {
             ...state,
             login,
             clearAuthError,
             logoutLocal,
-            updateUser
+            updateUser,
+            bootstrapAuth
         }
-    }, [state, login, clearAuthError, logoutLocal, updateUser])
+    }, [state, login, clearAuthError, logoutLocal, updateUser, bootstrapAuth])
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
@@ -158,5 +225,4 @@ export const useAuth = () => {
     }
     return context;
 }
-
 
