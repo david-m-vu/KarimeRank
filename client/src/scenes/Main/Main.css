@@ -2,8 +2,6 @@
     color: black;
 }
 
-
-
 /*Image hover*/
 .voting-image {
     transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;

@@ -33,21 +33,21 @@ const Navbar = (props) => {
 
     return (
         <div className="Navbar">
-            <div className="w-full grid grid-cols-2 grid-rows-[auto_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:grid-rows-1 items-center mt-2 px-6">
+            <div className="w-full grid grid-cols-2 grid-rows-[auto_auto] sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:grid-rows-1 items-center my-4 lg:my-5 px-6">
                 {/* title */}
                 <div 
-                    className="col-span-2 col-start-1 row-start-1 lg:col-span-1 lg:row-start-auto text-[4vh] md:text-[5vh] text-black dark:text-white"
+                    className="col-span-2 col-start-1 row-start-1 sm:col-span-1 sm:row-start-auto text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-black dark:text-white"
                 >
                     <NavLink to='/'>karimerank</NavLink> 
                 </div>
             
                 {/* if on rankings page, render # of votes */}
-                <div className="min-w-0 mr-4 col-start-1 row-start-2 lg:col-start-auto lg:row-start-auto"> {/* this wrapper keeps a permanent first grid cell, so the title stays centered on all pages*/}
+                <div className="min-w-0 mr-4 col-start-1 row-start-2 sm:col-start-auto sm:row-start-auto"> {/* this wrapper keeps a permanent first grid cell, so the title stays centered on all pages*/}
                     {location.pathname === "/rankings" && 
                         <div 
-                            className={`text-[2.5vh] md:text-[3.5vh] text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
+                            className={`text-xl md:text-2xl lg:text-3xl xl:text-4xl text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
                         >
-                            {props.totalVotes} <span className="hidden md:inline">total</span> votes <span className="hidden lg:inline">worldwide</span>
+                            {props.totalVotes} <span className="hidden sm:inline">total</span> votes <span className="hidden lg:inline">worldwide</span>
                         </div>
                     }
                 </div>
@@ -55,7 +55,7 @@ const Navbar = (props) => {
 
                 {/* right side */}
                 {!["/login", "/register"].includes(location.pathname) && 
-                    <div className="col-start-2 row-start-1 lg:col-start-auto lg:row-start-auto flex flex-row gap-2 md:gap-6 ml-4 text-[2.5vh] md:text-[3.5vh] justify-end items-center">                        
+                    <div className="col-start-2 row-start-1 sm:col-start-auto sm:row-start-auto flex flex-row gap-2 md:gap-6 ml-4 text-xl md:text-2xl lg:text-3xl xl:text-4xl justify-end items-center">                        
                         {/* nav dropdown */}
                         <div className="relative flex flex-col items-end">
                             {/* current page navlink */}
@@ -76,10 +76,10 @@ const Navbar = (props) => {
                             {/* other navlinks when dropdown open */}
                             <div 
                                 id="navbar-available-paths"
-                                className={`available-paths absolute top-full flex flex-col items-end ${isNavExpanded ? "open" : "closed"} z-20 `}
+                                className={`available-paths absolute top-[calc(100%+4px)] lg:gap-1 flex flex-col items-end ${isNavExpanded ? "open" : "closed"} z-20`}
                                 aria-hidden={!isNavExpanded}    
                             >
-                                <div className="absolute -inset-x-3 inset-y-0 rounded-lg bg-[#F8F8D6]/[0.97] dark:bg-[#4C4C4C]/[0.97] shadow-lg -z-10"/>
+                                <div className="absolute -inset-x-3 inset-y-0 lg:-inset-y-1 rounded-lg bg-[#F8F8D6]/[0.97] dark:bg-[#4C4C4C]/[0.97] shadow-lg -z-10"/>
                                 { 
                                     getAvailablePathsToPageNames(location.pathname).map(({path, label}) => {
                                         return <div key={path} className="text-[#8c8c8c] hover:text-black dark:hover:text-white">
@@ -96,12 +96,12 @@ const Navbar = (props) => {
                                 Checking session...
                             </div>
                         ) : isAuthenticated ? (
-                            <button className="w-12 h-auto rounded-full border flex justify-center items-center" >
-                                <PersonIcon className="text-black dark:text-white"></PersonIcon>
+                            <button className="rounded-full border border-black dark:border-white w-8 h-8 md:w-12 md:h-12 shrink-0 p-0 flex justify-center items-center" >
+                                <PersonIcon className="text-black dark:text-white w-6 h-6 md:w-8 md:h-8"></PersonIcon>
                             </button>
                         ) : (
                             <PrimaryButton 
-                                className="px-5 max-[499px]:px-2 rounded-full leading-[2.5vh] md:leading-[3.5vh]"
+                                className="px-5 max-[499px]:px-2 max-[499px]:py-2 rounded-full text-xl md:text-2xl lg:text-3xl xl:text-4xl"
                                 onClick={() => navigate("login")}
                             >
                                 <span className="max-[499px]:hidden">Sign in</span>

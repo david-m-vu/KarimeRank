@@ -168,15 +168,15 @@ const Rankings = ({ setTotalVotes }) => {
         <div className="Rankings relative flex-1">
             {/* headers */}
             <div className="flex flex-col items-center md:justify-between md:flex-row md:gap-6 gap-1 px-6 mb-7 md:mb-11 z-10 relative w-full ">
-                <div className={`md:text-[2rem] text-[1.5rem] dark:text-white text-center`}>
+                <div className={`md:text-3xl text-2xl dark:text-white text-center`}>
                     NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
-                <div className="flex flex-row justify-center items-center">
-                    <label className="md:text-[2rem] text-[1.5rem] dark:text-white">Filter: </label>
+                <div className="flex flex-row justify-center items-center md:text-3xl text-2xl dark:text-white">
+                    <label>Filter: </label>
 
                     <select 
                         name="idols" 
-                        className="min-w-40 bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" 
+                        className="min-w-40 bg-white dark:bg-black border-black dark:border-white border-2 rounded-md ml-2 p-[0.1rem]" 
                         value={queryParameters.get("filter") || "All"} 
                         onChange={handleSelect}
                     >
