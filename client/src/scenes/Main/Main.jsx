@@ -149,9 +149,9 @@ const Main = () => {
                 {images.map((image, index) => {
                     return (
                         <div className="inline-flex flex-col items-start min-w-0 relative mb-4 md:mb-9 lg:mb-11" key={image.id}>
-                            <div className="relative">
+                            <div className="relative image-hover-wrapper">
                                 <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
-                                    className="md:hover:outline md:outline-[#FF0000] md:outline-3 w-auto xl:h-[60vh] 
+                                    className="voting-image w-auto xl:h-[60vh] 
                                                 lg:h-[40vh] md:h-[40vh] h-[35vh] cursor-pointer rounded-xl block" 
                                     src={image.url} 
                                     alt={image.imageName} 
