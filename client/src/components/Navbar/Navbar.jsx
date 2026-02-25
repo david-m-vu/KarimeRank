@@ -29,7 +29,7 @@ const Navbar = (props) => {
         return availablePages;
     }
 
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, isBootstrapping } = useAuth();
 
     return (
         <div className="Navbar">
@@ -38,7 +38,7 @@ const Navbar = (props) => {
                 <div 
                     className="col-span-2 col-start-1 row-start-1 lg:col-span-1 lg:row-start-auto text-[4vh] md:text-[5vh] text-black dark:text-white"
                 >
-                    <NavLink to='/'>karimerank</NavLink>
+                    <NavLink to='/'>karimerank</NavLink> 
                 </div>
             
                 {/* if on rankings page, render # of votes */}
@@ -55,7 +55,7 @@ const Navbar = (props) => {
 
                 {/* right side */}
                 {!["/login", "/register"].includes(location.pathname) && 
-                    <div className="col-start-2 row-start-1 lg:col-start-auto lg:row-start-auto flex flex-row gap-2 md:gap-6 ml-4 text-[2.5vh] md:text-[3.5vh] justify-end">
+                    <div className="col-start-2 row-start-1 lg:col-start-auto lg:row-start-auto flex flex-row gap-2 md:gap-6 ml-4 text-[2.5vh] md:text-[3.5vh] justify-end items-center">                        
                         {/* nav dropdown */}
                         <div className="relative flex flex-col items-end">
                             {/* current page navlink */}
@@ -90,12 +90,16 @@ const Navbar = (props) => {
                             </div>
                         </div>
 
-                        {/* sign-in button / profile */}
-                        {isAuthenticated ? 
+                        {/* auth state */}
+                        {isBootstrapping ? (
+                            <div className="auth-bootstrap-indicator text-[0.75rem] md:text-[0.875rem] text-[#6c6c6c] dark:text-[#b8b8b8] whitespace-nowrap">
+                                Checking session...
+                            </div>
+                        ) : isAuthenticated ? (
                             <button className="w-12 h-auto rounded-full border flex justify-center items-center" >
-                                {user ? user.nickname.slice(0, 1) : <PersonIcon className="text-black dark:text-white"></PersonIcon>}
+                                <PersonIcon className="text-black dark:text-white"></PersonIcon>
                             </button>
-                            : 
+                        ) : (
                             <PrimaryButton 
                                 className="px-5 max-[499px]:px-2 rounded-full leading-[2.5vh] md:leading-[3.5vh]"
                                 onClick={() => navigate("login")}
@@ -103,7 +107,7 @@ const Navbar = (props) => {
                                 <span className="max-[499px]:hidden">Sign in</span>
                                 <LoginIcon className="hidden max-[499px]:block w-5 h-auto"/>
                             </PrimaryButton>
-                        }
+                        )}
                     </div>
                 }
             </div>
