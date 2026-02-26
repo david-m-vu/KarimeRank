@@ -3,6 +3,8 @@ import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages } from "..
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
+import ImageWithPlaceHolder from "../../components/ImageWithPlaceHolder/ImageWithPlaceholder.jsx";
+
 import crown from "../../assets/crown.png"
 
 const Rankings = ({ setTotalVotes }) => {
@@ -209,8 +211,19 @@ const Rankings = ({ setTotalVotes }) => {
                 {images.map((image, index) => {
                     return (
                         <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl ${getRankOneStyle(index)}`}>
-                            <ImageWithPlaceHolder src={image.url} link={image.originUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height} idolName={image.idolName}/>
+                            <ImageWithPlaceHolder 
+                                src={image.url} 
+                                link={image.originUrl} 
+                                alt={image.imageName} 
+                                handleImageLoad={handleImageLoad} 
+                                width={image.width} 
+                                height={image.height} 
+                                idolName={image.idolName} 
+                                withAnchor={true}
+                                className="box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl"
+                            />
                             {/* <div>{image.idolName}</div> */}
+                            {/* stats */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
                                 <div className="md:text-[2.5rem] text-[1rem]">{index + 1}.</div>
                                 <div className="flex flex-col justify-center flex-1 items-center">
@@ -242,56 +255,6 @@ const Rankings = ({ setTotalVotes }) => {
             }
 
             <button id="myBtn" onClick={() => topFunction()} className={`fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl ${showScrollTopButton ? "block" : "hidden"}`}>↑</button>
-        </div>
-    )
-}
-
-// react component that is a wrapper for an image
-const ImageWithPlaceHolder = (props) => {
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [placeholderColor, setPlaceholderColor] = useState("#686b5e")
-
-    useEffect(() => {
-        setPlaceholderColor(getRandomDullHslColor());
-    }, [])
-
-    const getRandomDullHslColor = () => {
-        // Generate random hue (0-360)
-        const hue = Math.floor(Math.random() * 361);
-        // Set saturation to a low value to ensure dullness (e.g., 10-20%)
-        const saturation = Math.floor(Math.random() * 11) + 10;
-        // Set lightness to a low-medium value (e.g., 30-50%)
-        const lightness = Math.floor(Math.random() * 21) + 30;
-      
-        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    }
-
-    const getAspectRatio = () => {
-        if (!props.width || !props.height) {
-            return 0.6667;
-        } else {
-            return props.width / props.height;
-        }
-    }
-
-    return (
-        <div className="flex flex-row justify-center">
-            <a href={props.link} target="_blank" rel="noreferrer" className="relative image-hover-container group">
-                <img className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl ${isLoaded ? "block" : "hidden"}`} src={props.src} alt={props.alt} 
-                    onLoad={() => {
-                        setIsLoaded(true); 
-                        props.handleImageLoad();
-                    }}/>
-                {isLoaded && (
-                    <div className="image-hover-overlay absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl md:border-4 border-2 border-black dark:border-gray-500">
-                        <div className="text-white text-center md:text-[2rem] text-[1.2rem] font-bold z-10 px-4">
-                            {props.idolName.replace(/[0-9]/g, '')}
-                        </div>
-                    </div>
-                )}
-            </a>
-
-            {!isLoaded && <div className={`box-border md:border-4 border-2 border-black dark:border-gray-500 md:h-[20rem] h-[10rem] rounded-xl`} style={{ backgroundColor: placeholderColor, aspectRatio: (getAspectRatio()) }}/>}
         </div>
     )
 }
