@@ -30,7 +30,7 @@ const Navbar = (props) => {
     const navigate = useNavigate();
     const isAuthPage = ["/login", "/register"].includes(location.pathname);
 
-    const { isAuthenticated, isBootstrapping, user } = useAuth();
+    const { isAuthenticated, isBootstrapping, user, logout } = useAuth();
 
     // see if we need to close any popups/dropdowns on click
     useEffect(() => {
@@ -40,6 +40,8 @@ const Navbar = (props) => {
             }
             
             const target = e.target;
+            const targetElement = target instanceof Element ? target : null;
+
             const clickedNavUi =
                 dropdownRef.current?.contains(target) ||
                 dropdownToggleRef.current?.contains(target);
@@ -47,14 +49,17 @@ const Navbar = (props) => {
             const clickedProfileUi =
                 profileRef.current?.contains(target) ||
                 profileToggleRef.current?.contains(target);
+            
+            // truthy only when the click happened on an element inside .voting-image (or on it directly)
+            const clickedVotingImage = Boolean(targetElement?.closest(".voting-image"));
 
             // Close nav when clicking anywhere outside nav UI.
-            if (!clickedNavUi) {
+            if (isNavExpanded && !clickedNavUi) {
                 setIsNavExpanded(false);
             }
 
-            // Keep profile open when clicking nav UI; close only when clicking outside both.
-            if (!clickedProfileUi) {
+            // Keep profile open only for profile UI or voting images.
+            if (isProfileOpened && !clickedProfileUi && !clickedVotingImage) {
                 setIsProfileOpened(false);
             }
         }
@@ -177,7 +182,9 @@ const Navbar = (props) => {
                                         <p className="text-base md:text-lg lg:text-xl leading-tight">{user.nickname}</p>
                                         <p className="text-xs md:text-sm lg:text-base leading-tight text-[#6c6c6c] dark:text-[#b8b8b8]">@{user.username}</p>
                                     </div>
+
                                     <hr />
+
                                     <div className="flex flex-col text-sm md:text-base lg:text-lg leading-6 md:leading-7">
                                         <div className="flex flex-row justify-between">
                                             <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes:</p>
@@ -192,6 +199,20 @@ const Navbar = (props) => {
                                             <img className="rounded-xl box-border border-2 border-black dark:border-gray-500" src={user.favoriteImageUrl} alt="Favorite image_" />
                                         </div>  
                                     </div>
+
+                                    <hr />
+
+                                    <PrimaryButton
+                                        className="rounded-full text-[#FF6961] py-1 text-sm md:text-base lg:text-lg self-center px-5"
+                                        onClick={async () => {
+                                            await logout();
+                                            setIsProfileOpened(false);
+                                            navigate("/");
+                                        }}
+                                    >
+                                        Logout
+                                    </PrimaryButton>
+
                                 </div>
                                 
                             </div>

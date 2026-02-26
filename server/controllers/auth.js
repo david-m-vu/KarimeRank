@@ -107,11 +107,12 @@ export const login = async (req, res) => {
             { expiresIn: "7d" }
         );
 
+        
         res.cookie("access_token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production", // true on HTTPS prod
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // versus "expires", which is an absolute timestamp
         })
 
         delete user.passwordHash;
@@ -136,4 +137,19 @@ export const reauthenticateUser = async (req, res) => {
 
     delete user.passwordHash;
     return res.status(200).json({ user })
+}
+
+export const logout = async (req, res) => {
+    try {
+        // clearCookie is from express
+        res.clearCookie("access_token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        });
+
+        return res.status(200).json({ message: "Logged out" });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
 }

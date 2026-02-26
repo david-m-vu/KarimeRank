@@ -7,6 +7,10 @@
     transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
 }
 
+.image-hover-wrapper:hover .voting-image {
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
 /* Light mode - vibrant red/pink glow */
 .image-hover-wrapper:hover .voting-image {
     transform: translateY(-8px);
@@ -57,10 +61,6 @@
                         0 0 120px rgba(218, 165, 32, 0.4);
         }
     }
-}
-
-.image-hover-wrapper:hover .voting-image {
-    animation: sparkle 1.5s ease-in-out infinite;
 }
 
 .heart {

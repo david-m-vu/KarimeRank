@@ -174,6 +174,19 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: authActionTypes.LOGOUT });
     }, []);
 
+    const logout = useCallback(async () => {
+        try {
+            await fetch(`${AUTH_BASE_URL}/logout`, {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch {
+            // If network logout fails, still clear local auth state.
+        } finally {
+            dispatch({ type: authActionTypes.LOGOUT });
+        }
+    }, []);
+
     const updateUser = useCallback((newUser) => {
         dispatch({ 
             type: authActionTypes.UPDATE_USER, 
@@ -231,12 +244,13 @@ export const AuthProvider = ({ children }) => {
             ...state,
             login,
             clearAuthError,
+            logout,
             logoutLocal,
             updateUser,
             bootstrapAuth,
             applyUserVoteStats
         }
-    }, [state, login, clearAuthError, logoutLocal, updateUser, bootstrapAuth, applyUserVoteStats])
+    }, [state, login, clearAuthError, logout, logoutLocal, updateUser, bootstrapAuth, applyUserVoteStats])
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
