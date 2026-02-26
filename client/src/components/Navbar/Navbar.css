@@ -14,6 +14,22 @@
     pointer-events: auto;
 }
 
+.user-info {  
+    transition: opacity 0.11s ease, transform 0.11s ease;
+}
+
+.user-info.closed {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    pointer-events: none;
+}
+
+.user-info.open {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+}
+
 .auth-bootstrap-indicator {
     animation: auth-session-pulse 1.2s ease-in-out infinite;
 }

@@ -18,34 +18,50 @@ const NAV_ITEMS = [
 
 const Navbar = (props) => {
     const [isNavExpanded, setIsNavExpanded] = useState(false);
+    const [isProfileOpened, setIsProfileOpened] = useState(false);
 
     const dropdownRef = useRef();
     const dropdownToggleRef = useRef();
+
+    const profileRef = useRef();
+    const profileToggleRef = useRef();
 
     const location = useLocation();
     const navigate = useNavigate();
     const isAuthPage = ["/login", "/register"].includes(location.pathname);
 
+    const { isAuthenticated, isBootstrapping, user } = useAuth();
+
+    // see if we need to close any popups/dropdowns on click
     useEffect(() => {
         const handlePointerDown = (e) => {
-            if (!isNavExpanded) {
+            if (!isNavExpanded && !isProfileOpened) {
                 return;
             }
             
             const target = e.target;
-            if (dropdownRef.current?.contains(target)) {
-                return;
-            }
-            if (dropdownToggleRef.current?.contains(target)) {
-                return;
+            const clickedNavUi =
+                dropdownRef.current?.contains(target) ||
+                dropdownToggleRef.current?.contains(target);
+
+            const clickedProfileUi =
+                profileRef.current?.contains(target) ||
+                profileToggleRef.current?.contains(target);
+
+            // Close nav when clicking anywhere outside nav UI.
+            if (!clickedNavUi) {
+                setIsNavExpanded(false);
             }
 
-            setIsNavExpanded(false);
+            // Keep profile open when clicking nav UI; close only when clicking outside both.
+            if (!clickedProfileUi) {
+                setIsProfileOpened(false);
+            }
         }
 
         document.addEventListener("pointerdown", handlePointerDown);;
         return () => document.removeEventListener("pointerdown", handlePointerDown);
-    }, [isNavExpanded])
+    }, [isNavExpanded, isProfileOpened])
 
     const getAvailablePathsToPageNames = (curPath) => {
         // filter out the current page in pageNames
@@ -54,8 +70,6 @@ const Navbar = (props) => {
         })
         return availablePages;
     }
-
-    const { isAuthenticated, isBootstrapping } = useAuth();
 
     return (
         <div className="Navbar">
@@ -100,7 +114,10 @@ const Navbar = (props) => {
                                     ref={dropdownToggleRef}
                                     type="button"
                                     className="group inline-flex flex-row justify-center items-center cursor-pointer text-black dark:text-white transition-opacity duration-150 hover:opacity-90 active:opacity-80"
-                                    onClick={() => setIsNavExpanded((prev) => !prev)}
+                                    onClick={() => {
+                                        setIsNavExpanded((prev) => !prev);
+                                        setIsProfileOpened(false);
+                                    }}
                                     aria-label={isNavExpanded ? "Collapse navigation" : "Expand navigation"}
                                     aria-expanded={isNavExpanded}
                                     aria-controls="navbar-available-paths"
@@ -135,12 +152,50 @@ const Navbar = (props) => {
                                 Checking session...
                             </div>
                         ) : isAuthenticated ? (
-                            <button 
-                                className="rounded-full border border-black dark:border-white w-8 h-8 md:w-12 md:h-12 shrink-0 p-0 flex justify-center items-center
-                                hover:bg-[#f5f5e5] dark:hover:bg-[#3a3a3a] transition-colors duration-75"
-                            >
-                                <PersonIcon className="text-black dark:text-white w-6 h-6 md:w-8 md:h-8"></PersonIcon>
-                            </button>
+                            <div className="relative">
+                                <button 
+                                    className="rounded-full border border-black dark:border-white w-8 h-8 md:w-12 md:h-12 shrink-0 p-0 flex justify-center items-center
+                                    hover:bg-[#f5f5e5] dark:hover:bg-[#3a3a3a] transition-colors duration-75"
+                                    onClick={() => {
+                                        setIsNavExpanded(false);
+                                        setIsProfileOpened((prev) => !prev)
+                                    }} 
+                                    ref={profileToggleRef}
+                                >
+                                    <PersonIcon className="text-black dark:text-white w-6 h-6 md:w-8 md:h-8"></PersonIcon>
+                                </button>
+                                
+                                {/* user info popup */}
+                                <div
+                                    className={`user-info ${isProfileOpened ? "open" : "closed"} absolute top-[calc(100%+12px)] 
+                                                right-0 flex flex-col p-4 md:p-5 min-w-[clamp(20vw,16rem,85vw)] gap-3 z-[15]`}
+                                    ref={profileRef}
+                                >
+                                    <div className="absolute inset-x-0 inset-y-0 rounded-lg bg-[#F8F8D6]/[0.97] dark:bg-[#4C4C4C]/[0.97] shadow-lg -z-10"/>
+
+                                    <div className="flex flex-col">
+                                        <p className="text-base md:text-lg lg:text-xl leading-tight">{user.nickname}</p>
+                                        <p className="text-xs md:text-sm lg:text-base leading-tight text-[#6c6c6c] dark:text-[#b8b8b8]">@{user.username}</p>
+                                    </div>
+                                    <hr />
+                                    <div className="flex flex-col text-sm md:text-base lg:text-lg leading-6 md:leading-7">
+                                        <div className="flex flex-row justify-between">
+                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes:</p>
+                                            <p className="tabular-nums">{user.totalVotes}</p>
+                                        </div>  
+                                        <div className="flex flex-row justify-between">
+                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Idol:</p>
+                                            <p>{user.favoriteIdol ? user.favoriteIdol.replace(/[0-9]/g, '') : "None"}</p>
+                                        </div>  
+                                        <div className={`flex ${user.favoriteImageUrl ? "flex-col" : "flex-row justify-between"}`}>
+                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:</p>
+                                            <img className="rounded-xl box-border border-2 border-black dark:border-gray-500" src={user.favoriteImageUrl} alt="Favorite image_" />
+                                        </div>  
+                                    </div>
+                                </div>
+                                
+                            </div>
+
                         ) : (
                             <PrimaryButton 
                                 className="px-5 max-[499px]:px-2 py-1 max-[499px]:py-2 rounded-full text-xl md:text-2xl lg:text-3xl xl:text-4xl"

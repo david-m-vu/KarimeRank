@@ -44,6 +44,7 @@ const verifyKarimeRankKey = (req, res) => {
     return true;
 };
 
+// store image from thumbnail url into firebase storage with referrer originUrl
 const fetchImageBufferWithRetry = async ({ originUrl, thumbnailUrl, maxAttempts = 3 }) => {
     let lastError;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -86,7 +87,7 @@ const saveIdolImages = async (idolName, collectionName, imageObjects) => {
         try {
             const buffer = await fetchImageBufferWithRetry({ originUrl, thumbnailUrl });
 
-            // upload image to firebase storage
+            // upload (thumbnail) image to firebase storage
             const added = await uploadImage(
                 buffer,
                 `${collectionName}/${idolName}/${sanitizeFileName(imageName)}.jpeg`,

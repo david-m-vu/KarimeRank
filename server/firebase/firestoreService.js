@@ -148,6 +148,7 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
             const currentFavoriteIdolKey = nextFavoriteIdol.toLowerCase().trim();
 
             let nextFavoriteImageId = typeof userData.favoriteImageId === "string" ? userData.favoriteImageId : "";
+            let nextFavoriteImageUrl = typeof userData.favoriteImageUrl === "string" ? userData.favoriteImageUrl : "";
             let nextFavoriteImageVotes = Number(userData.favoriteImageVotes) || 0;
 
             // if new idol votes > current favorite idol votes || same idol, update those existing user fields
@@ -158,6 +159,11 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
 
             if (nextImageVotes >= nextFavoriteImageVotes || nextFavoriteImageId === chosenImageId) {
                 nextFavoriteImageId = chosenImageId;
+                nextFavoriteImageUrl = (
+                    (typeof imageData.firebaseUrl === "string" && imageData.firebaseUrl) ||
+                    (typeof imageData.url === "string" && imageData.url) ||
+                    ""
+                );
                 nextFavoriteImageVotes = nextImageVotes;
             }
 
@@ -179,6 +185,7 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
                 favoriteIdol: nextFavoriteIdol,
                 favoriteIdolVotes: nextFavoriteIdolVotes,
                 favoriteImageId: nextFavoriteImageId,
+                favoriteImageUrl: nextFavoriteImageUrl,
                 favoriteImageVotes: nextFavoriteImageVotes
             }
 

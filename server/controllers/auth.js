@@ -45,6 +45,7 @@ export const register = async (req, res) => {
             favoriteIdol: "",
             favoriteIdolVotes: 0,
             favoriteImageId: "",
+            favoriteImageUrl: "",
             favoriteImageVotes: 0,
             lastLoginAt: null,
         }
