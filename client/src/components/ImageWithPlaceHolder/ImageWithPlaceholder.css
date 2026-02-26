@@ -1,0 +1,31 @@
+
+.image-hover-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.image-hover-container:hover img {
+    filter: grayscale(50%) brightness(0.7);
+    transition: filter 0.3s ease;
+}
+
+.loading-placeholder {
+    animation: placeholder-pulse 1.2s ease-in-out infinite;
+    will-change: filter, opacity;
+}
+
+@keyframes placeholder-pulse {
+    0%, 100% {
+        filter: saturate(0.9) brightness(0.9);
+        opacity: 0.82;
+    }
+    50% {
+        filter: saturate(1.15) brightness(1.08);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loading-placeholder {
+        animation: none;
+    }
+}

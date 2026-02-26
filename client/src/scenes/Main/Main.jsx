@@ -1,11 +1,13 @@
 import "./Main.css"
 import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNamesWithGroup, likeImage } from "../../requests/images.js"
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useSpring, animated } from "react-spring"
 
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import heart from "../../assets/heart-filled.svg";
+import ImageWithPlaceholder from "../../components/ImageWithPlaceHolder/ImageWithPlaceholder.jsx";
 
 const Main = () => {
     const [images, setImages] = useState([]);
@@ -16,13 +18,22 @@ const Main = () => {
     const [secondNewStats, setSecondNewStats] = useState({});
     const [winnerID, setWinnerID] = useState(-1);
 
-    const [selectedIdol, setSelectedIdol] = useState("Random");
     const [idolGroups, setIdolGroups] = useState([]);
 
     const [isLoadingMain, setIsLoadingMain] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(0);
 
+    const [queryParameters, setQueryParameters] = useSearchParams();
     const { applyUserVoteStats } = useAuth();
+
+    const selectedIdol = queryParameters.get("filter") || "random";
+    const selectedIdolLower = selectedIdol.toLowerCase();
+    const hasLoadedIdolGroups = idolGroups.length > 0;
+    const isSelectedIdolValid = selectedIdolLower === "random" || idolGroups.some((idolGroup) => {
+        return idolGroup.idolName.toLowerCase() === selectedIdolLower;
+    });
+    const effectiveSelectedIdol = (hasLoadedIdolGroups && !isSelectedIdolValid) ? "random" : selectedIdol;
+    
 
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
@@ -38,10 +49,10 @@ const Main = () => {
             setImagesLoaded(0);
             setIsLoadingMain(true);
         }
-        if (selectedIdol.toLowerCase() === "random") {
+        if (effectiveSelectedIdol === "random") {
             imagePair = await getIdolImagePair();
         } else {
-            imagePair = await getIdolImagePairByIdol(selectedIdol);
+            imagePair = await getIdolImagePairByIdol(effectiveSelectedIdol);
         }
 
         if (imagePair) {
@@ -59,7 +70,7 @@ const Main = () => {
                 setShowRecords(false);
             }
         }
-    }, [selectedIdol])
+    }, [effectiveSelectedIdol])
 
     // fetch idol groups on initial render
     useEffect(() => {
@@ -74,6 +85,13 @@ const Main = () => {
     useEffect(() => {
         fetchImages(false);
     }, [fetchImages])
+
+    // normalize invalid filter query to Random once idol options are known
+    useEffect(() => {
+        if (hasLoadedIdolGroups && !isSelectedIdolValid) {
+            setQueryParameters({ filter: "random" }, { replace: true });
+        }
+    }, [hasLoadedIdolGroups, isSelectedIdolValid, setQueryParameters])
 
     // if all (2) images have loaded, set isLoadingMain to false
     useEffect(() => {
@@ -127,7 +145,7 @@ const Main = () => {
     }
 
     const handleSelect = (e) => {
-        setSelectedIdol(e.target.value)
+        setQueryParameters({ filter: e.target.value }, { replace: true });
     }
 
     return (
@@ -143,9 +161,10 @@ const Main = () => {
                 <select 
                     name="idols" 
                     className="bg-white dark:bg-black border-black dark:border-white dark:text-white border-2 rounded-md ml-2 min-w-[13.5rem] md:min-w-[16rem] lg:min-w-[19.75rem]" 
+                    value={effectiveSelectedIdol}
                     onChange={handleSelect}
                 >
-                    <option>Random</option>
+                    <option value="random">Random</option>
                     {idolGroups.sort((a, b) => {
                         // need to do this because you cant subtract two strings
                         if (a.groupName > b.groupName) {
@@ -156,7 +175,12 @@ const Main = () => {
                             return 0;
                         }
                     }).map((idolGroups, index) => {
-                        return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
+                        return <option 
+                            value={idolGroups.idolName} 
+                            key={idolGroups.idolName}
+                        >
+                            {`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}
+                        </option>
                     })}
                 </select>
 
@@ -167,13 +191,17 @@ const Main = () => {
                     return (
                         <div className="inline-flex flex-col items-start min-w-0 relative" key={image.id}>
                             <div className="relative image-hover-wrapper">
-                                <img onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
+                                <ImageWithPlaceholder onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
                                     className="voting-image h-[clamp(16rem,50dvh,34rem)] w-auto object-cover cursor-pointer rounded-xl block" 
                                     src={image.url} 
                                     alt={image.imageName} 
-                                    onLoad={() => {
-                                        handleImageLoad();
-                                    }}
+                                    width={image.width}
+                                    height={image.height}
+                                    // onLoad={() => {
+                                    //     handleImageLoad();
+                                    // }}
+                                    handleImageLoad={handleImageLoad}
+                                    withAnchor={false}
                                 />
                                 {(Boolean(hasLiked) && hasLiked === image.id) && <img className="heart absolute" src={heart} alt="like" />}
                                 {showRecords && 
@@ -228,7 +256,7 @@ const AnimatedNumber = ({ color, start, end }) => {
     }
     
     const { number } = useSpring({
-        from: { number: start},
+        from: { number: start },
         number: end,
         delay: 50,
         config: { mass: 1, tension: 20, friction: 10 },

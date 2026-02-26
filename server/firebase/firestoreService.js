@@ -147,9 +147,24 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
             let nextFavoriteIdolVotes = Number(userData.favoriteIdolVotes) || 0;
             const currentFavoriteIdolKey = nextFavoriteIdol.toLowerCase().trim();
 
-            let nextFavoriteImageId = typeof userData.favoriteImageId === "string" ? userData.favoriteImageId : "";
-            let nextFavoriteImageUrl = typeof userData.favoriteImageUrl === "string" ? userData.favoriteImageUrl : "";
-            let nextFavoriteImageVotes = Number(userData.favoriteImageVotes) || 0;
+            const favoriteImage = (userData.favoriteImage && typeof userData.favoriteImage === "object") ? userData.favoriteImage : {};
+            let nextFavoriteImageId = typeof favoriteImage.id === "string" ? favoriteImage.id : "";
+            let nextFavoriteImageUrl = typeof favoriteImage.url === "string" ? favoriteImage.url : "";
+
+            let nextFavoriteImageWidth = Number(favoriteImage.width);
+            if (!Number.isFinite(nextFavoriteImageWidth) || nextFavoriteImageWidth < 0) {
+                nextFavoriteImageWidth = 0;
+            }
+
+            let nextFavoriteImageHeight = Number(favoriteImage.height);
+            if (!Number.isFinite(nextFavoriteImageHeight) || nextFavoriteImageHeight < 0) {
+                nextFavoriteImageHeight = 0;
+            }
+
+            let nextFavoriteImageVotes = Number(favoriteImage.votes);
+            if (!Number.isFinite(nextFavoriteImageVotes) || nextFavoriteImageVotes < 0) {
+                nextFavoriteImageVotes = 0;
+            }
 
             // if new idol votes > current favorite idol votes || same idol, update those existing user fields
             if (nextIdolVotes >= nextFavoriteIdolVotes || currentFavoriteIdolKey === idolVoteKey) {
@@ -164,6 +179,13 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
                     (typeof imageData.url === "string" && imageData.url) ||
                     ""
                 );
+                
+                const imageWidth = Number(imageData.width);
+                nextFavoriteImageWidth = Number.isFinite(imageWidth) && imageWidth > 0 ? imageWidth : 0;
+
+                const imageHeight = Number(imageData.height);
+                nextFavoriteImageHeight = Number.isFinite(imageHeight) && imageHeight > 0 ? imageHeight : 0;
+                
                 nextFavoriteImageVotes = nextImageVotes;
             }
 
@@ -184,9 +206,13 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
                 totalVotes: prevTotalVotes + 1,
                 favoriteIdol: nextFavoriteIdol,
                 favoriteIdolVotes: nextFavoriteIdolVotes,
-                favoriteImageId: nextFavoriteImageId,
-                favoriteImageUrl: nextFavoriteImageUrl,
-                favoriteImageVotes: nextFavoriteImageVotes
+                favoriteImage: {
+                    id: nextFavoriteImageId,
+                    url: nextFavoriteImageUrl,
+                    width: nextFavoriteImageWidth,
+                    height: nextFavoriteImageHeight,
+                    votes: nextFavoriteImageVotes,
+                }
             }
 
             transaction.update(userRef, userVoteStats)
