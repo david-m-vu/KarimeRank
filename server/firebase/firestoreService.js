@@ -101,6 +101,102 @@ export const updateNicknameByUserId = async (collectionName, userId, newNickname
     return { id: userSnap.id, ...userSnap.data()};
 }
 
+// updates the user's total vote count and also their favorite image/idol
+export const updateUserVotes = async (useTestCollection = true, userId, chosenImageId) => {
+    try {
+        const usersCollectionName = useTestCollection ? "test_users" : "users";
+        const imagesCollectionName = useTestCollection ? "test_images" : "images";
+        const userRef = doc(db, usersCollectionName, userId);
+        const imageRef = doc(db, imagesCollectionName, chosenImageId);
+
+        return await runTransaction(db, async (transaction) => {
+            const userSnap = await transaction.get(userRef);
+            if (!userSnap.exists()) {
+                throw new Error("user doesn't exist");
+            }
+
+            const imageSnap = await transaction.get(imageRef);
+            if (!imageSnap.exists()) {
+                throw new Error("image doesn't exist");
+            }
+
+            const userData = userSnap.data();
+            const imageData = imageSnap.data();
+
+            const idolName = typeof imageData.idolName === "string" ? imageData.idolName.trim() : "";
+            if (!idolName) {
+                throw new Error("image is missing idolName");
+            }
+
+            // get necessary subcollection data idolVotes and imageVotes
+            const idolVoteKey = idolName.toLowerCase();
+            const idolVoteRef = doc(db, usersCollectionName, userId, "idolVotes", idolVoteKey);
+            const imageVoteRef = doc(db, usersCollectionName, userId, "imageVotes", chosenImageId);
+
+            const idolVoteSnap = await transaction.get(idolVoteRef);
+            const imageVoteSnap = await transaction.get(imageVoteRef);
+
+            const currentIdolVotes = idolVoteSnap.exists() ? Number(idolVoteSnap.data().votes) || 0 : 0;
+            const currentImageVotes = imageVoteSnap.exists() ? Number(imageVoteSnap.data().votes) || 0 : 0;
+            const nextIdolVotes = currentIdolVotes + 1;
+            const nextImageVotes = currentImageVotes + 1;
+
+            // get prev user stats
+            const prevTotalVotes = Number(userData.totalVotes) || 0;
+            let nextFavoriteIdol = typeof userData.favoriteIdol === "string" ? userData.favoriteIdol : "";
+            let nextFavoriteIdolVotes = Number(userData.favoriteIdolVotes) || 0;
+            const currentFavoriteIdolKey = nextFavoriteIdol.toLowerCase().trim();
+
+            let nextFavoriteImageId = typeof userData.favoriteImageId === "string" ? userData.favoriteImageId : "";
+            let nextFavoriteImageVotes = Number(userData.favoriteImageVotes) || 0;
+
+            // if new idol votes > current favorite idol votes || same idol, update those existing user fields
+            if (nextIdolVotes >= nextFavoriteIdolVotes || currentFavoriteIdolKey === idolVoteKey) {
+                nextFavoriteIdol = idolName;
+                nextFavoriteIdolVotes = nextIdolVotes;
+            }
+
+            if (nextImageVotes >= nextFavoriteImageVotes || nextFavoriteImageId === chosenImageId) {
+                nextFavoriteImageId = chosenImageId;
+                nextFavoriteImageVotes = nextImageVotes;
+            }
+
+            transaction.set(idolVoteRef, {
+                idolName,
+                votes: nextIdolVotes,
+                updatedAt: Timestamp.now()
+            }, { merge: true }) // without merge: true, set overwrites the whole document instead of just the specified fields
+
+            transaction.set(imageVoteRef, {
+                imageId: chosenImageId,
+                idolName,
+                votes: nextImageVotes,
+                updatedAt: Timestamp.now()
+            }, { merge: true })
+
+            const userVoteStats = {
+                totalVotes: prevTotalVotes + 1,
+                favoriteIdol: nextFavoriteIdol,
+                favoriteIdolVotes: nextFavoriteIdolVotes,
+                favoriteImageId: nextFavoriteImageId,
+                favoriteImageVotes: nextFavoriteImageVotes
+            }
+
+            transaction.update(userRef, userVoteStats)
+
+            return userVoteStats
+
+        })
+
+    } catch (err) {
+        console.log(err.message);
+        return { error: err.message };
+    }
+
+}
+
+
+
 /*
  * images
  */

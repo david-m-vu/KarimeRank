@@ -58,6 +58,8 @@ export const moveDocuments = async (SourceCollection, DestinationCollection) => 
     }
 }
 
+// outcome 1 means the my in myRating wins
+// outcome 0 means the my in myRating loses
 export const getNewRating = (myRating, opponentRating, outcome) => {
     return myRating + getRatingDelta(myRating, opponentRating, outcome)
 }
@@ -67,6 +69,8 @@ const getRatingDelta = (myRating, opponentRating, outcome) => {
         return null;
     }
 
+    // opponent has more rating --> large denominator --> small chance to win --> more rating gained (if outcome === 1)
+    // you have more rating --> small denominator --> large chance to win --> less rating gained (if outcome === 1)
     const myChanceToWin = 1 / (1 + Math.pow(10, (opponentRating - myRating) / 400));
     return Math.round(32 * (outcome - myChanceToWin))
 }

@@ -133,7 +133,7 @@ const Login = () => {
 
                 {/* buttons */}
                 <div className="flex flex-row w-full justify-between text-[1.25rem]">
-                    <Link to="/register" className="hover:opacity-90 active:opacity-80">
+                    <Link to="/register" className="hover:opacity-90 active:opacity-80 hover:bg-[#E8E8DC] dark:hover:bg-[#3A3A38] px-4 py-1 rounded-full">
                         Sign Up
                     </Link>
                     <PrimaryButton type="submit" className="px-8 rounded-2xl" disabled={username === "" || password === ""}>
@@ -142,7 +142,7 @@ const Login = () => {
                 </div>
             </form>
             
-            <img src={KarinaGreet} alt="Karina Greet" className="fixed bottom-0 left-0"/>
+            <img src={KarinaGreet} alt="Karina Greet" className="fixed bottom-0 left-0 h-[50vw] lg:h-auto lg:w-auto"/>
         </div>
     )
 }

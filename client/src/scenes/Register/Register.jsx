@@ -220,7 +220,7 @@ const Register = () => {
 
                 {/* buttons */}
                 <div className="flex flex-row w-full justify-between text-[1.25rem]">
-                    <Link to="/login" className=" hover:opacity-90 active:opacity-80">
+                    <Link to="/login" className=" hover:opacity-90 active:opacity-80 hover:bg-[#E8E8DC] dark:hover:bg-[#3A3A38] px-4 py-1 rounded-full">
                         Login
                     </Link>
                     <PrimaryButton

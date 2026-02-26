@@ -2,7 +2,7 @@ import { db } from "../firebase/firebaseConfig.js";
 import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction, deleteDoc, writeBatch, Timestamp } from "firebase/firestore"
 import axios from "axios";
 
-import { saveManyImages } from "../firebase/firestoreService.js";
+import { saveManyImages, updateUserVotes } from "../firebase/firestoreService.js";
 import { uploadImage } from "../firebase/storageService.js";
 
 import { getImagesByIdol } from "../requests/scraping.js"
@@ -562,6 +562,22 @@ export const likeImage = async (req, res) => {
             chosenID
         } = req.body;
 
+        if (
+            typeof firstImageID !== "string" || !firstImageID.trim() ||
+            typeof secondImageID !== "string" || !secondImageID.trim() ||
+            typeof chosenID !== "string" || !chosenID.trim()
+        ) {
+            return res.status(400).json({ message: "firstImageID, secondImageID, and chosenID are required to be non-empty strings" });
+        }
+
+        if (firstImageID === secondImageID) {
+            return res.status(400).json({ message: "firstImageID and secondImageID must be different" });
+        }
+
+        if (chosenID !== firstImageID && chosenID !== secondImageID) {
+            return res.status(400).json({ message: "chosenID must match firstImageID or secondImageID" });
+        }
+
         const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
 
         // the third argument is the firestore document ID, also known as __name__
@@ -582,7 +598,7 @@ export const likeImage = async (req, res) => {
             const secondSnap = await transaction.get(secondDocRef);
 
             if (!firstSnap.exists()) {
-                throw new Error("First image not found)");
+                throw new Error("First image not found");
             }
             if (!secondSnap.exists()) {
                 throw new Error("Second image not found");
@@ -635,9 +651,32 @@ export const likeImage = async (req, res) => {
             };
         })
 
-        res.status(200).json({ updatedFirstImage, updatedSecondImage });
+        const resObject = { updatedFirstImage, updatedSecondImage }
+        // update user data if authenticated
+        if (req.auth) {
+            const { userId } = req.auth;
+
+            const updateRes = await updateUserVotes(process.env.TEST_MODE === "TEST_MODE", userId, chosenID);
+            if (updateRes.error) {
+                // Best-effort user stats update: don't fail vote response after Elo transaction succeeded.
+                resObject.userStatsUpdateError = updateRes.error;
+            } else {
+                resObject.userVoteStats = updateRes;
+            }
+        }
+
+        console.log(resObject);
+
+        return res.status(200).json(resObject);
+
     } catch (err) {
-        res.status(404).json({ message: err.message })
+        if (err.message === "Invalid chosenID") {
+            return res.status(400).json({ message: err.message });
+        }
+        if (err.message === "First image not found" || err.message === "Second image not found") {
+            return res.status(404).json({ message: err.message });
+        }
+        return res.status(500).json({ message: err.message });
     }
 }
 

@@ -3,6 +3,8 @@ import { getIdolImagePair, getIdolImagePairByIdol, getAllIdolNamesWithGroup, lik
 import { useState, useEffect, useCallback } from "react";
 import { useSpring, animated } from "react-spring"
 
+import { useAuth } from "../../context/AuthContext.jsx";
+
 import heart from "../../assets/heart-filled.svg";
 
 const Main = () => {
@@ -19,6 +21,8 @@ const Main = () => {
 
     const [isLoadingMain, setIsLoadingMain] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(0);
+
+    const { applyUserVoteStats } = useAuth();
 
     const playAudio = () => {
         var audio = new Audio("/sounds/bubble-sound.mp3");
@@ -90,7 +94,16 @@ const Main = () => {
 
             // get new stats
             const updatedImages = await likeImage(images[0].id, images[1].id, chosenImageId);
-            const { updatedFirstImage, updatedSecondImage } = updatedImages;
+            if (!updatedImages?.updatedFirstImage || !updatedImages?.updatedSecondImage) {
+                setHasLiked(0);
+                return;
+            }
+
+            const { updatedFirstImage, updatedSecondImage, userVoteStats, userStatsUpdateError } = updatedImages;
+
+            if (!userStatsUpdateError && userVoteStats) {
+                applyUserVoteStats(userVoteStats);
+            }
 
             setFirstNewStats({ id: updatedFirstImage.id, numLosses: updatedFirstImage.numLosses, numWins: updatedFirstImage.numWins, score: updatedFirstImage.score });
             setSecondNewStats({ id: updatedSecondImage.id, numLosses: updatedSecondImage.numLosses, numWins: updatedSecondImage.numWins, score: updatedSecondImage.score })

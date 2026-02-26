@@ -1,10 +1,11 @@
 import "./Navbar.css"
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 
 import { ReactComponent as ExpandMoreIcon } from "../../assets/icons/expand_more.svg";
 import { ReactComponent as LoginIcon } from "../../assets/icons/login.svg";
 import { ReactComponent as PersonIcon } from "../../assets/icons/person_outline.svg";
+import { ReactComponent as ArrowBackIcon } from "../../assets/icons/arrow_back.svg";
 import PrimaryButton from "../PrimaryButton/PrimaryButton";
 
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -18,8 +19,33 @@ const NAV_ITEMS = [
 const Navbar = (props) => {
     const [isNavExpanded, setIsNavExpanded] = useState(false);
 
+    const dropdownRef = useRef();
+    const dropdownToggleRef = useRef();
+
     const location = useLocation();
     const navigate = useNavigate();
+    const isAuthPage = ["/login", "/register"].includes(location.pathname);
+
+    useEffect(() => {
+        const handlePointerDown = (e) => {
+            if (!isNavExpanded) {
+                return;
+            }
+            
+            const target = e.target;
+            if (dropdownRef.current?.contains(target)) {
+                return;
+            }
+            if (dropdownToggleRef.current?.contains(target)) {
+                return;
+            }
+
+            setIsNavExpanded(false);
+        }
+
+        document.addEventListener("pointerdown", handlePointerDown);;
+        return () => document.removeEventListener("pointerdown", handlePointerDown);
+    }, [isNavExpanded])
 
     const getAvailablePathsToPageNames = (curPath) => {
         // filter out the current page in pageNames
@@ -29,7 +55,7 @@ const Navbar = (props) => {
         return availablePages;
     }
 
-    const { user, isAuthenticated, isBootstrapping } = useAuth();
+    const { isAuthenticated, isBootstrapping } = useAuth();
 
     return (
         <div className="Navbar">
@@ -54,12 +80,24 @@ const Navbar = (props) => {
             
 
                 {/* right side */}
-                {!["/login", "/register"].includes(location.pathname) && 
-                    <div className="col-start-2 row-start-1 sm:col-start-auto sm:row-start-auto flex flex-row gap-2 md:gap-6 ml-4 text-xl md:text-2xl lg:text-3xl xl:text-4xl justify-end items-center">                        
+                <div className="col-start-2 row-start-1 sm:col-start-auto sm:row-start-auto flex flex-row gap-2 md:gap-6 ml-4 text-xl md:text-2xl lg:text-3xl xl:text-4xl justify-end items-center">
+                {isAuthPage ? (
+                    <PrimaryButton
+                        type="button"
+                        onClick={() => navigate("/")}
+                        className="inline-flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 rounded-full shrink-0"
+                        aria-label="Go back"
+                    >
+                        <ArrowBackIcon className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 shrink-0" />
+                        <span className="hidden sm:inline ">Back</span>
+                    </PrimaryButton>
+                ) : (
+                    <>                        
                         {/* nav dropdown */}
                         <div className="relative flex flex-col items-end">
                             {/* current page navlink */}
                                 <button
+                                    ref={dropdownToggleRef}
                                     type="button"
                                     className="group inline-flex flex-row justify-center items-center cursor-pointer text-black dark:text-white transition-opacity duration-150 hover:opacity-90 active:opacity-80"
                                     onClick={() => setIsNavExpanded((prev) => !prev)}
@@ -76,6 +114,7 @@ const Navbar = (props) => {
                             {/* other navlinks when dropdown open */}
                             <div 
                                 id="navbar-available-paths"
+                                ref={dropdownRef}
                                 className={`available-paths absolute top-[calc(100%+4px)] lg:gap-1 flex flex-col items-end ${isNavExpanded ? "open" : "closed"} z-20`}
                                 aria-hidden={!isNavExpanded}    
                             >
@@ -96,20 +135,24 @@ const Navbar = (props) => {
                                 Checking session...
                             </div>
                         ) : isAuthenticated ? (
-                            <button className="rounded-full border border-black dark:border-white w-8 h-8 md:w-12 md:h-12 shrink-0 p-0 flex justify-center items-center" >
+                            <button 
+                                className="rounded-full border border-black dark:border-white w-8 h-8 md:w-12 md:h-12 shrink-0 p-0 flex justify-center items-center
+                                hover:bg-[#f5f5e5] dark:hover:bg-[#3a3a3a] transition-colors duration-75"
+                            >
                                 <PersonIcon className="text-black dark:text-white w-6 h-6 md:w-8 md:h-8"></PersonIcon>
                             </button>
                         ) : (
                             <PrimaryButton 
-                                className="px-5 max-[499px]:px-2 max-[499px]:py-2 rounded-full text-xl md:text-2xl lg:text-3xl xl:text-4xl"
+                                className="px-5 max-[499px]:px-2 py-1 max-[499px]:py-2 rounded-full text-xl md:text-2xl lg:text-3xl xl:text-4xl"
                                 onClick={() => navigate("login")}
                             >
                                 <span className="max-[499px]:hidden">Sign in</span>
                                 <LoginIcon className="hidden max-[499px]:block w-5 h-auto"/>
                             </PrimaryButton>
                         )}
-                    </div>
-                }
+                    </>
+                )}
+                </div>
             </div>
         </div>
     )

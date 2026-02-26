@@ -1,6 +1,6 @@
 import express from "express";
 import { generateImagesByIdol, generateImageSet, getTotalVotes, updateAllIdols, deleteIdol, deleteImageById, getAllImages, getStartToEndImages, getAllIdolNames, getAllIdolNamesWithGroup, getRandomImagePair, getRandomImagePairByIdol, likeImage, addGroupName, testAnything, archiveImagesCollection } from "../controllers/images.js"
-import { requireAuth } from "../middleware/auth.js"
+import { authOptional, requireAuth } from "../middleware/auth.js"
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.post("/update-all", updateAllIdols);
 router.get("/random", getRandomImagePair);
 router.get("/random/:idolName", getRandomImagePairByIdol);
 
-router.patch("/like", likeImage);
+router.patch("/like", authOptional, likeImage);
 router.delete("/delete-idol", deleteIdol);
 router.delete("/delete-image", deleteImageById);
 

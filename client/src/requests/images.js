@@ -126,6 +126,7 @@ export const likeImage = async (firstImageID, secondImageID, chosenID) => {
         headers: {
             "Content-Type": "application/json",
         },
+        credentials: "include", // if no auth cookie exists, browser just sends none
         body: JSON.stringify({
             firstImageID,
             secondImageID,

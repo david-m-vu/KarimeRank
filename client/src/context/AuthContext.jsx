@@ -20,7 +20,9 @@ const authActionTypes = {
 
     BOOTSTRAP_START: "BOOTSTRAP_START",
     BOOTSTRAP_SUCCESS: "BOOTSTRAP_SUCCESS",
-    BOOTSTRAP_FAILURE: "BOOTSTRAP_FAILURE"
+    BOOTSTRAP_FAILURE: "BOOTSTRAP_FAILURE",
+
+    APPLY_VOTE_STATS: "APPLY_VOTE_STATS"
 }
 
 const authReducer = (state, action) => {
@@ -94,6 +96,19 @@ const authReducer = (state, action) => {
                 isAuthenticated: false,
                 isBootstrapping: false,
                 error: ""
+            }
+        }
+        case authActionTypes.APPLY_VOTE_STATS: {
+            if (!state.user || !action.payload?.userVoteStats) {
+                return state;
+            }
+
+            return {
+                ...state,
+                user: {
+                    ...state.user,
+                    ...action.payload.userVoteStats
+                }
             }
         }
         default: {
@@ -204,6 +219,13 @@ export const AuthProvider = ({ children }) => {
         bootstrapAuth();
     }, [bootstrapAuth])
 
+    const applyUserVoteStats = useCallback((userVoteStats) => {
+        dispatch({
+            type: authActionTypes.APPLY_VOTE_STATS,
+            payload: { userVoteStats }
+        })
+    }, [])
+
     const value = useMemo(() => {
         return {
             ...state,
@@ -211,9 +233,10 @@ export const AuthProvider = ({ children }) => {
             clearAuthError,
             logoutLocal,
             updateUser,
-            bootstrapAuth
+            bootstrapAuth,
+            applyUserVoteStats
         }
-    }, [state, login, clearAuthError, logoutLocal, updateUser, bootstrapAuth])
+    }, [state, login, clearAuthError, logoutLocal, updateUser, bootstrapAuth, applyUserVoteStats])
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
@@ -225,4 +248,3 @@ export const useAuth = () => {
     }
     return context;
 }
-
