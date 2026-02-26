@@ -8,6 +8,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from './scenes/Login/Login.jsx';
 import Register from './scenes/Register/Register.jsx';
 import ChangeNickname from './scenes/ChangeNickname/ChangeNickname.jsx';
+import Leaderboard from "./scenes/Leaderboard/Leaderboard.jsx";
 import RequireAuth from './components/RequireAuth/RequireAuth.jsx';
 
 const App = () => {
@@ -20,6 +21,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Main />}></Route>
           <Route path="/rankings" element={<Rankings setTotalVotes={setTotalVotes} />}></Route>
+          <Route path="/leaderboard" element={<Leaderboard/>}></Route>
           <Route path="/register" element={<Register/>}></Route>
           <Route path="/login" element={<Login/>}></Route>
           <Route

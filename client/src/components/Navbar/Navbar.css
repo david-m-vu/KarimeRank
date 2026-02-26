@@ -1,5 +1,5 @@
 .available-paths {  
-    transition: opacity 0.22s ease, transform 0.22s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .available-paths.closed {

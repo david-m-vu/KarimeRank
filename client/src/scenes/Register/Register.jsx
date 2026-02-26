@@ -83,7 +83,6 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log('submitted form');
         setSubmittedOnce(true);
         setRegisterErrMsg("");
 

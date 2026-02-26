@@ -52,7 +52,6 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        console.log("submitted form")
         setSubmittedOnce(true);
 
         if (!username || !password) {

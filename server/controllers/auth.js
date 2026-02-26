@@ -56,8 +56,6 @@ export const register = async (req, res) => {
             return res.status(409).json({ message: "username already exists" });
         }
 
-        console.log(`created new user with username ${normalizedUsername} and nickname ${finalNickname}`);
-
         // don't send password hash back to the user
         delete savedUser.passwordHash;
 

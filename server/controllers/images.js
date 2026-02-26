@@ -666,8 +666,6 @@ export const likeImage = async (req, res) => {
             }
         }
 
-        console.log(resObject);
-
         return res.status(200).json(resObject);
 
     } catch (err) {

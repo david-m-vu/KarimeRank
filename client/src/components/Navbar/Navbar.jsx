@@ -183,7 +183,7 @@ const Navbar = (props) => {
                                         <p className="text-xs md:text-sm lg:text-base leading-tight text-[#6c6c6c] dark:text-[#b8b8b8]">@{user.username}</p>
                                     </div>
 
-                                    <hr />
+                                    <hr className="border-0 border-t border-black dark:border-white"/>
 
                                     <div className="flex flex-col text-sm md:text-base lg:text-lg leading-6 md:leading-7">
                                         <div className="flex flex-row justify-between">
@@ -200,7 +200,7 @@ const Navbar = (props) => {
                                         </div>  
                                     </div>
 
-                                    <hr />
+                                    <hr className="border-0 border-t border-black dark:border-white"/>
 
                                     <PrimaryButton
                                         className="rounded-full text-[#FF6961] py-1 text-sm md:text-base lg:text-lg self-center px-5"
