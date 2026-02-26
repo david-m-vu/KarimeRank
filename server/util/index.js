@@ -7,6 +7,20 @@ export const sanitizeFileName = (name) => {
         .replace(/^\.+|\.+$/g, "");   // Remove leading/trailing dots
 }
 
+export const isValidUsername = (username) => {
+    if (typeof username !== "string") {
+        return false;
+    }
+    return /^(?=.{3,20}$)[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$/.test(username.trim())
+}
+
+export const isValidNickname = (nickname) => {
+    if (typeof nickname !== "string") {
+        return false;
+    }
+    return /^(?=.{2,30}$)[A-Za-z0-9]+(?:[ ._-][A-Za-z0-9]+)*$/.test(nickname.trim());
+}
+
 export const isValidImageUrl = async (url) => {
     try {
         // Perform a HEAD request to get headers only
@@ -37,8 +51,6 @@ export const moveDocuments = async (SourceCollection, DestinationCollection) => 
         await DestinationCollection.insertMany(images);
         await SourceCollection.deleteMany({});
 
-
-        console.log("poggers");
         const archivedImages = await DestinationCollection.find();
         return archivedImages
     } catch (err) {
@@ -46,6 +58,8 @@ export const moveDocuments = async (SourceCollection, DestinationCollection) => 
     }
 }
 
+// outcome 1 means the my in myRating wins
+// outcome 0 means the my in myRating loses
 export const getNewRating = (myRating, opponentRating, outcome) => {
     return myRating + getRatingDelta(myRating, opponentRating, outcome)
 }
@@ -55,6 +69,8 @@ const getRatingDelta = (myRating, opponentRating, outcome) => {
         return null;
     }
 
+    // opponent has more rating --> large denominator --> small chance to win --> more rating gained (if outcome === 1)
+    // you have more rating --> small denominator --> large chance to win --> less rating gained (if outcome === 1)
     const myChanceToWin = 1 / (1 + Math.pow(10, (opponentRating - myRating) / 400));
     return Math.round(32 * (outcome - myChanceToWin))
 }

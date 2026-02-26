@@ -1,0 +1,47 @@
+.available-paths {  
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.available-paths.closed {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    pointer-events: none;
+}
+
+.available-paths.open {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+}
+
+.user-info {  
+    transition: opacity 0.11s ease, transform 0.11s ease;
+}
+
+.user-info.closed {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    pointer-events: none;
+}
+
+.user-info.open {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+}
+
+.auth-bootstrap-indicator {
+    animation: auth-session-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes auth-session-pulse {
+    0% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}

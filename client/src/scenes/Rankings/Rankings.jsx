@@ -1,11 +1,11 @@
 import "./Rankings.css"
 import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import crown from "../../assets/crown.png"
 
-const Rankings = (props) => {
+const Rankings = ({ setTotalVotes }) => {
     const [images, setImages] = useState([]);
     const [lastDocId, setLastDocId] = useState(null);
 
@@ -13,40 +13,89 @@ const Rankings = (props) => {
     const [searchMore, setSearchMore] = useState(true);
     const [isLoadingMain, setIsLoadingMain] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
     const [showEndIndicator, setShowEndIndicator] = useState(false);
+    const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
     const [idolGroups, setIdolGroups] = useState([]);
     const [daysUntilNextMonth, setDaysUntilNextMonth] = useState("X");
     
     const navigate = useNavigate();
     const [queryParameters] = useSearchParams();
+    const selectedFilter = queryParameters.get("filter");
 
-    let mybutton = document.getElementById("myBtn");
+    const fetchImages = useCallback(async (idolName, cursor, canSearchMore) => {
+        if (canSearchMore) {
+            // console.log("fetching");
+            setIsLoadingMain(true);
+            const pagination = await getStartToEndImages(idolName, 20, cursor);
 
+            if (pagination.images.length > 0) {
+                setImages((prev) => [...prev, ...pagination.images])
+                setLastDocId(pagination.lastDocId);
+            } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
+                // console.log("done")
+                setShowEndIndicator(true);
+                setSearchMore(false);
+                setIsLoadingMain(false);
+            }
+        }
+    }, [])
+
+    const retrieveTotalVotes = useCallback(async () => {
+        const totalVotes = await getTotalVotes();
+        setTotalVotes(totalVotes);
+    }, [setTotalVotes]);
+
+    const handleScroll = useCallback(() => {
+        const scrollTop = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        setShowScrollTopButton(scrollTop > 2000);
+
+        // indicate that we are at the bottom of the screen
+        if (scrollTop + windowHeight >= documentHeight - 5) {
+            setIsBottom(true);
+        }
+    }, []);
+
+    // on initial render
     useEffect(() => {
+        const fetchAllIdolGroups = async () => {
+            const uniqueIdolGroups = await getAllIdolNamesWithGroup();
+            setIdolGroups(uniqueIdolGroups);
+        };
+        
         window.addEventListener("scroll", handleScroll)
         fetchAllIdolGroups();
         retrieveTotalVotes();
         getDaysUntilNextMonth();
 
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [])
+
+    }, [handleScroll, retrieveTotalVotes])
 
     // trigger fetch when user selects a new idol
     useEffect(() => {
         // console.log(`filter: ${queryParameters.get("filter")}`);
-        fetchImages(queryParameters.get("filter"));
-    }, [queryParameters])
+        setSearchMore(true);
+        setLastDocId(null);
+        setImages([]);
+        setImagesLoaded(0);
+        setShowEndIndicator(false);
+        fetchImages(selectedFilter, null, true);
+    }, [selectedFilter, fetchImages])
 
     // trigger fetch when user reaches the bottom of the page
     useEffect(() => {
         if (isBottom) {
-            fetchImages(queryParameters.get("filter")).then((value) => {
+            // same as await fetchImages(...); setIsBottom(false)
+            fetchImages(selectedFilter, lastDocId, searchMore).then(() => {
                 setIsBottom(false);
             })
         }
-    }, [isBottom])
+    }, [isBottom, fetchImages, selectedFilter, lastDocId, searchMore])
 
     useEffect(() => {
         // console.log(`imagesLoaded: ${imagesLoaded}, numImages: ${images.length}`)
@@ -61,60 +110,12 @@ const Rankings = (props) => {
         setImagesLoaded(prev => prev + 1);
     };
 
-    function scrollFunction() {
-        if (document.body.scrollTop > 2000 || document.documentElement.scrollTop > 2000) {
-            mybutton.style.display = "block";
-        } else {
-            mybutton.style.display = "none";
-        }
-    }
-    window.onscroll = function () { scrollFunction() };
-
     const topFunction = () => {
         window.scrollTo({
             top: 0,
             left: 0,
             behavior: 'smooth'
         });
-    }
-
-    const handleScroll = (e) => {
-        const scrollTop = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        // indicate that we are at the bottom of the screen
-        if (scrollTop + windowHeight >= documentHeight - 5) {
-            setIsBottom(true);
-        }
-    }
-
-    const fetchImages = async (idolName) => {
-        if (searchMore) {
-            // console.log("fetching");
-            setIsLoadingMain(true);
-            const pagination = await getStartToEndImages(idolName, 20, lastDocId);
-
-            if (pagination.images.length !== 0) {
-                setImages((prev) => [...prev, ...pagination.images])
-                setLastDocId(pagination.lastDocId);
-            } else { // if we have no more images to display, then we shouldn't be able to fetch anymore images.
-                // console.log("done")
-                setShowEndIndicator(true);
-                setSearchMore(false);
-                setIsLoadingMain(false);
-            }
-        }
-    }
-
-    const fetchAllIdolGroups = async () => {
-        const uniqueIdolGroups = await getAllIdolNamesWithGroup();
-        setIdolGroups(uniqueIdolGroups);
-    }
-
-    const retrieveTotalVotes = async () => {
-        const totalVotes = await getTotalVotes();
-        props.setTotalVotes(totalVotes);
     }
 
     const handleSelect = (e) => {
@@ -164,13 +165,21 @@ const Rankings = (props) => {
     }
 
     return (
-        <div className="Rankings relative">
-            <div className="flex justify-center mb-5 z-10 relative w-full flex-col items-center md:flex-row md:gap-7 gap-4">
+        <div className="Rankings relative flex-1">
+            {/* headers */}
+            <div className="flex flex-col items-center md:justify-between md:flex-row md:gap-6 gap-1 px-6 mb-7 md:mb-11 z-10 relative w-full ">
+                <div className={`md:text-3xl text-2xl dark:text-white text-center`}>
+                    NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
+                </div>
+                <div className="flex flex-row justify-center items-center md:text-3xl text-2xl dark:text-white">
+                    <label>Filter: </label>
 
-                <div className="flex flex-row justify-center items-center">
-                    <label className="md:text-[2rem] text-[1.5rem] dark:text-white">Filter: </label>
-
-                    <select name="idols" className="bg-white dark:bg-black dark:text-white border-black dark:border-white border-2 rounded-md ml-2 md:text-[1.5rem] text-[1rem] p-[0.1rem]" value={queryParameters.get("filter") || "All"} onChange={handleSelect}>
+                    <select 
+                        name="idols" 
+                        className="min-w-40 bg-white dark:bg-black border-black dark:border-white border-2 rounded-md ml-2 p-[0.1rem]" 
+                        value={queryParameters.get("filter") || "All"} 
+                        onChange={handleSelect}
+                    >
                         <option>All</option>
                         {idolGroups.sort((a, b) => {
                             if (a.groupName > b.groupName) {
@@ -181,12 +190,12 @@ const Rankings = (props) => {
                                 return 0;
                             }
                         }).map((idolGroups, index) => {
-                            return <option value={idolGroups.idolName} key={idolGroups.idolName}>{`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}</option>
+                            return <option 
+                                value={idolGroups.idolName} key={idolGroups.idolName}>
+                                    {`${idolGroups.idolName.replace(/[0-9]/g, '')} (${idolGroups.groupName})`}
+                                </option>
                         })}
                     </select>
-                </div>
-                <div className={`md:text-[2rem] lg:absolute md:right-4 md:mx-4 text-[1.5rem] dark:text-white`}>
-                    NEW IMAGE CYCLE IN <span className={getDaysCountClass()}>{daysUntilNextMonth}</span> DAY<span className={daysUntilNextMonth === 1 ? "hidden" : "inline"}>S</span>
                 </div>
             </div>
 
@@ -195,14 +204,15 @@ const Rankings = (props) => {
                 Don't see any images? try reloading!
             </div>}
 
-           <div className="flex flex-row flex-wrap gap-3 md:gap-6 md:p-8 p-4 justify-center">
+            {/* gallery */}
+            <div className="flex flex-row flex-wrap gap-x-3 gap-y-7 md:gap-x-6 md:gap-y-10 md:p-8 p-4 justify-center">
                 {images.map((image, index) => {
                     return (
-                        <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl mt-6 ${getRankOneStyle(index)}`}>
+                        <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl ${getRankOneStyle(index)}`}>
                             <ImageWithPlaceHolder src={image.url} link={image.originUrl} alt={image.imageName} handleImageLoad={handleImageLoad} width={image.width} height={image.height} idolName={image.idolName}/>
                             {/* <div>{image.idolName}</div> */}
                             <div className="flex flex-row items-center md:gap-4 flex-wrap">
-                                <div className="md:text-[2.5rem] text-[1rem] rankNumber">{index + 1}.</div>
+                                <div className="md:text-[2.5rem] text-[1rem]">{index + 1}.</div>
                                 <div className="flex flex-col justify-center flex-1 items-center">
                                     <div className="text-center text-[1rem] md:text-[1.5rem]">W: {image.numWins} L: {image.numLosses}</div>
                                     <div className="text-center text-[0.7rem] md:text-[1rem]">
@@ -213,16 +223,13 @@ const Rankings = (props) => {
                             {index === 0 && <img className="absolute lg:w-[8rem] md:w-[8rem] w-[4rem] h-auto lg:top-[-6rem] md:top-[-6rem] top-[-3rem] left-[50%] translate-x-[-50%]" src={crown} alt="crown" />}
                         </div>
                     )
-
                 }
                 )}
             </div>
             {isLoading &&
                 <div className="loadingScreen">
-                    <div className="loader">
-                    </div>
-                    <div className="darkOverlay">
-                    </div>
+                    <div className="loader"></div>
+                    <div className="darkOverlay"></div>
                 </div>
             }
 
@@ -234,7 +241,7 @@ const Rankings = (props) => {
                 <div className="eolMessage flex justify-center md:text-[2rem] text-[1.5rem] dark:text-white pb-8">END OF LIST</div>
             }
 
-            <button id="myBtn" onClick={() => topFunction()} className="fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] display-hidden text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl">↑</button>
+            <button id="myBtn" onClick={() => topFunction()} className={`fixed md:bottom-[20px] bottom-[10px] right-[10px] md:right-[30px] text-white m-4 text-[2rem] z-99 rounded-full px-4 bg-gray-700 shadow-2xl ${showScrollTopButton ? "block" : "hidden"}`}>↑</button>
         </div>
     )
 }

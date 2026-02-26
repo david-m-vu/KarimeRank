@@ -2,6 +2,67 @@
     color: black;
 }
 
+/*Image hover*/
+.voting-image {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.image-hover-wrapper:hover .voting-image {
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Light mode - vibrant red/pink glow */
+.image-hover-wrapper:hover .voting-image {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2),
+                0 0 30px rgba(255, 50, 100, 0.6),
+                0 0 60px rgba(255, 50, 100, 0.4),
+                0 0 90px rgba(255, 50, 100, 0.2);
+    filter: brightness(1.08) saturate(1.1);
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2),
+                    0 0 30px rgba(255, 50, 100, 0.6),
+                    0 0 60px rgba(255, 50, 100, 0.4),
+                    0 0 90px rgba(255, 50, 100, 0.2);
+    }
+    50% {
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2),
+                    0 0 40px rgba(255, 50, 100, 0.8),
+                    0 0 80px rgba(255, 50, 100, 0.6),
+                    0 0 120px rgba(255, 50, 100, 0.3);
+    }
+}
+
+/* Dark mode - rich vibrant gold */
+@media (prefers-color-scheme: dark) {
+    .image-hover-wrapper:hover .voting-image {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5),
+                    0 0 30px rgba(218, 165, 32, 0.7),
+                    0 0 60px rgba(218, 165, 32, 0.5),
+                    0 0 90px rgba(218, 165, 32, 0.3);
+        filter: brightness(1.1);
+    }
+
+    @keyframes sparkle {
+        0%, 100% {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5),
+                        0 0 30px rgba(218, 165, 32, 0.7),
+                        0 0 60px rgba(218, 165, 32, 0.5),
+                        0 0 90px rgba(218, 165, 32, 0.3);
+        }
+        50% {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5),
+                        0 0 40px rgba(218, 165, 32, 0.9),
+                        0 0 80px rgba(218, 165, 32, 0.7),
+                        0 0 120px rgba(218, 165, 32, 0.4);
+        }
+    }
+}
+
 .heart {
     animation: pulse 0.8s ease forwards 1;
     transform-origin: center;
@@ -10,6 +71,7 @@
     width: 20px;
     height: auto;
 }
+
 .resultsInfo {
     animation: slide-in 0.2s linear forwards;
 }
