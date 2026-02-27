@@ -7,6 +7,7 @@ import { ReactComponent as LoginIcon } from "../../assets/icons/login.svg";
 import { ReactComponent as PersonIcon } from "../../assets/icons/person_outline.svg";
 import { ReactComponent as ArrowBackIcon } from "../../assets/icons/arrow_back.svg";
 import PrimaryButton from "../PrimaryButton/PrimaryButton";
+import RollingNumber from "../RollingNumber/RollingNumber.jsx";
 
 import ImageWithPlaceholder from "../ImageWithPlaceHolder/ImageWithPlaceholder.jsx";
 
@@ -38,6 +39,8 @@ const Navbar = (props) => {
     const favoriteImageVotes = Number(favoriteImage?.votes ?? 0) || 0;
     const favoriteImageWidth = Number(favoriteImage?.width ?? 0) || 0;
     const favoriteImageHeight = Number(favoriteImage?.height ?? 0) || 0;
+
+    const totalVotesText = String(Math.max(0, Number(props.totalVotes) || 0));
 
     // see if we need to close any popups/dropdowns on click
     useEffect(() => {
@@ -98,7 +101,13 @@ const Navbar = (props) => {
                     <div 
                         className={`text-xl md:text-2xl lg:text-3xl xl:text-4xl text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
                     >
-                        <span key={props.totalVotesAnimationKey} className="total-votes-counter">{props.totalVotes}</span> <span className="hidden sm:inline">total</span> votes <span className="hidden lg:inline">worldwide</span>
+                        { props.numPopAnimationOn ? 
+                            <span key={props.totalVotesAnimationKey} className="total-votes-counter-pop">{totalVotesText}</span>
+                            :
+                            <RollingNumber value={props.totalVotes} className="total-votes-counter" /> 
+                        }
+                        <span className="hidden sm:inline"> total</span> votes <span className="hidden lg:inline">worldwide</span>
+                        
                     </div>
 
                 </div>

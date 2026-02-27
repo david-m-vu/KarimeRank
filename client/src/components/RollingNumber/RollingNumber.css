@@ -1,0 +1,34 @@
+.rolling-number {
+    display: inline-flex;
+    gap: 0;
+    align-items: baseline;
+    font-variant-numeric: tabular-nums;
+}
+
+.rolling-number__digit-window {
+    position: relative;
+    display: inline-block;
+    width: 0.45em;
+    height: 1em;
+    overflow: hidden;
+    line-height: 1;
+}
+
+.rolling-number__digit-strip {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    will-change: transform;
+}
+
+.rolling-number__digit {
+    display: block;
+    height: 1em;
+    line-height: 1;
+    text-align: center;
+}
+
+.rolling-number__separator {
+    display: inline-block;
+    line-height: 1;
+}
