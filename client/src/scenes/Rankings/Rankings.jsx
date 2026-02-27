@@ -1,5 +1,5 @@
 import "./Rankings.css"
-import { getTotalVotes, getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
+import { getAllIdolNamesWithGroup, getStartToEndImages } from "../../requests/images.js"
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -7,7 +7,7 @@ import ImageWithPlaceHolder from "../../components/ImageWithPlaceHolder/ImageWit
 
 import crown from "../../assets/crown.png"
 
-const Rankings = ({ setTotalVotes }) => {
+const Rankings = () => {
     const [images, setImages] = useState([]);
     const [lastDocId, setLastDocId] = useState(null);
 
@@ -44,11 +44,6 @@ const Rankings = ({ setTotalVotes }) => {
         }
     }, [])
 
-    const retrieveTotalVotes = useCallback(async () => {
-        const totalVotes = await getTotalVotes();
-        setTotalVotes(totalVotes);
-    }, [setTotalVotes]);
-
     const handleScroll = useCallback(() => {
         const scrollTop = window.scrollY;
         const windowHeight = window.innerHeight;
@@ -71,12 +66,11 @@ const Rankings = ({ setTotalVotes }) => {
         
         window.addEventListener("scroll", handleScroll)
         fetchAllIdolGroups();
-        retrieveTotalVotes();
         getDaysUntilNextMonth();
 
         return () => window.removeEventListener("scroll", handleScroll);
 
-    }, [handleScroll, retrieveTotalVotes])
+    }, [handleScroll])
 
     // trigger fetch when user selects a new idol
     useEffect(() => {

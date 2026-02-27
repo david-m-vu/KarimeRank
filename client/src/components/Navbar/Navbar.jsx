@@ -95,13 +95,12 @@ const Navbar = (props) => {
             
                 {/* if on rankings page, render # of votes */}
                 <div className="min-w-0 mr-4 col-start-1 row-start-2 sm:col-start-auto sm:row-start-auto"> {/* this wrapper keeps a permanent first grid cell, so the title stays centered on all pages*/}
-                    {location.pathname === "/rankings" && 
-                        <div 
-                            className={`text-xl md:text-2xl lg:text-3xl xl:text-4xl text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
-                        >
-                            {props.totalVotes} <span className="hidden sm:inline">total</span> votes <span className="hidden lg:inline">worldwide</span>
-                        </div>
-                    }
+                    <div 
+                        className={`text-xl md:text-2xl lg:text-3xl xl:text-4xl text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
+                    >
+                        <span key={props.totalVotesAnimationKey} className="total-votes-counter">{props.totalVotes}</span> <span className="hidden sm:inline">total</span> votes <span className="hidden lg:inline">worldwide</span>
+                    </div>
+
                 </div>
             
 
