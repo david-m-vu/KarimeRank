@@ -7,6 +7,9 @@ import { ReactComponent as LoginIcon } from "../../assets/icons/login.svg";
 import { ReactComponent as PersonIcon } from "../../assets/icons/person_outline.svg";
 import { ReactComponent as ArrowBackIcon } from "../../assets/icons/arrow_back.svg";
 import PrimaryButton from "../PrimaryButton/PrimaryButton";
+import RollingNumber from "../RollingNumber/RollingNumber.jsx";
+
+import ImageWithPlaceholder from "../ImageWithPlaceHolder/ImageWithPlaceholder.jsx";
 
 import { useAuth } from "../../context/AuthContext.jsx";
 
@@ -31,6 +34,13 @@ const Navbar = (props) => {
     const isAuthPage = ["/login", "/register"].includes(location.pathname);
 
     const { isAuthenticated, isBootstrapping, user, logout } = useAuth();
+    const favoriteImage = user?.favoriteImage && typeof user.favoriteImage === "object" ? user.favoriteImage : null;
+    const favoriteImageUrl = favoriteImage?.url || "";
+    const favoriteImageVotes = Number(favoriteImage?.votes ?? 0) || 0;
+    const favoriteImageWidth = Number(favoriteImage?.width ?? 0) || 0;
+    const favoriteImageHeight = Number(favoriteImage?.height ?? 0) || 0;
+
+    const totalVotesText = String(Math.max(0, Number(props.totalVotes) || 0));
 
     // see if we need to close any popups/dropdowns on click
     useEffect(() => {
@@ -88,13 +98,18 @@ const Navbar = (props) => {
             
                 {/* if on rankings page, render # of votes */}
                 <div className="min-w-0 mr-4 col-start-1 row-start-2 sm:col-start-auto sm:row-start-auto"> {/* this wrapper keeps a permanent first grid cell, so the title stays centered on all pages*/}
-                    {location.pathname === "/rankings" && 
-                        <div 
-                            className={`text-xl md:text-2xl lg:text-3xl xl:text-4xl text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
-                        >
-                            {props.totalVotes} <span className="hidden sm:inline">total</span> votes <span className="hidden lg:inline">worldwide</span>
-                        </div>
-                    }
+                    <div 
+                        className={`text-xl md:text-2xl lg:text-3xl xl:text-4xl text-black dark:text-white whitespace-nowrap overflow-hidden text-ellipsis`}
+                    >
+                        { props.numPopAnimationOn ? 
+                            <span key={props.totalVotesAnimationKey} className="total-votes-counter-pop">{totalVotesText}</span>
+                            :
+                            <RollingNumber value={props.totalVotes} className="total-votes-counter" /> 
+                        }
+                        <span className="hidden sm:inline"> total</span> votes <span className="hidden lg:inline">worldwide</span>
+                        
+                    </div>
+
                 </div>
             
 
@@ -194,9 +209,22 @@ const Navbar = (props) => {
                                             <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Idol:</p>
                                             <p>{user.favoriteIdol ? user.favoriteIdol.replace(/[0-9]/g, '') : "None"}</p>
                                         </div>  
-                                        <div className={`flex ${user.favoriteImageUrl ? "flex-col" : "flex-row justify-between"}`}>
-                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:</p>
-                                            <img className="rounded-xl box-border border-2 border-black dark:border-gray-500" src={user.favoriteImageUrl} alt="Favorite image_" />
+                                        <div className={`flex ${favoriteImageUrl ? "flex-col" : "flex-row justify-between"}`}>
+                                            <div className={`flex flex-row justify-between ${favoriteImageUrl ? "w-full" : ""}`}>
+                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:</p>
+                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">({favoriteImageVotes} Like{favoriteImageVotes > 1 ? "s" : ""})</p>
+                                            </div>
+                                            { favoriteImageUrl ? 
+                                                <ImageWithPlaceholder
+                                                    className="w-full h-auto rounded-xl box-border border-2 border-black dark:border-gray-500"
+                                                    src={favoriteImageUrl}
+                                                    alt="Favorite image_"
+                                                    width={favoriteImageWidth}
+                                                    height={favoriteImageHeight}
+                                                />
+                                                :
+                                                <p>None</p>
+                                            }
                                         </div>  
                                     </div>
 

@@ -36,6 +36,7 @@ export const getAllImages = async () => {
 
 }
 
+// currently unused because app listens to live updates to firestore stats/globalVotes
 export const getTotalVotes = async () => {
     const totalVotesRes = await fetch(`${BACKEND_BASE_URL}/images/votes`);
 

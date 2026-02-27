@@ -1,4 +1,4 @@
-import { updateNicknameByUserId } from "../firebase/firestoreService.js";
+import { updateNicknameByUserId, getTopUsersByVotes  } from "../firebase/firestoreService.js";
 import { isValidNickname } from "../util/index.js";
 
 export const updateNickname = async (req, res) => {
@@ -25,5 +25,21 @@ export const updateNickname = async (req, res) => {
     } catch (err) {
         console.error(err.message);
         return res.status(500).json({ message: err.message })
+    }
+    
+}
+export const getLeaderboard = async (req, res) => {
+    try {
+        const collectionName = process.env.TEST_MODE === "TEST_MODE" ? "test_users" : "users";
+
+        const topUsers = await getTopUsersByVotes(collectionName, 10);
+        if (!topUsers) {
+            return res.status(500).json({ message: "Failed to fetch leaderboard" });
+        }
+
+        return res.status(200).json({ leaderboard: topUsers });
+    } catch (err) {
+        console.error(err.message);
+        return res.status(500).json({ message: err.message });
     }
 }

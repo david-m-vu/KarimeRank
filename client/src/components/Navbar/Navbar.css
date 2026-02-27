@@ -34,6 +34,16 @@
     animation: auth-session-pulse 1.2s ease-in-out infinite;
 }
 
+.total-votes-counter {
+    display: inline-flex;
+    vertical-align: baseline;
+}
+
+.total-votes-counter-pop {
+    display: inline-block;
+    animation: total-votes-pop 280ms ease-out;
+}
+
 @keyframes auth-session-pulse {
     0% {
         opacity: 0.5;
@@ -43,5 +53,20 @@
     }
     100% {
         opacity: 0.5;
+    }
+}
+
+@keyframes total-votes-pop {
+    0% {
+        transform: translate3d(0, 0.25rem, 0) scale(0.96);
+        opacity: 0.55;
+    }
+    60% {
+        transform: translate3d(0, 0, 0) scale(1.06);
+        opacity: 1;
+    }
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 1;
     }
 }

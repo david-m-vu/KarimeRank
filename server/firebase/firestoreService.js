@@ -1,5 +1,5 @@
 import { db } from "./firebaseConfig.js";
-import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc, orderBy, limit as firestoreLimit } from "firebase/firestore";
 
 /*
  * users
@@ -147,9 +147,24 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
             let nextFavoriteIdolVotes = Number(userData.favoriteIdolVotes) || 0;
             const currentFavoriteIdolKey = nextFavoriteIdol.toLowerCase().trim();
 
-            let nextFavoriteImageId = typeof userData.favoriteImageId === "string" ? userData.favoriteImageId : "";
-            let nextFavoriteImageUrl = typeof userData.favoriteImageUrl === "string" ? userData.favoriteImageUrl : "";
-            let nextFavoriteImageVotes = Number(userData.favoriteImageVotes) || 0;
+            const favoriteImage = (userData.favoriteImage && typeof userData.favoriteImage === "object") ? userData.favoriteImage : {};
+            let nextFavoriteImageId = typeof favoriteImage.id === "string" ? favoriteImage.id : "";
+            let nextFavoriteImageUrl = typeof favoriteImage.url === "string" ? favoriteImage.url : "";
+
+            let nextFavoriteImageWidth = Number(favoriteImage.width);
+            if (!Number.isFinite(nextFavoriteImageWidth) || nextFavoriteImageWidth < 0) {
+                nextFavoriteImageWidth = 0;
+            }
+
+            let nextFavoriteImageHeight = Number(favoriteImage.height);
+            if (!Number.isFinite(nextFavoriteImageHeight) || nextFavoriteImageHeight < 0) {
+                nextFavoriteImageHeight = 0;
+            }
+
+            let nextFavoriteImageVotes = Number(favoriteImage.votes);
+            if (!Number.isFinite(nextFavoriteImageVotes) || nextFavoriteImageVotes < 0) {
+                nextFavoriteImageVotes = 0;
+            }
 
             // if new idol votes > current favorite idol votes || same idol, update those existing user fields
             if (nextIdolVotes >= nextFavoriteIdolVotes || currentFavoriteIdolKey === idolVoteKey) {
@@ -164,6 +179,13 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
                     (typeof imageData.url === "string" && imageData.url) ||
                     ""
                 );
+                
+                const imageWidth = Number(imageData.width);
+                nextFavoriteImageWidth = Number.isFinite(imageWidth) && imageWidth > 0 ? imageWidth : 0;
+
+                const imageHeight = Number(imageData.height);
+                nextFavoriteImageHeight = Number.isFinite(imageHeight) && imageHeight > 0 ? imageHeight : 0;
+
                 nextFavoriteImageVotes = nextImageVotes;
             }
 
@@ -184,15 +206,19 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
                 totalVotes: prevTotalVotes + 1,
                 favoriteIdol: nextFavoriteIdol,
                 favoriteIdolVotes: nextFavoriteIdolVotes,
-                favoriteImageId: nextFavoriteImageId,
-                favoriteImageUrl: nextFavoriteImageUrl,
-                favoriteImageVotes: nextFavoriteImageVotes
+                favoriteImage: {
+                    id: nextFavoriteImageId,
+                    url: nextFavoriteImageUrl,
+                    width: nextFavoriteImageWidth,
+                    height: nextFavoriteImageHeight,
+                    votes: nextFavoriteImageVotes,
+                }
             }
 
             transaction.update(userRef, userVoteStats)
 
             return userVoteStats
-
+        
         })
 
     } catch (err) {
@@ -264,6 +290,26 @@ export const saveManyImages = async (collectionName, imageObjects) => {
         // return just the images we've added
         return results.filter(image => image !== null); // filter out all the images that returned null due to already existing
         
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+
+
+}
+
+export const getTopUsersByVotes = async (collectionName, limit = 10) => {
+    try {
+        const collectionRef = collection(db, collectionName);
+        const q = query(collectionRef, orderBy("totalVotes", "desc"), firestoreLimit(limit));
+        const snap = await getDocs(q);
+
+        return snap.docs.map((doc) => {
+            const data = doc.data();
+            // strip sensitive fields before returning
+            const { passwordHash, ...safeData } = data;
+            return { id: doc.id, ...safeData };
+        });
     } catch (err) {
         console.log(err.message);
         return null;

@@ -250,14 +250,30 @@ export const archiveImagesCollection = async (req, res) => {
 // firebase version
 export const getTotalVotes = async (req, res) => {
     try {
-        const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
-        const imagesRef = collection(db, collectionName);
+        const isTestMode = process.env.TEST_MODE === "TEST_MODE";
+        const statsCollection = isTestMode ? "test_stats" : "stats";
+        const globalVotesRef = doc(db, statsCollection, "globalVotes");
+        const globalVotesSnap = await getDoc(globalVotesRef);
 
+        if (globalVotesSnap.exists()) {
+            const totalVotes = Number(globalVotesSnap.data().totalVotes) || 0;
+            return res.status(200).json({ totalVotes });
+        }
+
+        // fallback for if globalVotes field in statsCollection doesn't exist
+        const imagesCollection = isTestMode ? "test_images" : "images";
+        const imagesRef = collection(db, imagesCollection);
         const snapshot = await getAggregateFromServer(imagesRef, {
             totalVotes: sum("numWins")
-        })
-        
-        res.status(200).json({ totalVotes: snapshot.data().totalVotes });
+        });
+        const totalVotes = Number(snapshot.data().totalVotes) || 0;
+
+        await setDoc(globalVotesRef, {
+            totalVotes,
+            updatedAt: Timestamp.now()
+        }, { merge: true });
+
+        return res.status(200).json({ totalVotes });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -579,11 +595,14 @@ export const likeImage = async (req, res) => {
             return res.status(400).json({ message: "chosenID must match firstImageID or secondImageID" });
         }
 
-        const collectionName = (process.env.TEST_MODE === "TEST_MODE") ? "test_images" : "images";
+        const isTestMode = process.env.TEST_MODE === "TEST_MODE";
+        const collectionName = isTestMode ? "test_images" : "images";
+        const statsCollection = isTestMode ? "test_stats" : "stats";
 
         // the third argument is the firestore document ID, also known as __name__
         const firstDocRef = doc(db, collectionName, firstImageID);
         const secondDocRef = doc(db, collectionName, secondImageID);
+        const globalVotesRef = doc(db, statsCollection, "globalVotes");
 
         let updatedFirstImage = {};
         let updatedSecondImage = {};
@@ -597,6 +616,7 @@ export const likeImage = async (req, res) => {
             // read both documents atomically
             const firstSnap = await transaction.get(firstDocRef);
             const secondSnap = await transaction.get(secondDocRef);
+            const globalVotesSnap = await transaction.get(globalVotesRef);
 
             if (!firstSnap.exists()) {
                 throw new Error("First image not found");
@@ -624,7 +644,11 @@ export const likeImage = async (req, res) => {
                 throw new Error("Invalid chosenID");
             }
 
-            // update both docs in the database in the same transaction
+            const currentTotalVotes = globalVotesSnap.exists()
+                ? Number(globalVotesSnap.data().totalVotes) || 0
+                : 0;
+
+            // update docs in the database in the same transaction
             transaction.update(firstDocRef, {
                 score: firstScore,
                 numWins: firstWins,
@@ -635,7 +659,12 @@ export const likeImage = async (req, res) => {
                 score: secondScore,
                 numWins: secondWins,
                 numLosses: secondLosses
-            })
+            });
+
+            transaction.set(globalVotesRef, {
+                totalVotes: currentTotalVotes + 1,
+                updatedAt: Timestamp.now()
+            }, { merge: true });
 
             // store updated data
             updatedFirstImage = {
