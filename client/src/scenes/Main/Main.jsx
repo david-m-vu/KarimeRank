@@ -262,7 +262,11 @@ const AnimatedNumber = ({ color, start, end }) => {
         delay: 50,
         config: { mass: 1, tension: 20, friction: 10 },
     });
-    return <animated.div className={`${getNumberClassName()} animatedNumber`}>{number.to((n) => n.toFixed(0))}</animated.div>
+    return (
+        <animated.div className={`${getNumberClassName()} animatedNumber`}>
+            {number.to((n) => n.toFixed(0))}
+        </animated.div>
+    )
 }
 
 export default Main;

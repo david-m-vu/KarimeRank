@@ -35,6 +35,11 @@
 }
 
 .total-votes-counter {
+    display: inline-flex;
+    vertical-align: baseline;
+}
+
+.total-votes-counter-pop {
     display: inline-block;
     animation: total-votes-pop 280ms ease-out;
 }

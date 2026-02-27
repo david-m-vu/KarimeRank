@@ -15,8 +15,10 @@ import ChangeNickname from './scenes/ChangeNickname/ChangeNickname.jsx';
 import Leaderboard from "./scenes/Leaderboard/Leaderboard.jsx";
 import RequireAuth from './components/RequireAuth/RequireAuth.jsx';
 
+const numPopAnimationOn = false;
+
 const App = () => {
-  const [totalVotes, setTotalVotes] = useState("X");
+  const [totalVotes, setTotalVotes] = useState(0);
   const [totalVotesAnimationKey, setTotalVotesAnimationKey] = useState(0);
   const previousTotalVotesRef = useRef(null); // ref so updates don't trigger rerenders
 
@@ -25,13 +27,17 @@ const App = () => {
     // Attaches a listener for DocumentSnapshot events
     const unsub = onSnapshot(ref, (snap) => {
       const nextTotalVotes = Number(snap.data()?.totalVotes ?? 0);
-      const previousTotalVotes = previousTotalVotesRef.current;
+      
+      if (numPopAnimationOn) {
+        const previousTotalVotes = previousTotalVotesRef.current;
 
-      if (previousTotalVotes !== null && previousTotalVotes !== nextTotalVotes) {
-        setTotalVotesAnimationKey((prev) => prev + 1);
+        if (previousTotalVotes !== null && previousTotalVotes !== nextTotalVotes) {
+          setTotalVotesAnimationKey((prev) => prev + 1);
+        }
+
+        previousTotalVotesRef.current = nextTotalVotes;
       }
 
-      previousTotalVotesRef.current = nextTotalVotes;
       setTotalVotes(nextTotalVotes);
     })
     return unsub;
@@ -39,7 +45,7 @@ const App = () => {
 
   return (
     <div className="App min-h-dvh flex flex-col">
-      <Navbar totalVotes={totalVotes} totalVotesAnimationKey={totalVotesAnimationKey} />
+      <Navbar totalVotes={totalVotes} totalVotesAnimationKey={totalVotesAnimationKey} numPopAnimationOn={numPopAnimationOn}/>
       <main className="flex-1 min-h-0 flex">
         <Routes>
           <Route path="/" element={<Main />}></Route>
