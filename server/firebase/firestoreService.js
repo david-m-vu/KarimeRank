@@ -1,5 +1,5 @@
 import { db } from "./firebaseConfig.js";
-import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc, orderBy, limit as firestoreLimit } from "firebase/firestore";
 
 /*
  * users
@@ -218,7 +218,7 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
             transaction.update(userRef, userVoteStats)
 
             return userVoteStats
-
+        
         })
 
     } catch (err) {
@@ -290,6 +290,26 @@ export const saveManyImages = async (collectionName, imageObjects) => {
         // return just the images we've added
         return results.filter(image => image !== null); // filter out all the images that returned null due to already existing
         
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+
+
+}
+
+export const getTopUsersByVotes = async (collectionName, limit = 10) => {
+    try {
+        const collectionRef = collection(db, collectionName);
+        const q = query(collectionRef, orderBy("totalVotes", "desc"), firestoreLimit(limit));
+        const snap = await getDocs(q);
+
+        return snap.docs.map((doc) => {
+            const data = doc.data();
+            // strip sensitive fields before returning
+            const { passwordHash, ...safeData } = data;
+            return { id: doc.id, ...safeData };
+        });
     } catch (err) {
         console.log(err.message);
         return null;
