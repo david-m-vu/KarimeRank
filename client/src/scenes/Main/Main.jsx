@@ -78,6 +78,7 @@ const Main = () => {
             const uniqueIdolGroups = await getAllIdolNamesWithGroup();
             setIdolGroups(uniqueIdolGroups);
         }
+
         fetchAllIdolGroups();
     }, [])
 

@@ -185,7 +185,7 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
 
                 const imageHeight = Number(imageData.height);
                 nextFavoriteImageHeight = Number.isFinite(imageHeight) && imageHeight > 0 ? imageHeight : 0;
-                
+
                 nextFavoriteImageVotes = nextImageVotes;
             }
 
