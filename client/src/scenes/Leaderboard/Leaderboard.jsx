@@ -9,6 +9,11 @@ const Leaderboard = () => {
     const [error, setError] = useState(null);
     const [hoveredUserId, setHoveredUserId] = useState(null);
     const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+    const topRowGradients = [
+        ["#F7D46B", "#D89A2B"], // Gold
+        ["#F1F1F1", "#BFC3C8"], // Silver
+        ["#E0B07A", "#B87333"], // Bronze
+    ];
 
    
     useEffect(() => {
@@ -55,11 +60,21 @@ const Leaderboard = () => {
                 <h1 className="text-2xl md:text-3xl lg:text-4xl text-black dark:text-white text-center">Top Voters</h1>
                 <div className="flex flex-col gap-2">
                 {users.map((user, index) => {
+                    const topRowGradient = topRowGradients[index] || null; // only nonnull for the first 3 rows
+                    const isTopRow = Boolean(topRowGradient);
+                    const primaryTextClass = isTopRow ? "text-[#1F1F1F]" : "text-black dark:text-white";
+                    const secondaryTextClass = isTopRow ? "text-[#4F4F4F]" : "text-[#6c6c6c] dark:text-[#b8b8b8]";
                     const favoriteImage = user?.favoriteImage && typeof user.favoriteImage === "object" ? user.favoriteImage : null;
                     const favoriteImageUrl = favoriteImage?.url || "";
                     const favoriteImageVotes = Number(favoriteImage?.votes ?? 0) || 0;
                     const favoriteImageWidth = Number(favoriteImage?.width ?? 0) || 0;
                     const favoriteImageHeight = Number(favoriteImage?.height ?? 0) || 0;
+                    // anything starting with -- is a CSS variable name
+                    const rowStyle = topRowGradient ? {
+                        "--row-gradient-start": topRowGradient[0],
+                        "--row-gradient-end": topRowGradient[1],
+                        "--row-delay": `${index * 0.11}s`,
+                    } : undefined;
 
                     return (
                         <div
@@ -69,12 +84,15 @@ const Leaderboard = () => {
                             onMouseMove={handleMouseMove}
                         >
                             {/* default row */}
-                            <div className="flex flex-row items-center justify-between hover:outline hover:outline-black hover:dark:outline-white px-4 py-3 rounded-lg m bg-[#F8F8D6] dark:bg-[#4C4C4C]">
+                            <div
+                                className={`leaderboard-row flex flex-row items-center justify-between hover:outline hover:outline-black hover:dark:outline-white px-4 py-3 rounded-lg m bg-[#F8F8D6] dark:bg-[#4C4C4C] ${topRowGradient ? "leaderboard-row--top" : ""}`}
+                                style={rowStyle}
+                            >
                                 <div className="flex flex-row items-center gap-3">
-                                    <span className="text-[#6c6c6c] dark:text-[#b8b8b8] text-sm w-5 text-right">{index + 1}</span>
-                                    <span className="text-black dark:text-white">{user.nickname}</span>
+                                    <span className={`${secondaryTextClass} text-sm w-5 text-right`}>{index + 1}</span>
+                                    <span className={primaryTextClass}>{user.nickname}</span>
                                 </div>
-                                <span className="tabular-nums text-black dark:text-white">{user.totalVotes} votes</span>
+                                <span className={`tabular-nums ${primaryTextClass}`}>{user.totalVotes} vote{user.totalVotes !== 1 && "s"}</span>
                             </div>
 
                             {/* cursor-following popup */}
@@ -101,7 +119,7 @@ const Leaderboard = () => {
                                         </div>
                                         <div className={`flex ${favoriteImageUrl ? "flex-col" : "flex-row justify-between"}`}>
                                             <div className={`flex flex-row justify-between ${favoriteImageUrl ? "w-full" : ""}`}>
-                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:</p>
+                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:&nbsp;</p>
                                                 <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">({favoriteImageVotes} Like{favoriteImageVotes !== 1 ? "s" : ""})</p>
                                             </div>
                                             {favoriteImageUrl ? (

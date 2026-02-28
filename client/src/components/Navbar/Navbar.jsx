@@ -211,8 +211,8 @@ const Navbar = (props) => {
                                         </div>  
                                         <div className={`flex ${favoriteImageUrl ? "flex-col" : "flex-row justify-between"}`}>
                                             <div className={`flex flex-row justify-between ${favoriteImageUrl ? "w-full" : ""}`}>
-                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:</p>
-                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">({favoriteImageVotes} Like{favoriteImageVotes > 1 ? "s" : ""})</p>
+                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">Favorite Image:&nbsp;</p>
+                                                <p className="text-[#6c6c6c] dark:text-[#b8b8b8]">({favoriteImageVotes} Like{favoriteImageVotes === 1 ? "" : "s"})</p>
                                             </div>
                                             { favoriteImageUrl ? 
                                                 <ImageWithPlaceholder

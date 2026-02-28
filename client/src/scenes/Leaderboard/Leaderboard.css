@@ -2,6 +2,38 @@
     animation: popup-sparkle 2s ease-in-out infinite;
 }
 
+.leaderboard-row {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate; 
+}
+
+.leaderboard-row > * {
+    position: relative;
+    z-index: 1;
+}
+
+.leaderboard-row--top::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--row-gradient-start), var(--row-gradient-end));
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: leaderboard-row-gradient-reveal 550ms ease-in-out var(--row-delay, 0s) forwards;
+}
+
+@keyframes leaderboard-row-gradient-reveal {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
 @keyframes popup-sparkle {
     0%, 100% {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1),
@@ -27,5 +59,12 @@
                         0 0 20px rgba(218, 165, 32, 0.35),
                         0 0 40px rgba(218, 165, 32, 0.15);
         }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .leaderboard-row--top::before {
+        animation: none;
+        transform: scaleX(1);
     }
 }

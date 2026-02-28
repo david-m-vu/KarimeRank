@@ -15,7 +15,7 @@ const LEET_CHARACTER_MAP = Object.freeze({
     "!": "i",
 });
 
-const normalizeForDenylist = (value) => {
+const normalizeForDenylist = (value, { collapseRepeats = false } = {}) => {
     if (typeof value !== "string") {
         return "";
     }
@@ -28,6 +28,10 @@ const normalizeForDenylist = (value) => {
 
     const leetNormalized = lower.replace(/[01345789@$!]/g, (char) => LEET_CHARACTER_MAP[char] || char);
     const alphanumericOnly = leetNormalized.replace(/[^a-z0-9]/g, "");
+
+    if (!collapseRepeats) {
+        return alphanumericOnly;
+    }
 
     // Collapse long repeated characters so variants like "shiiiit" still match.
     return alphanumericOnly.replace(/(.)\1{2,}/g, "$1");
@@ -52,7 +56,8 @@ const getNormalizedDenylist = () => {
 
     cachedDenylistSignature = signature;
     cachedReservedNames = Object.freeze(new Set(reservedNames.map((value) => normalizeForDenylist(value))));
-    cachedNormalizedBlockedTerms = Object.freeze(blockedTerms.map((term) => normalizeForDenylist(term)));
+    // filter Boolean on string to avoid accidental universal matches on empty strings
+    cachedNormalizedBlockedTerms = Object.freeze(blockedTerms.map((term) => normalizeForDenylist(term)).filter(Boolean)); 
 
     return {
         reservedNames: cachedReservedNames,
@@ -62,18 +67,19 @@ const getNormalizedDenylist = () => {
 
 export const getDenylistMatch = (value) => {
     const normalized = normalizeForDenylist(value);
+    const collapsedNormalized = normalizeForDenylist(value, { collapseRepeats: true });
     const denylist = getNormalizedDenylist();
 
     if (!normalized) {
         return null;
     }
 
-    if (denylist.reservedNames.has(normalized)) {
+    if (denylist.reservedNames.has(normalized) || denylist.reservedNames.has(collapsedNormalized)) {
         return "reserved_name";
     }
 
     for (const blockedTerm of denylist.blockedTerms) {
-        if (normalized.includes(blockedTerm)) {
+        if (normalized.includes(blockedTerm) || collapsedNormalized.includes(blockedTerm)) {
             return "blocked_term";
         }
     }
