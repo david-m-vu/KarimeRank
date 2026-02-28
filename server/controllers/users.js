@@ -1,5 +1,5 @@
 import { updateNicknameByUserId, getTopUsersByVotes  } from "../firebase/firestoreService.js";
-import { isValidNickname } from "../util/index.js";
+import { isValidNickname, getDenylistMatch } from "../util/index.js";
 
 export const updateNickname = async (req, res) => {
     // get user id and new nickname
@@ -11,6 +11,10 @@ export const updateNickname = async (req, res) => {
 
         if (!isValidNickname(normalizedNickname)) {
             return res.status(400).json({ message: "nickname must be 2-30 characters with no leading/trailing and repeating separators/spaces" })
+        }
+
+        if (getDenylistMatch(normalizedNickname)) {
+            return res.status(400).json({ message: "nickname contains disallowed words or reserved names" });
         }
 
         const collectionName = process.env.TEST_MODE === "TEST_MODE" ? "test_users" : "users"

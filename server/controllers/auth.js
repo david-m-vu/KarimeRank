@@ -1,5 +1,5 @@
 import { getUserByUsernameLower, getUserByUserId, saveUser } from "../firebase/firestoreService.js";
-import { isValidUsername, isValidNickname } from "../util/index.js";
+import { isValidUsername, isValidNickname, getDenylistMatch } from "../util/index.js";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -21,12 +21,20 @@ export const register = async (req, res) => {
             });
         }
 
+        if (getDenylistMatch(normalizedUsername)) {
+            return res.status(400).json({ message: "username contains disallowed words or reserved names" });
+        }
+
         if (typeof password !== "string" || password.length < 6 || password.length > 72) {
             return res.status(400).json({ message: "password must be between 6 and 72 characters" });
         }
 
         if (normalizedNickname && !isValidNickname(normalizedNickname)) {
             return res.status(400).json({ message: "nickname must be 2-30 characters with no leading/trailing and repeating separators/spaces" });
+        }
+
+        if (normalizedNickname && getDenylistMatch(normalizedNickname)) {
+            return res.status(400).json({ message: "nickname contains disallowed words or reserved names" });
         }
 
         // if user didn't input nickname, set it to normalizedUsername

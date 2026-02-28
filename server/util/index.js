@@ -1,4 +1,85 @@
 import axios from "axios";
+import { getReservedNames, getBlockedTerms } from "../config/denylist.js";
+
+const LEET_CHARACTER_MAP = Object.freeze({
+    "0": "o",
+    "1": "i",
+    "3": "e",
+    "4": "a",
+    "5": "s",
+    "7": "t",
+    "8": "b",
+    "9": "g",
+    "@": "a",
+    "$": "s",
+    "!": "i",
+});
+
+const normalizeForDenylist = (value) => {
+    if (typeof value !== "string") {
+        return "";
+    }
+
+    const lower = value
+        .trim()
+        .toLowerCase()
+        .normalize("NFKD") // catches accented characters
+        .replace(/[\u0300-\u036f]/g, ""); // removes the accent marks after normalize
+
+    const leetNormalized = lower.replace(/[01345789@$!]/g, (char) => LEET_CHARACTER_MAP[char] || char);
+    const alphanumericOnly = leetNormalized.replace(/[^a-z0-9]/g, "");
+
+    // Collapse long repeated characters so variants like "shiiiit" still match.
+    return alphanumericOnly.replace(/(.)\1{2,}/g, "$1");
+};
+
+let cachedDenylistSignature = null;
+let cachedReservedNames = Object.freeze(new Set());
+let cachedNormalizedBlockedTerms = Object.freeze([]);
+
+const getNormalizedDenylist = () => {
+    const reservedNames = getReservedNames();
+    const blockedTerms = getBlockedTerms();
+    const signature = `${reservedNames.join(",")}|${blockedTerms.join(",")}`;
+
+    // cache to avoid repeated work of parsing env lists and normalizing every time
+    if (signature === cachedDenylistSignature) {
+        return {
+            reservedNames: cachedReservedNames,
+            blockedTerms: cachedNormalizedBlockedTerms,
+        };
+    }
+
+    cachedDenylistSignature = signature;
+    cachedReservedNames = Object.freeze(new Set(reservedNames.map((value) => normalizeForDenylist(value))));
+    cachedNormalizedBlockedTerms = Object.freeze(blockedTerms.map((term) => normalizeForDenylist(term)));
+
+    return {
+        reservedNames: cachedReservedNames,
+        blockedTerms: cachedNormalizedBlockedTerms,
+    };
+};
+
+export const getDenylistMatch = (value) => {
+    const normalized = normalizeForDenylist(value);
+    const denylist = getNormalizedDenylist();
+
+    if (!normalized) {
+        return null;
+    }
+
+    if (denylist.reservedNames.has(normalized)) {
+        return "reserved_name";
+    }
+
+    for (const blockedTerm of denylist.blockedTerms) {
+        if (normalized.includes(blockedTerm)) {
+            return "blocked_term";
+        }
+    }
+
+    return null;
+};
 
 export const sanitizeFileName = (name) => {
     return name
