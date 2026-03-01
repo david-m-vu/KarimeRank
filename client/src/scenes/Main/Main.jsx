@@ -194,7 +194,7 @@ const Main = () => {
                             <div className="relative image-hover-wrapper">
                                 <ImageWithPlaceholder onClick={async () => { if (!hasLiked) await selectImage(image.id) }} 
                                     className="voting-image h-[clamp(16rem,50dvh,34rem)] w-auto object-cover cursor-pointer rounded-xl block" 
-                                    src={image.url} 
+                                    src={image.firebaseUrl || image.url} 
                                     alt={image.imageName} 
                                     width={image.width}
                                     height={image.height}

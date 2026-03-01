@@ -18,7 +18,7 @@ import axios from "axios";
 export const getImagesByIdol = async (idolName) => {
     const res = await axios.request({
         method: "POST",
-        url: `${process.env.WEBSCRAPING_BASE_URL}/scraper`,
+        url: `${process.env.WEBSCRAPING_BASE_URL}/getKpopPicturesV2`,
         headers: {
             "Content-Type": "application/json"
         },

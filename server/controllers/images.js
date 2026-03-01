@@ -1,12 +1,12 @@
 import { db } from "../firebase/firebaseConfig.js";
-import { doc, collection, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction, deleteDoc, writeBatch, Timestamp } from "firebase/firestore"
+import { doc, collection, getDoc, setDoc, getDocs, getAggregateFromServer, sum, limit, orderBy, startAfter, query, where, runTransaction, deleteDoc, writeBatch, Timestamp } from "firebase/firestore"
 import axios from "axios";
 
 import { saveManyImages, updateUserVotes } from "../firebase/firestoreService.js";
 import { uploadImage } from "../firebase/storageService.js";
 
 import { getImagesByIdol } from "../requests/scraping.js"
-import { isValidImageUrl, getNewRating, moveDocuments, sanitizeFileName } from "../util/index.js";
+import { isValidImageUrl, getNewRating, sanitizeFileName } from "../util/index.js";
 import { kpopGroups } from "../idol-data/index.js";
 
 import Image from "../models/Image.js";
@@ -34,6 +34,23 @@ const client = axios.create({
 })
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const probeImageDimensionsWithRetry = async ({ metadataSource, maxAttempts = 2 }) => {
+    let lastError;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await probe(metadataSource);
+        } catch (err) {
+            lastError = err;
+            if (attempt < maxAttempts) {
+                await wait(400 * attempt);
+            }
+        }
+    }
+
+    throw lastError;
+};
 
 const verifyKarimeRankKey = (req, res) => {
     const providedKey = req.headers.authorization?.replace("Bearer ", "");
@@ -81,6 +98,7 @@ const fetchImageBufferWithRetry = async ({ originUrl, thumbnailUrl, maxAttempts 
     throw lastError;
 };
 
+// save idol images into firebase storage AND firestore
 const saveIdolImages = async (idolName, collectionName, imageObjects) => {
     const uploadPromises = imageObjects.map(async (imageObj) => {
         const { originUrl, thumbnailUrl, imageName } = imageObj;
@@ -94,18 +112,30 @@ const saveIdolImages = async (idolName, collectionName, imageObjects) => {
                 imageObj
             );
 
-            // attach dimensions
-            const metadataSource = imageObj.firebaseUrl || thumbnailUrl;
-            if (metadataSource) {
-                try {
-                    const imageMetadata = await probe(metadataSource);
-                    if (imageMetadata) {
-                        const { width, height } = imageMetadata;
-                        imageObj.width = width;
-                        imageObj.height = height;
+            // Prefer probing dimensions from the bytes we already downloaded to avoid a second network request.
+            try {
+                const localMetadata = probe.sync(buffer);
+                if (localMetadata?.width && localMetadata?.height) {
+                    imageObj.width = localMetadata.width;
+                    imageObj.height = localMetadata.height;
+                }
+            } catch (_) {
+                // Fall through to network probe retry below.
+            }
+
+            // Fallback for uncommon cases where sync probe cannot infer size from the downloaded buffer.
+            if (!imageObj.width || !imageObj.height) {
+                const metadataSource = imageObj.firebaseUrl || thumbnailUrl;
+                if (metadataSource) {
+                    try {
+                        const imageMetadata = await probeImageDimensionsWithRetry({ metadataSource });
+                        if (imageMetadata?.width && imageMetadata?.height) {
+                            imageObj.width = imageMetadata.width;
+                            imageObj.height = imageMetadata.height;
+                        }
+                    } catch (metadataErr) {
+                        console.warn(`Failed to probe metadata for ${imageName}:`, metadataErr.message);
                     }
-                } catch (metadataErr) {
-                    console.warn(`Failed to probe metadata for ${imageName}:`, metadataErr.message);
                 }
             }
 
@@ -257,7 +287,8 @@ export const getTotalVotes = async (req, res) => {
 
         if (globalVotesSnap.exists()) {
             const totalVotes = Number(globalVotesSnap.data().totalVotes) || 0;
-            return res.status(200).json({ totalVotes });
+            const totalVotesAllTime = Number(globalVotesSnap.data().totalVotesAllTime) || totalVotes;
+            return res.status(200).json({ totalVotes, totalVotesAllTime });
         }
 
         // fallback for if globalVotes field in statsCollection doesn't exist
@@ -270,10 +301,11 @@ export const getTotalVotes = async (req, res) => {
 
         await setDoc(globalVotesRef, {
             totalVotes,
+            totalVotesAllTime: totalVotes,
             updatedAt: Timestamp.now()
         }, { merge: true });
 
-        return res.status(200).json({ totalVotes });
+        return res.status(200).json({ totalVotes, totalVotesAllTime: totalVotes });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -647,6 +679,9 @@ export const likeImage = async (req, res) => {
             const currentTotalVotes = globalVotesSnap.exists()
                 ? Number(globalVotesSnap.data().totalVotes) || 0
                 : 0;
+            const currentTotalVotesAllTime = globalVotesSnap.exists()
+                ? Number(globalVotesSnap.data().totalVotesAllTime) || currentTotalVotes
+                : 0;
 
             // update docs in the database in the same transaction
             transaction.update(firstDocRef, {
@@ -663,6 +698,7 @@ export const likeImage = async (req, res) => {
 
             transaction.set(globalVotesRef, {
                 totalVotes: currentTotalVotes + 1,
+                totalVotesAllTime: currentTotalVotesAllTime + 1,
                 updatedAt: Timestamp.now()
             }, { merge: true });
 
@@ -693,6 +729,7 @@ export const likeImage = async (req, res) => {
             } else {
                 resObject.userVoteStats = updateRes;
             }
+            
         }
 
         return res.status(200).json(resObject);

@@ -19,6 +19,15 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $API_KEY"
 
+      - name: Reset monthly user votes
+        env:
+          API_URL: ${{ secrets.KARIMERANK_API_URL }}
+          API_KEY: ${{ secrets.KARIMERANK_API_KEY }}
+        run: |
+          curl -sS --fail -X POST "$API_URL/users/reset-monthly-votes" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $API_KEY"
+
       - name: Trigger generate-set
         env:
           API_URL: ${{ secrets.KARIMERANK_API_URL }}

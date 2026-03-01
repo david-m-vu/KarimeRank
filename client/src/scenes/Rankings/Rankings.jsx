@@ -206,7 +206,7 @@ const Rankings = () => {
                     return (
                         <div key={image.id} className={`relative rounded-xl p-1 dark:bg-black bg-white dark:text-white shadow-2xl ${getRankOneStyle(index)}`}>
                             <ImageWithPlaceHolder 
-                                src={image.url} 
+                                src={image.firebaseUrl || image.url} 
                                 link={image.originUrl} 
                                 alt={image.imageName} 
                                 handleImageLoad={handleImageLoad} 

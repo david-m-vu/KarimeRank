@@ -132,19 +132,6 @@ export const isValidImageUrl = async (url) => {
     }
 }
 
-export const moveDocuments = async (SourceCollection, DestinationCollection) => {
-    try {
-        const images = await SourceCollection.find();
-        await DestinationCollection.insertMany(images);
-        await SourceCollection.deleteMany({});
-
-        const archivedImages = await DestinationCollection.find();
-        return archivedImages
-    } catch (err) {
-        return null;
-    }
-}
-
 // outcome 1 means the my in myRating wins
 // outcome 0 means the my in myRating loses
 export const getNewRating = (myRating, opponentRating, outcome) => {

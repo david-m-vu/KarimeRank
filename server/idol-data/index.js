@@ -1,7 +1,7 @@
 export const kpopGroups = {
     aespa: ["karina2", "winter", "ningning", "giselle"],
     newjeans: ["hanni", "haerin2", "minji11", "danielle", "hyein4"],
-    kiss: ["belle", "natty", "haneul9", "julie3"],
+    kiss: ["belle", "natty", "haneul", "julie2"],
     illit: ["wonhee", "yunah", "iroha", "moka", "Minju6"],
     ive: ["wonyoung", "Yujin3", "Gaeul5", "Leeseo", "Rei2", "Liz2"],
     triples: [
@@ -11,5 +11,12 @@ export const kpopGroups = {
     ],
     h2h: [
         "carmen", "jiwoo10", "yuha", "stella", "juun", "a-na", "ian5", "ye-on"
-    ]
+    ],
+    cortis: [
+        "james", "juhoon", "martin", "seonghyeon", "keonho"
+    ],
+    twice: [
+        "nayeon", "jeongyeon", "momo", "sana", "jihyo", "mina2", "dahyun", "Chaeyoung", "tzuyu"
+    ],
+    straykids: ["bang-chan", "lee-know", "changbin", "hyunjin2", "han", "felix", "seungmin2", "I-N"]
 }

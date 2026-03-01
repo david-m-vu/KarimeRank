@@ -49,6 +49,7 @@ export const register = async (req, res) => {
             usernameLower: normalizedUsername.toLowerCase(),
             passwordHash,
             nickname: finalNickname,
+            totalVotesAllTime: 0,
             totalVotes: 0,
             favoriteIdol: "",
             favoriteIdolVotes: 0,

@@ -1,5 +1,5 @@
 import { db } from "./firebaseConfig.js";
-import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc, orderBy, limit as firestoreLimit } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, Timestamp, runTransaction, doc, getDoc, updateDoc, orderBy, limit as firestoreLimit, writeBatch } from "firebase/firestore";
 
 /*
  * users
@@ -141,8 +141,9 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
             const nextIdolVotes = currentIdolVotes + 1;
             const nextImageVotes = currentImageVotes + 1;
 
-            // get prev user stats
+            // get prev user stats            
             const prevTotalVotes = Number(userData.totalVotes) || 0;
+            const prevTotalVotesAllTime = Number(userData.totalVotesAllTime) || prevTotalVotes;
             let nextFavoriteIdol = typeof userData.favoriteIdol === "string" ? userData.favoriteIdol : "";
             let nextFavoriteIdolVotes = Number(userData.favoriteIdolVotes) || 0;
             const currentFavoriteIdolKey = nextFavoriteIdol.toLowerCase().trim();
@@ -203,6 +204,7 @@ export const updateUserVotes = async (useTestCollection = true, userId, chosenIm
             }, { merge: true })
 
             const userVoteStats = {
+                totalVotesAllTime: prevTotalVotesAllTime + 1,
                 totalVotes: prevTotalVotes + 1,
                 favoriteIdol: nextFavoriteIdol,
                 favoriteIdolVotes: nextFavoriteIdolVotes,
@@ -310,6 +312,142 @@ export const getTopUsersByVotes = async (collectionName, limit = 10) => {
             const { passwordHash, ...safeData } = data;
             return { id: doc.id, ...safeData };
         });
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+}
+
+const USER_VOTE_RESET = {
+    totalVotes: 0,
+    favoriteIdol: "",
+    favoriteIdolVotes: 0,
+    favoriteImage: {
+        id: "",
+        url: "",
+        width: 0,
+        height: 0,
+        votes: 0,
+    }
+};
+
+const appendDeleteSubcollectionDocsToBatch = async ({ usersCollectionName, userId, subcollectionName, pendingOps }) => {
+    const subcollectionRef = collection(db, usersCollectionName, userId, subcollectionName);
+    const subcollectionSnap = await getDocs(subcollectionRef);
+
+    subcollectionSnap.forEach((subDoc) => {
+        pendingOps.push({ type: "delete", ref: subDoc.ref });
+    });
+
+    return subcollectionSnap.size;
+};
+
+const commitPendingUserVoteResetOps = async (pendingOps, batchLimit = 450) => {
+    let committedOps = 0;
+
+    while (pendingOps.length > 0) {
+        const batch = writeBatch(db);
+        const chunk = pendingOps.splice(0, batchLimit);
+
+        chunk.forEach((op) => {
+            if (op.type === "delete") {
+                batch.delete(op.ref);
+                return;
+            }
+
+            if (op.type === "update") {
+                batch.update(op.ref, op.data);
+            }
+        });
+
+        await batch.commit();
+        committedOps += chunk.length;
+    }
+
+    return committedOps;
+};
+
+export const resetCurrentMonthGlobalVotes = async (useTestCollection = false) => {
+    try {
+        const statsCollectionName = useTestCollection ? "test_stats" : "stats";
+        const globalVotesRef = doc(db, statsCollectionName, "globalVotes");
+
+        return await runTransaction(db, async (transaction) => {
+            const globalVotesSnap = await transaction.get(globalVotesRef);
+            const currentData = globalVotesSnap.exists() ? globalVotesSnap.data() : {};
+            const totalVotesAllTime = Number(currentData.totalVotesAllTime) || Number(currentData.totalVotes) || 0;
+
+            transaction.set(globalVotesRef, {
+                totalVotes: 0,
+                totalVotesAllTime,
+                updatedAt: Timestamp.now(),
+                lastMonthlyResetAt: Timestamp.now()
+            }, { merge: true });
+
+            return {
+                statsCollectionName,
+                totalVotesAllTime,
+                globalVotesReset: true
+            };
+        });
+    } catch (err) {
+        console.log(err.message);
+        return null;
+    }
+}
+
+export const resetAllUsersVoteStats = async (useTestCollection = false) => {
+    try {
+        const usersCollectionName = useTestCollection ? "test_users" : "users";
+        const usersRef = collection(db, usersCollectionName);
+        const usersSnap = await getDocs(usersRef);
+
+        if (usersSnap.empty) {
+            return {
+                usersUpdated: 0,
+                idolVotesDeleted: 0,
+                imageVotesDeleted: 0,
+                writesCommitted: 0
+            };
+        }
+
+        const pendingOps = [];
+        let idolVotesDeleted = 0;
+        let imageVotesDeleted = 0;
+
+        for (const userDoc of usersSnap.docs) {
+            // update top level user fields
+            pendingOps.push({
+                type: "update",
+                ref: userDoc.ref,
+                data: USER_VOTE_RESET
+            });
+
+            // delete idolVotes and imageVotes subcollections
+
+            idolVotesDeleted += await appendDeleteSubcollectionDocsToBatch({
+                usersCollectionName,
+                userId: userDoc.id,
+                subcollectionName: "idolVotes",
+                pendingOps
+            });
+
+            imageVotesDeleted += await appendDeleteSubcollectionDocsToBatch({
+                usersCollectionName,
+                userId: userDoc.id,
+                subcollectionName: "imageVotes",
+                pendingOps
+            });
+        }
+
+        const writesCommitted = await commitPendingUserVoteResetOps(pendingOps);
+
+        return {
+            usersUpdated: usersSnap.size,
+            idolVotesDeleted,
+            imageVotesDeleted,
+            writesCommitted
+        };
     } catch (err) {
         console.log(err.message);
         return null;

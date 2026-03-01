@@ -110,6 +110,10 @@ const Leaderboard = () => {
 
                                     <div className="flex flex-col text-sm leading-6">
                                         <div className="flex flex-row justify-between">
+                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes (All time):</p>
+                                            <p className="tabular-nums">{user.totalVotesAllTime || user.totalVotes}</p>
+                                        </div>  
+                                        <div className="flex flex-row justify-between">
                                             <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes:</p>
                                             <p className="tabular-nums text-black dark:text-white">{user.totalVotes}</p>
                                         </div>
