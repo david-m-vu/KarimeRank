@@ -116,6 +116,7 @@ const Leaderboard = () => {
         const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0;
 
         // calculate by default where the popup will begin
+        // nextLeft and nextTop represent the popup's proposed position before final clamping, then are clamped later
         let nextLeft = cursorPos.x + offset;
         let nextTop = cursorPos.y + offset;
 
@@ -135,6 +136,8 @@ const Leaderboard = () => {
         const maxLeft = Math.max(margin, viewportWidth - popupSize.width - margin);
         const maxTop = Math.max(margin, viewportHeight - popupSize.height - margin);
 
+        // resulting left value is always between [margin, maxLeft]
+        // resulting top value is always between [margin, maxTop]
         const clampedLeft = Math.min(Math.max(nextLeft, margin), maxLeft);
         const clampedTop = Math.min(Math.max(nextTop, margin), maxTop);
 
@@ -142,7 +145,6 @@ const Leaderboard = () => {
             top: clampedTop,
             left: clampedLeft,
             maxHeight: "calc(100vh - 24px)",
-            overflowY: "auto",
         };
     };
     
