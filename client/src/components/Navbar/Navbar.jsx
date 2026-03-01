@@ -6,10 +6,12 @@ import { ReactComponent as ExpandMoreIcon } from "../../assets/icons/expand_more
 import { ReactComponent as LoginIcon } from "../../assets/icons/login.svg";
 import { ReactComponent as PersonIcon } from "../../assets/icons/person_outline.svg";
 import { ReactComponent as ArrowBackIcon } from "../../assets/icons/arrow_back.svg";
+import { ReactComponent as EditIcon } from "../../assets/icons/edit.svg";
 import PrimaryButton from "../PrimaryButton/PrimaryButton";
 import RollingNumber from "../RollingNumber/RollingNumber.jsx";
 
 import ImageWithPlaceholder from "../ImageWithPlaceHolder/ImageWithPlaceholder.jsx";
+import { updateNickname } from "../../requests/users.js";
 
 import { useAuth } from "../../context/AuthContext.jsx";
 
@@ -19,21 +21,29 @@ const NAV_ITEMS = [
     { path: "/leaderboard", label: "Leaderboard"}
 ]
 
+const NICKNAME_MIN = 2;
+const NICKNAME_MAX = 30;
+
 const Navbar = (props) => {
     const [isNavExpanded, setIsNavExpanded] = useState(false);
     const [isProfileOpened, setIsProfileOpened] = useState(false);
+    const [isEditingNickname, setIsEditingNickname] = useState(false); // if isEditingNickname, render nickname text input field and focus it
+    const [nicknameDraft, setNicknameDraft] = useState("");
+    const [nicknameError, setNicknameError] = useState("");
+    const [isSavingNickname, setIsSavingNickname] = useState(false); // disable the submit button while the request to change nickname is being made
 
     const dropdownRef = useRef();
     const dropdownToggleRef = useRef();
 
     const profileRef = useRef();
     const profileToggleRef = useRef();
+    const nicknameInputRef = useRef();
 
     const location = useLocation();
     const navigate = useNavigate();
     const isAuthPage = ["/login", "/register"].includes(location.pathname);
 
-    const { isAuthenticated, isBootstrapping, user, logout } = useAuth();
+    const { isAuthenticated, isBootstrapping, user, logout, updateUser } = useAuth();
     const favoriteImage = user?.favoriteImage && typeof user.favoriteImage === "object" ? user.favoriteImage : null;
     const favoriteImageUrl = favoriteImage?.url || "";
     const favoriteImageVotes = Number(favoriteImage?.votes ?? 0) || 0;
@@ -78,6 +88,79 @@ const Navbar = (props) => {
         return () => document.removeEventListener("pointerdown", handlePointerDown);
     }, [isNavExpanded, isProfileOpened])
 
+    useEffect(() => {
+        // make sure user isn't editing nickname when profile popup isnt open
+        if (!isProfileOpened) {
+            setIsEditingNickname(false);
+            setNicknameError("");
+            return;
+        }
+
+        // keep edit input in sync with the current user nickname when the profile popup opens
+        if (user?.nickname) {
+            setNicknameDraft(user.nickname);
+        }
+    }, [isProfileOpened, user?.nickname]);
+
+    useEffect(() => {
+        if (isEditingNickname) {
+            nicknameInputRef.current?.focus();
+            nicknameInputRef.current?.select(); // select all the text in the input element
+        }
+    }, [isEditingNickname]);
+
+    const validateNickname = (rawNickname) => {
+        const trimmedNickname = rawNickname.trim();
+        if (!trimmedNickname) {
+            return "Nickname is required";
+        }
+        if (trimmedNickname.length < NICKNAME_MIN || trimmedNickname.length > NICKNAME_MAX) {
+            return "Nickname must be 2-30 characters long";
+        }
+        return "";
+    };
+
+    const submitNicknameUpdate = async () => {
+        if (!user || isSavingNickname) {
+            return;
+        }
+
+        const trimmedNickname = nicknameDraft.trim();
+        const validationError = validateNickname(trimmedNickname);
+        if (validationError) {
+            setNicknameError(validationError);
+            return;
+        }
+
+        if (trimmedNickname === user.nickname) {
+            setIsEditingNickname(false);
+            setNicknameError("");
+            return;
+        }
+
+        // isSavingNickname is used to disable the submit button while the request to change nickname is being made
+        setIsSavingNickname(true);
+        setNicknameError("");
+
+        const response = await updateNickname(trimmedNickname);
+        if (response?.error) {
+            setNicknameError(response.error);
+            setIsSavingNickname(false);
+            return;
+        }
+
+        if (!response?.updatedUser) {
+            setNicknameError("Nickname update succeeded but user data was missing");
+            setIsSavingNickname(false);
+            return;
+        }
+
+        updateUser(response.updatedUser);
+        setIsEditingNickname(false);
+        setNicknameError("");
+        setIsSavingNickname(false);
+    };
+
     const getAvailablePathsToPageNames = (curPath) => {
         // filter out the current page in pageNames
         const availablePages = NAV_ITEMS.filter(({path, _pageName}) => {
@@ -106,7 +189,7 @@ const Navbar = (props) => {
                             :
                             <RollingNumber value={props.totalVotes} className="total-votes-counter" /> 
                         }
-                        <span className="hidden sm:inline"> total</span> votes <span className="hidden lg:inline">worldwide</span>
+                        <span className="hidden sm:inline"> total</span> votes <span className="hidden lg:inline">this month</span>
                         
                     </div>
 
@@ -194,8 +277,56 @@ const Navbar = (props) => {
                                     <div className="absolute inset-x-0 inset-y-0 rounded-lg bg-[#F8F8D6]/[0.97] dark:bg-[#4C4C4C]/[0.97] shadow-lg -z-10"/>
 
                                     <div className="flex flex-col">
-                                        <p className="text-base md:text-lg lg:text-xl leading-tight">{user.nickname}</p>
+                                        <div className="flex flex-row justify-between items-center">
+                                            {isEditingNickname ? (
+                                                <input
+                                                    ref={nicknameInputRef}
+                                                    type="text"
+                                                    value={nicknameDraft}
+                                                    onChange={(e) => {
+                                                        setNicknameDraft(e.target.value);
+                                                        if (nicknameError) {
+                                                            setNicknameError("");
+                                                        }
+                                                    }}
+                                                    onBlur={submitNicknameUpdate}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter") {
+                                                            e.preventDefault(); // stop default enter-key behavior (unintended form submit)
+                                                            submitNicknameUpdate();
+                                                        }
+                                                        if (e.key === "Escape") {
+                                                            setIsEditingNickname(false);
+                                                            setNicknameDraft(user.nickname || "");
+                                                            setNicknameError("");
+                                                        }
+                                                    }}
+                                                    disabled={isSavingNickname}
+                                                    className="text-base md:text-lg lg:text-xl leading-tight bg-transparent border border-black/30 dark:border-white/30 rounded px-2 py-0.5 w-full max-w-[14rem]"
+                                                />
+                                            ) : (
+                                                <p className="text-base md:text-lg lg:text-xl leading-tight">{user.nickname}</p>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setNicknameDraft(user.nickname || "");
+                                                    setNicknameError("");
+                                                    setIsEditingNickname(true);
+                                                }}
+                                                aria-label="Edit nickname"
+                                                disabled={isSavingNickname}
+                                                className="hover:bg-[#f5f5e5] dark:hover:bg-[#3a3a3a] active:bg-[#eaeadb] dark:active:bg-[#474747] rounded-full p-1 
+                                                transition-colors duration-75 disabled:active:bg-inherit disabled:hover:bg-inherit disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-1 focus-visible:outline-black dark:focus-visible:outline-white focus-visible:outline-offset-1"
+                                            >
+                                                <EditIcon className="text-black dark:text-white h-3 md:h-[0.875rem] lg:h-4 w-auto">
+                                                </EditIcon>
+                                            </button>                                            
+                                        </div>
                                         <p className="text-xs md:text-sm lg:text-base leading-tight text-[#6c6c6c] dark:text-[#b8b8b8]">@{user.username}</p>
+                                        {nicknameError && (
+                                            <p className="text-xs md:text-sm text-[#FF6961] mt-1">{nicknameError}</p>
+                                        )}
                                     </div>
 
                                     <hr className="border-0 border-t border-black dark:border-white"/>
