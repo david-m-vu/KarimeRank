@@ -43,9 +43,19 @@ export const updateNickname = async (req, res) => {
 }
 export const getLeaderboard = async (req, res) => {
     try {
+        const { metric } = req.query;
+
+        let metricToSortBy;
+        
+        if (!metric || metric !== "totalVotesAllTime") {
+            metricToSortBy = "totalVotes";
+        } else {
+            metricToSortBy = "totalVotesAllTime";
+        }
+        
         const collectionName = process.env.TEST_MODE === "TEST_MODE" ? "test_users" : "users";
 
-        const topUsers = await getTopUsersByVotes(collectionName, 10);
+        const topUsers = await getTopUsersByVotes(collectionName, metricToSortBy, 10);
         if (!topUsers) {
             return res.status(500).json({ message: "Failed to fetch leaderboard" });
         }

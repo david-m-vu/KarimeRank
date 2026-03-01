@@ -201,10 +201,15 @@ const Navbar = (props) => {
                                     <hr className="border-0 border-t border-black dark:border-white"/>
 
                                     <div className="flex flex-col text-sm md:text-base lg:text-lg leading-6 md:leading-7">
+                                        <p className="text-xs md:text-sm lg:text-base leading-tight">All time stats</p>
                                         <div className="flex flex-row justify-between">
-                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes (All time):</p>
+                                            <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes:</p>
                                             <p className="tabular-nums">{user.totalVotesAllTime || user.totalVotes}</p>
                                         </div>  
+                                        
+                                        <hr className="my-2 border-0 border-t border-black/30 dark:border-white/30"/>
+
+                                        <p className="text-xs md:text-sm lg:text-base leading-tight">This Month's Stats</p>
                                         <div className="flex flex-row justify-between">
                                             <p className="text-[#6c6c6c] dark:text-[#b8b8b8]"># Votes:</p>
                                             <p className="tabular-nums">{user.totalVotes}</p>

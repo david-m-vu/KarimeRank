@@ -300,10 +300,10 @@ export const saveManyImages = async (collectionName, imageObjects) => {
 
 }
 
-export const getTopUsersByVotes = async (collectionName, limit = 10) => {
+export const getTopUsersByVotes = async (collectionName, sortField, limit = 10) => {
     try {
         const collectionRef = collection(db, collectionName);
-        const q = query(collectionRef, orderBy("totalVotes", "desc"), firestoreLimit(limit));
+        const q = query(collectionRef, orderBy(sortField, "desc"), firestoreLimit(limit));
         const snap = await getDocs(q);
 
         return snap.docs.map((doc) => {
