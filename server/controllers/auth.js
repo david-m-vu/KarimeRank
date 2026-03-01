@@ -118,7 +118,7 @@ export const login = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        
+        // store access_token in cookie first, but fallback by also sending it in the response body
         res.cookie("access_token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production", // true on HTTPS prod
@@ -127,7 +127,7 @@ export const login = async (req, res) => {
         })
 
         delete user.passwordHash;
-        return res.status(200).json({ user });
+        return res.status(200).json({ user, token }); 
 
     } catch (err) {
         console.error(err);

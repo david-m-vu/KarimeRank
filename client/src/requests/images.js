@@ -1,3 +1,5 @@
+import { withOptionalAuthHeader } from "./auth.js";
+
 const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
 
 export const generateImagesByIdol = async (idolName) => {
@@ -124,9 +126,9 @@ export const getIdolImagePairByIdol = async (idolName) => {
 export const likeImage = async (firstImageID, secondImageID, chosenID) => {
     const res = await fetch(`${BACKEND_BASE_URL}/images/like`, {
         method: "PATCH",
-        headers: {
+        headers: withOptionalAuthHeader({
             "Content-Type": "application/json",
-        },
+        }),
         credentials: "include", // if no auth cookie exists, browser just sends none
         body: JSON.stringify({
             firstImageID,

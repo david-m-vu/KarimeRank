@@ -1,3 +1,5 @@
+import { withOptionalAuthHeader } from "./auth.js";
+
 const USERS_BASE_URL = `${process.env.REACT_APP_BACKEND_BASE_URL}/users`
 
 export const updateNickname = async (newNickname) => {
@@ -5,9 +7,9 @@ export const updateNickname = async (newNickname) => {
         const res = await fetch(`${USERS_BASE_URL}/me/nickname`, {
             method: "PATCH",
             credentials: "include",
-            headers: {
+            headers: withOptionalAuthHeader({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 nickname: newNickname
             })
